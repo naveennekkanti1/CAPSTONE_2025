@@ -25,7 +25,9 @@ def allowed_file(filename):
 # Home route
 @app.route('/')
 def home():
-    return render_template('home.html')
+    user_logged_in = 'user_id' in session
+    return render_template('home.html', user_logged_in=user_logged_in)
+
 @app.route('/about')
 def about():
     return render_template('about.html')
@@ -225,8 +227,6 @@ def create_appointment():
     
     flash("Unauthorized access.", "danger")
     return redirect(url_for('login'))
-
-
 # Logout route
 @app.route('/logout')
 def logout():
