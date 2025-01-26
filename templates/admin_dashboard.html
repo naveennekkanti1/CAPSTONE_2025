@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard</title>
+    <style>
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background: linear-gradient(270deg, #ff7eb3, #ff758c, #ffa4a2, #ffc3a0);
+            background-size: 800% 800%;
+            animation: gradientBG 10s ease infinite;
+            color: white;
+        }
+
+        @keyframes gradientBG {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        .navbar {
+            display: flex;
+            justify-content: space-between;
+            background-color: #333;
+            padding: 1rem;
+        }
+
+        .navbar a {
+            color: white;
+            text-decoration: none;
+            margin: 0 1rem;
+        }
+
+        .navbar a:hover {
+            text-decoration: underline;
+        }
+
+        .container {
+            margin: 2rem auto;
+            max-width: 1200px;
+            padding: 1rem;
+            background-color: rgba(0, 0, 0, 0.8);
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+        }
+
+        .user-list, .appointment-list {
+            margin-top: 1.5rem;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 1rem;
+            background-color: #fff;
+            color: #000;
+        }
+
+        table th, table td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+
+        table th {
+            background-color: #555;
+            color: white;
+        }
+
+        img {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            object-fit: cover;
+        }
+    </style>
+</head>
+<body>
+    <div class="navbar">
+        <a href="/admin_dashboard">Admin Dashboard</a>
+        <a href="/logout">Logout</a>
+    </div>
+    <div class="container">
+        <h2>Admin Dashboard</h2>
+        <p><strong>Patients:</strong> {{ patients_count }}</p>
+        <p><strong>Doctors:</strong> {{ doctors_count }}</p>
+        <p><strong>Total Appointments:</strong> {{ appointments_count }}</p>
+
+        <div class="user-list">
+            <h3>All Users</h3>
+            <table>
+                <thead>
+                    <tr>
+                        <th>First Name</th>
+                        <th>Last Name</th>
+                        <th>Email</th>
+                        <th>Role</th>
+                        <th>Photo</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for user in users %}
+                    <tr>
+                        <td>{{ user['first_name'] }}</td>
+                        <td>{{ user['last_name'] }}</td>
+                        <td>{{ user['email'] }}</td>
+                        <td>{{ user['role'] }}</td>
+                        <td><img src="{{ url_for('static', filename='uploads/' + user['photo']) }}" alt="User Photo"></td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <div class="appointment-list">
+            <h3>All Appointments</h3>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Patient Name</th>
+                        <th>Doctor ID</th>
+                        <th>Age</th>
+                        <th>Phone</th>
+                        <th>Email</th>
+                        <th>Appointment Date</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for appointment in appointments %}
+                    <tr>
+                        <td>{{ appointment['patient_name'] }}</td>
+                        <td>{{ appointment['doctor_id'] }}</td>
+                        <td>{{ appointment['age'] }}</td>
+                        <td>{{ appointment['phone'] }}</td>
+                        <td>{{ appointment['email'] }}</td>
+                        <td>{{ appointment['appointment_datetime'] }}</td>
+                        <td>{{ appointment['status'] }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</body>
+</html>

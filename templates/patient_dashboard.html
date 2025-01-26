@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Patient Dashboard</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+    <div class="navbar">
+        <a href="/patient_dashboard">Dashboard</a>
+        <a href="/create_appointment">Book Appointment</a>
+        <a href="/logout">Logout</a>
+    </div>
+    <div class="container">
+        <h2>Welcome to the Patient Dashboard</h2>
+        
+        <div class="section">
+            <h3>Current Appointments</h3>
+            {% if appointments|length > 0 %}
+                <ul>
+                    {% for appointment in appointments %}
+                        <li>
+                            <strong>Doctor:</strong> {{ appointment.doctor_name }}<br>
+                            <strong>Date & Time:</strong> {{ appointment.appointment_datetime }}<br>
+                            <strong>Cause:</strong> {{ appointment.cause }}
+                        </li>
+                    {% endfor %}
+                </ul>
+            {% else %}
+                <p>You have no appointments scheduled.</p>
+            {% endif %}
+        </div>
+        
+        <div class="section">
+            <a href="/create_appointment" class="btn">Create New Appointment</a>
+        </div>
+    </div>
+</body>
+</html>

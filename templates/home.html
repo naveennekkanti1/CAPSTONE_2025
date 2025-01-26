@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RapiACT</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: #011d1b;
+            color: white;
+            line-height: 1.6;
+            overflow-x: hidden;
+        }
+
+        /* Navbar Styles */
+        .navbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px 30px;
+            background-color: #014340;
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+
+        .navbar .logo img {
+            height: 50px;
+        }
+
+        .navbar .links a {
+            color: white;
+            text-decoration: none;
+            margin: 0 15px;
+            font-size: 14px;
+            transition: color 0.3s ease;
+        }
+
+        .navbar .links a:hover {
+            color: #00d9a6;
+        }
+
+        /* Hero Section */
+        .hero {
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            background: linear-gradient(to bottom right, #014340, #011d1b);
+            padding: 20px;
+        }
+
+        .hero h1 {
+            font-size: 4rem;
+            color: #00a6ff;
+            margin-bottom: 20px;
+        }
+
+        .hero p {
+            font-size: 1.5rem;
+            color: #e0e0e0;
+            margin-bottom: 30px;
+        }
+
+        .hero .button a {
+            text-decoration: none;
+            padding: 15px 30px;
+            background-color: #00a6ff;
+            color: white;
+            border-radius: 50px;
+            font-size: 16px;
+            transition: background-color 0.3s ease;
+        }
+
+        .hero .button a:hover {
+            background-color: #0080c4;
+        }
+
+        /* Section Styles */
+        section {
+            padding: 60px 30px;
+            text-align: center;
+        }
+
+        section h2 {
+            font-size: 2.5rem;
+            color: #00a6ff;
+            margin-bottom: 20px;
+        }
+
+        section p {
+            max-width: 800px;
+            margin: 0 auto;
+            margin-bottom: 40px;
+        }
+
+        .icon-section {
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+
+        .icon-box {
+            background-color: whitesmoke;
+            border-radius: 20px;
+            padding: 20px;
+            width: 180px;
+            text-align: center;
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+            transition: transform 0.3s ease, background-color 0.3s ease;
+        }
+
+        .icon-box:hover {
+            transform: translateY(-10px);
+            background-color: #87CEEB;
+        }
+
+        .icon-box img {
+            width: 70px;
+            margin-bottom: 10px;
+        }
+
+        .icon-box p {
+            color: #014340;
+            font-weight: bold;
+            font-size: 1.1rem;
+        }
+
+        /* About Section */
+        #about {
+            background: linear-gradient(to bottom right, #014340, #011d1b);
+            color: white;
+        }
+
+        /* Services Section */
+        #services ul {
+            list-style: none;
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 0;
+        }
+
+        #services ul li {
+            font-size: 1.2rem;
+            margin: 15px 0;
+            position: relative;
+            padding-left: 25px;
+            color: #e0e0e0;
+        }
+
+        #services ul li::before {
+            content: "✔";
+            position: absolute;
+            left: 0;
+            color: #00d9a6;
+        }
+
+        /* Doctors Section */
+        #doctors {
+            background: #014340;
+            color: white;
+        }
+
+        #doctors .doctor {
+            margin: 20px 0;
+        }
+
+        #doctors .doctor h3 {
+            color: #00d9a6;
+            margin-bottom: 10px;
+        }
+
+        /* Contact Section */
+        #contact form {
+            max-width: 600px;
+            margin: 0 auto;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        #contact form input, #contact form textarea {
+            width: 100%;
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 10px;
+            border: none;
+            font-size: 1rem;
+        }
+
+        #contact form button {
+            background-color: #00a6ff;
+            color: white;
+            padding: 15px 30px;
+            border-radius: 50px;
+            border: none;
+            font-size: 16px;
+            transition: background-color 0.3s ease;
+        }
+
+        #contact form button:hover {
+            background-color: #0080c4;
+        }
+
+        /* Footer */
+        footer {
+            background-color: #014340;
+            color: white;
+            text-align: center;
+            padding: 20px 0;
+        }
+
+        /* Scroll Indicator */
+        .scroll-indicator {
+            position: fixed;
+            left: 0;
+            top: 0;
+            width: 5px;
+            height: 0;
+            background: linear-gradient(to bottom, #00a6ff, #0080c4);
+            z-index: 9999;
+        }
+    </style>
+</head>
+<body>
+    <!-- Scroll Indicator -->
+    <div class="scroll-indicator"></div>
+
+    <!-- Navbar -->
+    <div class="navbar">
+        <div class="logo">
+            <img src="static/images/logo.jpg" alt="Logo">
+        </div>
+        <div class="links">
+            <a href="#">Home</a>
+            <a href="#about">About</a>
+            <a href="#services">Services</a>
+            <a href="#doctors">Doctors</a>
+            <a href="#contact">Contact</a>
+            <a href="/login">Login</a>
+            <a href="/register">Register</a>
+        </div>
+    </div>
+
+    <!-- Hero Section -->
+    <div class="hero">
+        <h1>Welcome to <span>RapiACT!</span></h1>
+        <p>Your one-stop digital healthcare destination</p>
+        <div class="button">
+            <a href="#services">Get Started</a>
+        </div>
+    </div>
+
+    <!-- About Section -->
+    <section id="about">
+        <h2>About Us</h2>
+        <p>RapiACT is dedicated to revolutionizing the healthcare industry...</p>
+    </section>
+
+    <!-- Services Section -->
+    <section id="services">
+        <h2>Our Services</h2>
+        <ul>
+            <li>Online Doctor Consultations</li>
+            <li>Diagnostic Test Bookings</li>
+            <li>Personalized Health Reports</li>
+            <li>Emergency Assistance</li>
+        </ul>
+    </section>
+
+    <!-- Doctors Section -->
+    <section id="doctors">
+        <h2>Our Doctors</h2>
+        <div class="doctor">
+            <h3>Dr. John Doe</h3>
+            <p>Cardiology Specialist</p>
+        </div>
+    </section>
+
+    <!-- Contact Section -->
+    <section id="contact">
+        <h2>Contact Us</h2>
+        <form>
+            <input type="text" placeholder="Name" required>
+            <input type="email" placeholder="Email" required>
+            <textarea placeholder="Message"></textarea>
+            <button type="submit">Send</button>
+        </form>
+    </section>
+
+    <!-- Footer -->
+    <footer>
+        <p>© 2025 RapiACT. All Rights Reserved.</p>
+    </footer>
+
+    <!-- Script for Scroll Indicator -->
+    <script>
+        window.addEventListener('scroll', () => {
+            const scrollTop = window.scrollY;
+            const windowHeight = document.documentElement.scrollHeight - window.innerHeight;
+            const scrollPercentage = (scrollTop / windowHeight) * 100;
+            document.querySelector('.scroll-indicator').style.height = scrollPercentage + '%';
+        });
+    </script>
+</body>
+</html>
