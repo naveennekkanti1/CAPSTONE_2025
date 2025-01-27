@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin Dashboard</title>
+    <title>Appointments</title>
     <style>
         body {
             margin: 0;
@@ -46,12 +46,36 @@
             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
         }
 
-        .analytics {
-            margin-bottom: 2rem;
+        h2 {
+            text-align: center;
+            margin-bottom: 1.5rem;
         }
 
-        .analytics p {
-            font-size: 1.2rem;
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 1rem;
+        }
+
+        table, th, td {
+            border: 1px solid white;
+        }
+
+        th, td {
+            padding: 1rem;
+            text-align: left;
+        }
+
+        th {
+            background-color: #555;
+        }
+
+        tr:nth-child(even) {
+            background-color: rgba(255, 255, 255, 0.1);
+        }
+
+        tr:hover {
+            background-color: rgba(255, 255, 255, 0.2);
         }
     </style>
 </head>
@@ -63,13 +87,31 @@
         <a href="/logout">Logout</a>
     </div>
     <div class="container">
-        <h2>Admin Dashboard</h2>
-        <div class="analytics">
-            <p><strong>Total Users:</strong> {{ total_users }}</p>
-            <p><strong>Total Doctors:</strong> {{ total_doctors }}</p>
-            <p><strong>Total Patients:</strong> {{ total_patients }}</p>
-            <p><strong>Total Appointments:</strong> {{ total_appointments }}</p>
-        </div>
+        <h2>Appointments</h2>
+        <table>
+            <tr>
+                <th>Appointment ID</th>
+                <th>Email</th>
+                <th>Age</th>
+                <th>Patient Name</th>
+                <th>Doctor id</th>
+                <th>Report</th>
+                <th>Date & Time</th>
+                <th>Cause for Visiting</th>
+            </tr>
+            {% for appointment in appointments %}
+            <tr>
+                <td>{{ appointment._id }}</td>
+                <td>{{appointment.email}}</td>
+                <td>{{appointment.age}}</td>
+                <td>{{ appointment.patient_name }}</td>
+                <td>{{ appointment.doctor_id }}</td>
+                <td>{{ appointment.report }}</td>
+                <td>{{ appointment.appointment_datetime }}</td>
+                <td>{{ appointment.cause }}</td>
+            </tr>
+            {% endfor %}
+        </table>
     </div>
 </body>
 </html>

@@ -4,6 +4,7 @@ from werkzeug.security import generate_password_hash, check_password_hash
 from bson import ObjectId
 from werkzeug.utils import secure_filename
 from datetime import datetime
+from pymongo import MongoClient
 
 import os
 
@@ -11,6 +12,9 @@ import os
 app = Flask(__name__)
 app.config['MONGO_URI'] = "mongodb://localhost:27017/RAPACT"
 app.secret_key = 'your_secret_key'  # Used for session management
+
+client = MongoClient("mongodb://localhost:27017/")
+db = client['RAPACT']
 
 # File upload settings
 app.config['UPLOAD_FOLDER'] = 'static/uploads'
@@ -194,35 +198,51 @@ def dashboard():
             return redirect(url_for('patient_dashboard'))
     flash("Please log in first.", "danger")
     return redirect(url_for('login'))
+# admin dashboard
 
 @app.route('/admin_dashboard')
 def admin_dashboard():
-    if 'user_id' in session and session.get('role') == 'admin':
-        # Admin stats
-        patients_count = mongo.db.users.count_documents({'role': 'patient'})
-        doctors_count = mongo.db.users.count_documents({'role': 'doctor'})
-        appointments_count = mongo.db.appointments.count_documents({})
+    total_users = db.users.count_documents({})
+    total_doctors = db.users.count_documents({"role": "Doctor"})
+    total_patients = db.users.count_documents({"role": "Patient"})
+    total_appointments = db.appointments.count_documents({})
 
-        # Fetch all users
-        users = list(mongo.db.users.find())
-        
-        # Fetch unverified doctors
-        unverified_doctors = list(mongo.db.users.find({'role': 'doctor', 'verified': False}))
-        
-        # Fetch verified doctors
-        verified_doctors = list(mongo.db.users.find({'role': 'doctor', 'verified': True}))
+    return render_template(
+        'admin_dashboard.html',
+        total_users=total_users,
+        total_doctors=total_doctors,
+        total_patients=total_patients,
+        total_appointments=total_appointments,
+    )
 
-        return render_template(
-            'admin_dashboard.html',
-            patients_count=patients_count,
-            doctors_count=doctors_count,
-            appointments_count=appointments_count,
-            users=users,
-            unverified_doctors=unverified_doctors,
-            verified_doctors=verified_doctors
-        )
-    flash("Unauthorized access.", "danger")
-    return redirect(url_for('login'))
+@app.route('/users')
+def users():
+    role = request.args.get('role')
+    if role:
+        users = list(db.users.find({"role": role}))
+    else:
+        users = list(db.users.find())
+    return render_template('users.html', users=users)
+
+
+
+
+@app.route('/appointments')
+def appointments():
+    # Fetch appointments
+    appointments = list(db.appointments.find())
+    
+    # Fetch doctor details and enrich appointments data
+    for appointment in appointments:
+        doctor = db.doctors.find_one({"_id": appointment["doctor_id"]})
+        if doctor:
+            appointment["doctor_name"] = doctor.get("first_name", "Unknown")
+            appointment["doctor_specialization"] = doctor.get("specialization", "Unknown")
+        else:
+            appointment["doctor_name"] = "Unknown"
+            appointment["doctor_specialization"] = "Unknown"
+    
+    return render_template('appointments.html', appointments=appointments)
 
 
 @app.route('/patient_dashboard')
