@@ -185,18 +185,19 @@
         .logo-section img {
             width: 60px;
             height: 60px;
+            cursor: pointer; /* Make logo clickable */
         }
     </style>
 </head>
 <body>
 
-    <!-- Logo Section -->
-    <div class="logo-section">
-        <img src="static/images/logo.jpg" alt="Logo"> <!-- Replace with your logo image URL -->
+    <div class="logo-section" onclick="window.location.href='/'">
+        <img src="static/images/logo.jpg" alt="Logo"> <!-- Logo with click redirect -->
     </div>
 
     <!-- 3D Bubble Background -->
     <div class="background">
+        <!-- Bubbles here -->
         <div class="bubble"></div>
         <div class="bubble"></div>
         <div class="bubble"></div>
@@ -206,20 +207,6 @@
         <div class="bubble"></div>
         <div class="bubble"></div>
     </div>
-
-    <!-- Flash Messages -->
-    {% with messages = get_flashed_messages(with_categories=true) %}
-        {% if messages %}
-            <div class="container mt-5">
-                {% for category, message in messages %}
-                    <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
-                        {{ message }}
-                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                    </div>
-                {% endfor %}
-            </div>
-        {% endif %}
-    {% endwith %}
 
     <!-- Login Form -->
     <div class="container mt-5 d-flex align-items-center justify-content-center" style="height: 100vh;">
@@ -227,19 +214,17 @@
             <div class="form-container">
                 <h1>Login</h1>
                 <form method="POST" action="{{ url_for('login') }}">
-                    <!-- Email Field -->
+                    <!-- Form Fields -->
                     <div class="mb-3">
                         <label for="email" class="form-label">Email</label>
                         <input type="email" class="form-control" id="email" name="email" placeholder="Enter your email" required>
                     </div>
 
-                    <!-- Password Field -->
                     <div class="mb-3">
                         <label for="password" class="form-label">Password</label>
                         <input type="password" class="form-control" id="password" name="password" placeholder="Enter your password" required>
                     </div>
 
-                    <!-- Role Selection -->
                     <div class="mb-3">
                         <label for="role" class="form-label">Role</label>
                         <select class="form-select" id="role" name="role" required>
@@ -250,12 +235,13 @@
                         </select>
                     </div>
 
-                    <!-- Submit Button -->
                     <button type="submit" class="btn btn-primary w-100">Login</button>
 
-                    <!-- Register Link -->
                     <p class="text-center mt-3">
-                        Don't have an account? <a href="/register" class="text-decoration-none">Register here</a> .
+                        Don't have an account? <a href="/register_doctor" class="text-decoration-none">For Doctor</a>
+                    </p>
+                    <p class="text-center mt-3">
+                        Don't have an account? <a href="/register_patient" class="text-decoration-none">For Patient</a>
                     </p>
                 </form>
             </div>
