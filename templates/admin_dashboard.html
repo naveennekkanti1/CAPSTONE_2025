@@ -4,20 +4,13 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Admin Dashboard</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         body {
             margin: 0;
             font-family: Arial, sans-serif;
-            background: linear-gradient(270deg, #ff7eb3, #ff758c, #ffa4a2, #ffc3a0);
-            background-size: 800% 800%;
-            animation: gradientBG 10s ease infinite;
-            color: white;
-        }
-
-        @keyframes gradientBG {
-            0% { background-position: 0% 50%; }
-            50% { background-position: 100% 50%; }
-            100% { background-position: 0% 50%; }
+            background: #f0f0f0;
+            color: black;
         }
 
         .navbar {
@@ -37,21 +30,79 @@
             text-decoration: underline;
         }
 
+        .dropdown {
+            position: relative;
+            display: inline-block;
+        }
+
+        .dropdown-content {
+            display: none;
+            position: absolute;
+            background-color: #f9f9f9;
+            min-width: 160px;
+            box-shadow: 0px 8px 16px rgba(0, 0, 0, 0.2);
+            z-index: 1;
+        }
+
+        .dropdown:hover .dropdown-content {
+            display: block;
+        }
+
+        .dropdown-content a {
+            color: black;
+            padding: 12px 16px;
+            text-decoration: none;
+            display: block;
+        }
+
+        .dropdown-content a:hover {
+            background-color: #ddd;
+        }
+
         .container {
             margin: 2rem auto;
             max-width: 1200px;
-            padding: 1rem;
-            background-color: rgba(0, 0, 0, 0.8);
+            padding: 2rem;
+            background-color: white;
             border-radius: 8px;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
         }
 
-        .analytics {
+        h2 {
+            text-align: center;
             margin-bottom: 2rem;
         }
 
-        .analytics p {
-            font-size: 1.2rem;
+        .card {
+            display: flex;
+            justify-content: space-around;
+            flex-wrap: wrap;
+        }
+
+        .card-item {
+            width: 45%;
+            background-color: #fff;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            margin: 1rem 0;
+            padding: 2rem;
+            text-align: center;
+        }
+
+        .card-item h4 {
+            margin-bottom: 1rem;
+        }
+
+        .chart-container {
+            margin-top: 2rem;
+            background-color: rgba(0, 0, 0, 0.05);
+            border-radius: 8px;
+            padding: 2rem;
+        }
+
+        .chart {
+            width: 100%;
+            height: 400px;
         }
     </style>
 </head>
@@ -61,15 +112,126 @@
         <a href="/users">Users</a>
         <a href="/appointments">Appointments</a>
         <a href="/logout">Logout</a>
-    </div>
-    <div class="container">
-        <h2>Admin Dashboard</h2>
-        <div class="analytics">
-            <p><strong>Total Users:</strong> {{ total_users }}</p>
-            <p><strong>Total Doctors:</strong> {{ total_doctors }}</p>
-            <p><strong>Total Patients:</strong> {{ total_patients }}</p>
-            <p><strong>Total Appointments:</strong> {{ total_appointments }}</p>
+
+        <!-- Dropdown Menu -->
+        <div class="dropdown">
+            <a href="#">Manage</a>
+            <div class="dropdown-content">
+                <a href="/add_user">Add User</a>
+                <a href="/edit_user">Edit User</a>
+                <a href="/delete_user">Delete User</a>
+            </div>
         </div>
     </div>
+
+    <div class="container">
+        <h2>Admin Dashboard</h2>
+        
+        <div class="card">
+            <div class="card-item">
+                <h4>Total Users</h4>
+                <p>{{ total_users }}</p>
+            </div>
+            <div class="card-item">
+                <h4>Total Doctors</h4>
+                <p>{{ total_doctors }}</p>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-item">
+                <h4>Total Patients</h4>
+                <p>{{ total_patients }}</p>
+            </div>
+            <div class="card-item">
+                <h4>Total Appointments</h4>
+                <p>{{ total_appointments }}</p>
+            </div>
+        </div>
+
+        <div class="chart-container">
+            <h3>User Insights</h3>
+            <canvas id="userChart" class="chart"></canvas>
+        </div>
+
+        <div class="chart-container">
+            <h3>Appointment Insights</h3>
+            <canvas id="appointmentChart" class="chart"></canvas>
+        </div>
+    </div>
+
+    <script>
+        // Safeguard: Default values for dynamic variables in case they aren't passed
+        const totalDoctors = {{ total_doctors | default(0) }};
+        const totalPatients = {{ total_patients | default(0) }};
+        const upcomingAppointments = {{ upcoming_appointments | default(0) }};
+        const completedAppointments = {{ completed_appointments | default(0) }};
+        const cancelledAppointments = {{ cancelled_appointments | default(0) }};
+
+        // User insights graph
+        const userChartCtx = document.getElementById('userChart').getContext('2d');
+        const userChart = new Chart(userChartCtx, {
+            type: 'pie',
+            data: {
+                labels: ['Doctors', 'Patients'],
+                datasets: [{
+                    data: [totalDoctors, totalPatients],
+                    backgroundColor: ['#FF6384', '#36A2EB'],
+                    hoverOffset: 4
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: {
+                        position: 'top',
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: function(tooltipItem) {
+                                return tooltipItem.label + ': ' + tooltipItem.raw;
+                            }
+                        }
+                    }
+                }
+            }
+        });
+
+        // Appointment insights graph
+        const appointmentChartCtx = document.getElementById('appointmentChart').getContext('2d');
+        const appointmentChart = new Chart(appointmentChartCtx, {
+            type: 'bar',
+            data: {
+                labels: ['Upcoming', 'Completed', 'Cancelled'],
+                datasets: [{
+                    label: 'Appointments',
+                    data: [upcomingAppointments, completedAppointments, cancelledAppointments],
+                    backgroundColor: ['#FF9F40', '#4BC0C0', '#FFCD56'],
+                    borderColor: ['#FF7A33', '#4F6D68', '#FFB93E'],
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: {
+                        position: 'top',
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: function(tooltipItem) {
+                                return tooltipItem.label + ': ' + tooltipItem.raw;
+                            }
+                        }
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true
+                    }
+                }
+            }
+        });
+    </script>
 </body>
 </html>
