@@ -4,169 +4,200 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Admin Dashboard</title>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/css/bootstrap.min.css" rel="stylesheet">
     <style>
         body {
             margin: 0;
-            font-family: Arial, sans-serif;
-            background: #f0f0f0;
-            color: black;
+            min-height: 100vh;
+            background: linear-gradient(120deg, #2b1055, #7597de);
+            font-family: 'Arial', sans-serif;
+            color: #fff;
+        }
+
+        .background {
+            position: fixed;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            overflow: hidden;
+        }
+
+        .star {
+            position: absolute;
+            width: 2px;
+            height: 2px;
+            background: white;
+            border-radius: 50%;
+            animation: sparkle 5s infinite ease-in-out;
+        }
+
+        @keyframes sparkle {
+            0%, 100% {
+                opacity: 0.3;
+                transform: scale(0.5);
+            }
+            50% {
+                opacity: 1;
+                transform: scale(1);
+            }
         }
 
         .navbar {
-            display: flex;
-            justify-content: space-between;
-            background-color: #333;
-            padding: 1rem;
-        }
-
-        .navbar a {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            background: rgba(0, 0, 0, 0.7);
             color: white;
-            text-decoration: none;
-            margin: 0 1rem;
+            z-index: 10;
         }
 
-        .navbar a:hover {
-            text-decoration: underline;
+        .navbar-brand {
+            display: flex;
+            align-items: center;
         }
 
-        .dropdown {
-            position: relative;
-            display: inline-block;
+        .navbar-brand img {
+            height: 40px;
+            margin-right: 10px;
         }
 
-        .dropdown-content {
-            display: none;
-            position: absolute;
-            background-color: #f9f9f9;
-            min-width: 160px;
-            box-shadow: 0px 8px 16px rgba(0, 0, 0, 0.2);
-            z-index: 1;
+        .navbar-brand span {
+            color: #007bff;
+            font-weight: bold;
         }
 
-        .dropdown:hover .dropdown-content {
-            display: block;
+        .navbar .nav-link.dropdown-toggle {
+            color: #007bff !important;
         }
 
-        .dropdown-content a {
+        .navbar .nav-link.dropdown-toggle:hover {
+            color: #0056b3 !important;
+        }
+
+        .dropdown-menu a {
             color: black;
-            padding: 12px 16px;
-            text-decoration: none;
-            display: block;
         }
 
-        .dropdown-content a:hover {
-            background-color: #ddd;
+        .dropdown-menu a:hover {
+            background-color: #f1f1f1;
         }
 
         .container {
-            margin: 2rem auto;
-            max-width: 1200px;
-            padding: 2rem;
-            background-color: white;
-            border-radius: 8px;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            padding: 100px 20px 20px;
         }
 
-        h2 {
-            text-align: center;
-            margin-bottom: 2rem;
+        .section {
+            margin-top: 30px;
+            background-color:black(255, 255, 255, 0.9);
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+            overflow-y: auto;
+        }
+
+        .card-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            position: relative;
         }
 
         .card {
-            display: flex;
-            justify-content: space-around;
-            flex-wrap: wrap;
-        }
-
-        .card-item {
-            width: 45%;
-            background-color: #fff;
-            border-radius: 8px;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-            margin: 1rem 0;
-            padding: 2rem;
+            background: white;
+            border-radius: 10px;
+            padding: 15px;
             text-align: center;
+            color: #333;
+            position: relative;
         }
 
-        .card-item h4 {
-            margin-bottom: 1rem;
+        .card .edit-btn {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background-color: transparent;
+            border: none;
+            font-size: 1.5rem;
+            color: #007bff;
         }
 
-        .chart-container {
-            margin-top: 2rem;
-            background-color: rgba(0, 0, 0, 0.05);
-            border-radius: 8px;
-            padding: 2rem;
+        .card .edit-btn:hover {
+            color: #0056b3;
         }
 
-        .chart {
-            width: 100%;
-            height: 400px;
+        @media (max-width: 768px) {
+            .card-container {
+                grid-template-columns: 1fr;
+            }
         }
     </style>
 </head>
 <body>
-    <div class="navbar">
-        <a href="/admin_dashboard">Dashboard</a>
-        <a href="/users">Users</a>
-        <a href="/appointments">Appointments</a>
-        <a href="/logout">Logout</a>
-
-        <!-- Dropdown Menu -->
-        <div class="dropdown">
-            <a href="#">Manage</a>
-            <div class="dropdown-content">
-                <a href="/add_user">Add User</a>
-                <a href="/edit_user">Edit User</a>
-                <a href="/delete_user">Delete User</a>
+    <nav class="navbar navbar-expand-lg">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="/admin_dashboard">
+                <img src="static/images/logo.jpg" alt="Logo">
+                <span>RapiACT</span>
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNavDropdown">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse justify-content-end" id="navbarNavDropdown">
+                <ul class="navbar-nav">
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                            Menu
+                        </a>
+                        <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="navbarDropdown">
+                            <li><a class="dropdown-item" href="/admin_dashboard">Dashboard</a></li>
+                            <li><a class="dropdown-item" href="/users">Users</a></li>
+                            <li><a class="dropdown-item" href="/appointments">Appointments</a></li>
+                            <li><a class="dropdown-item" href="/logout">Logout</a></li>
+                        </ul>
+                    </li>
+                </ul>
             </div>
         </div>
-    </div>
+    </nav>
 
     <div class="container">
-        <h2>Admin Dashboard</h2>
-        
-        <div class="card">
-            <div class="card-item">
-                <h4>Total Users</h4>
+        <h2 class="text-center">Admin Dashboard</h2>
+
+        <div class="section card-container">
+            <div class="card">
+                <h5>Total Users</h5>
                 <p>{{ total_users }}</p>
             </div>
-            <div class="card-item">
-                <h4>Total Doctors</h4>
+            <div class="card">
+                <h5>Total Doctors</h5>
                 <p>{{ total_doctors }}</p>
             </div>
-        </div>
-
-        <div class="card">
-            <div class="card-item">
-                <h4>Total Patients</h4>
+            <div class="card">
+                <h5>Total Patients</h5>
                 <p>{{ total_patients }}</p>
             </div>
-            <div class="card-item">
-                <h4>Total Appointments</h4>
+            <div class="card">
+                <h5>Total Appointments</h5>
                 <p>{{ total_appointments }}</p>
             </div>
         </div>
 
-        <div class="chart-container">
+        <div class="section">
             <h3>User Insights</h3>
             <canvas id="userChart" class="chart"></canvas>
         </div>
 
-        <div class="chart-container">
+        <div class="section">
             <h3>Appointment Insights</h3>
             <canvas id="appointmentChart" class="chart"></canvas>
         </div>
     </div>
 
+    <div class="background"></div>
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script>
-        // Safeguard: Default values for dynamic variables in case they aren't passed
-        const totalDoctors = {{ total_doctors | default(0) }};
-        const totalPatients = {{ total_patients | default(0) }};
-        const upcomingAppointments = {{ upcoming_appointments | default(0) }};
-        const completedAppointments = {{ completed_appointments | default(0) }};
-        const cancelledAppointments = {{ cancelled_appointments | default(0) }};
 
         // User insights graph
         const userChartCtx = document.getElementById('userChart').getContext('2d');
@@ -233,5 +264,7 @@
             }
         });
     </script>
+    
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>

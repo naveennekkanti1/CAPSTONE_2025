@@ -13,8 +13,10 @@ app = Flask(__name__)
 app.config['MONGO_URI'] = "mongodb://localhost:27017/RAPACT"
 app.secret_key = 'your_secret_key'  # Used for session management
 
+
 client = MongoClient("mongodb://localhost:27017/")
 db = client['RAPACT']
+users_collection = db['users']
 
 # File upload settings
 app.config['UPLOAD_FOLDER'] = 'static/uploads'
@@ -202,18 +204,25 @@ def dashboard():
 
 @app.route('/admin_dashboard')
 def admin_dashboard():
-    total_users = db.users.count_documents({})
-    total_doctors = db.users.count_documents({"role": "Doctor"})
-    total_patients = db.users.count_documents({"role": "Patient"})
-    total_appointments = db.appointments.count_documents({})
+    # Counting total users, doctors, patients, and appointments
+    total_users = mongo.db.users.count_documents({})
+    total_doctors = mongo.db.doctors.count_documents({})
+    total_patients = mongo.db.patients.count_documents({})
+    total_appointments = mongo.db.appointments.count_documents({})
+    
+    # Counting appointment statuses (you might need to adjust based on your data schema)
+    upcoming_appointments = mongo.db.appointments.count_documents({"status": "upcoming"})
+    completed_appointments = mongo.db.appointments.count_documents({"status": "completed"})
+    cancelled_appointments = mongo.db.appointments.count_documents({"status": "cancelled"})
 
-    return render_template(
-        'admin_dashboard.html',
-        total_users=total_users,
-        total_doctors=total_doctors,
-        total_patients=total_patients,
-        total_appointments=total_appointments,
-    )
+    return render_template('admin_dashboard.html',
+                           total_users=total_users,
+                           total_doctors=total_doctors,
+                           total_patients=total_patients,
+                           total_appointments=total_appointments,
+                           upcoming_appointments=upcoming_appointments,
+                           completed_appointments=completed_appointments,
+                           cancelled_appointments=cancelled_appointments)
 
 @app.route('/users')
 def users():
@@ -438,6 +447,149 @@ def create_appointment():
     
     flash("Unauthorized access.", "danger")
     return redirect(url_for('login'))
+
+@app.route('/add_user', methods=['GET', 'POST'])
+def add_user():
+    if request.method == 'POST':
+        # Retrieve user details from the form
+        first_name = request.form['first_name']
+        last_name = request.form['last_name']
+        email = request.form['email']
+        password = request.form['password']
+        confirm_password = request.form['confirm_password']
+        role = request.form['role']
+        photo = request.files['photo']
+
+        # Validate passwords
+        if password != confirm_password:
+            flash("Passwords do not match. Please try again.", "danger")
+            return redirect(url_for('add_user'))
+
+        # Handle file upload
+        if photo and allowed_file(photo.filename):
+            photo_filename = secure_filename(photo.filename)
+            photo.save(os.path.join(app.config['UPLOAD_FOLDER'], photo_filename))
+        else:
+            flash("Invalid file type. Only PDF, JPG, JPEG, or PNG files are allowed.", "danger")
+            return redirect(url_for('add_user'))
+
+        # Check if email is already registered
+        if mongo.db.users.find_one({'email': email}):
+            flash("Email already registered. Please use a different email.", "danger")
+            return redirect(url_for('add_user'))
+
+        # Hash the password
+        hashed_password = generate_password_hash(password)
+
+        # Create user data dictionary
+        user_data = {
+            'first_name': first_name,
+            'last_name': last_name,
+            'email': email,
+            'password': hashed_password,
+            'role': role,
+            'photo': photo_filename,
+        }
+
+        # Add patient-specific fields if the role is patient
+        if role == 'patient':
+            house_no = request.form['house_no']
+            village_city = request.form['village_city']
+            district = request.form['district']
+            state = request.form['state']
+
+            user_data.update({
+                'house_no': house_no,
+                'village_city': village_city,
+                'district': district,
+                'state': state
+            })
+
+        # Add doctor-specific fields if the role is doctor
+        elif role == 'doctor':
+            age = request.form['age']
+            gender = request.form['gender']
+            phone = request.form['phone']
+            experience_years = request.form['experience_years']
+            specialization = request.form['specialization']
+            brief_experience = request.form['brief_experience']
+
+            user_data.update({
+                'age': age,
+                'gender': gender,
+                'phone': phone,
+                'experience_years': experience_years,
+                'specialization': specialization,
+                'brief_experience': brief_experience,
+                'address': {
+                    'house_no': request.form['house_no'],
+                    'city': request.form['city'],
+                    'state': request.form['state'],
+                    'country': request.form['country'],
+                    'pincode': request.form['pincode'],
+                }
+            })
+
+        # Insert the user data into the MongoDB database
+        mongo.db.users.insert_one(user_data)
+
+        flash("Registration successful! Please log in.", "success")
+        return redirect(url_for('login'))
+
+    # Render the user registration form
+    return render_template('add_user.html')
+
+def get_user_by_id(user_id):
+    return users_collection.find_one({"_id": user_id})
+
+def update_user(user_id, updated_data):
+    users_collection.update_one({"_id": user_id}, {"$set": updated_data})
+
+@app.route('/edit_user/<user_id>', methods=['GET', 'POST'])
+def edit_user(user_id):
+    # Fetch user from database using the user_id (converted to ObjectId)
+    user = mongo.db.users.find_one({"_id": ObjectId(user_id)})
+    
+    if not user:
+        flash("User not found.", "danger")
+        return redirect(url_for('users'))  # Redirect if user is not found
+
+    if request.method == 'POST':
+        # Extracting updated data from the form
+        updated_data = {
+            'first_name': request.form['first_name'],
+            'last_name': request.form['last_name'],
+            'email': request.form['email'],
+            'role': request.form['role'],
+        }
+        
+        # Update role-specific fields
+        if updated_data['role'] == 'patient':
+            updated_data.update({
+                'house_no': request.form.get('house_no'),
+                'village_city': request.form.get('village_city'),
+                'district': request.form.get('district'),
+                'state': request.form.get('state'),
+            })
+        elif updated_data['role'] == 'doctor':
+            updated_data.update({
+                'specialization': request.form.get('specialization'),
+                'experience_years': request.form.get('experience_years'),
+            })
+
+        # Update the database
+        mongo.db.users.update_one({"_id": ObjectId(user_id)}, {"$set": updated_data})
+        flash("User updated successfully!", "success")
+        return redirect(url_for('users'))
+
+    return render_template('edit_user.html', user=user)
+
+
+@app.route('/delete_user/<user_id>', methods=['POST'])
+def delete_user(user_id):
+    mongo.db.users.delete_one({'_id': ObjectId(user_id)})
+    flash("User deleted successfully!", "success")
+    return redirect(url_for('admin_dashboard'))
 
 # Logout route
 @app.route('/logout')
