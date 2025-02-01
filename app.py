@@ -173,22 +173,13 @@ def register_doctor():
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     if request.method == 'POST':
-        email = request.form['email']
-        password = request.form['password']
-        role = request.form['role']
-
-        # Find the user by email and role
-        user = mongo.db.users.find_one({'email': email, 'role': role})
-
-        if user and check_password_hash(user['password'], password):
-            session['user_id'] = str(user['_id'])
-            session['role'] = user['role']
+        user = mongo.db.users.find_one({'email': request.form['email'], 'role': request.form['role']})
+        if user and check_password_hash(user['password'], request.form['password']):
+            session.update({'user_id': str(user['_id']), 'role': user['role']})
             flash("Login successful!", "success")
-            return redirect(url_for('dashboard') + "?login_success=1")  # ✅ Redirect with success flag
-        else:
-            flash("Invalid credentials. Please try again.", "danger")
-            return redirect(url_for('login') + "?login_failed=1")  # ❌ Redirect with error flag
-
+            return redirect(url_for('dashboard', login_success=1))
+        flash("Invalid credentials. Please try again.", "danger")
+        return redirect(url_for('login', login_failed=1))
     return render_template('login.html')
 
 
