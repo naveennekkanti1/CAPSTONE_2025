@@ -9,12 +9,12 @@
         body {
             margin: 0;
             height: 100vh;
-            background: #0099cc; /* Blue background */
+            background: #0099cc;
             overflow: hidden;
             position: relative;
             font-family: 'Arial', sans-serif;
         }
-        /* Background Styles */
+
         .background {
             position: absolute;
             width: 100%;
@@ -47,7 +47,6 @@
             justify-content: space-between;
             align-items: center;
             z-index: 10;
-            pointer-events: auto;
         }
 
         .navbar a {
@@ -100,59 +99,88 @@
         .btn-upcoming:hover {
             background-color: #0056b3;
         }
+
+        .btn-cancel {
+            background-color: #dc3545;
+            color: white;
+        }
+
+        .btn-cancel:hover {
+            background-color: #c82333;
+        }
+
+        .btn-meeting {
+            background-color: #17a2b8;
+        }
+
+        .btn-meeting:hover {
+            background-color: #138496;
+        }
     </style>
 </head>
 <body>
-    <!-- Navbar -->
     <div class="navbar">
         <span>Welcome, {{ first_name }} {{ last_name }}</span>
         <div>
-            <a href="/create_appointment">Book Appointment</a>
+            <a href="/create_appointment">create Appointment</a>
+            <a href="/special_meeting_doctor">Special Meeting</a> <!-- Added for Doctors -->
             <a href="/profile">Profile</a>
             <a href="/logout">Logout</a>
         </div>
     </div>
 
-    <!-- Content -->
     <div class="container">
         <h2>Welcome to RapiACT</h2>
 
+        <div class="background">
+            <div class="bubble" style="width: 100px; height: 100px;"></div>
+            <div class="bubble" style="width: 150px; height: 150px;"></div>
+            <div class="bubble" style="width: 200px; height: 200px;"></div>
+            <div class="bubble" style="width: 120px; height: 120px;"></div>
+            <div class="bubble" style="width: 180px; height: 180px;"></div>
+            <div class="bubble" style="width: 90px; height: 90px;"></div>
+        </div>
 
-
-        
-    <!-- 3D Bubble Background -->
-    <div class="background">
-        <div class="bubble" style="width: 100px; height: 100px;"></div>
-        <div class="bubble" style="width: 150px; height: 150px;"></div>
-        <div class="bubble" style="width: 200px; height: 200px;"></div>
-        <div class="bubble" style="width: 120px; height: 120px;"></div>
-        <div class="bubble" style="width: 180px; height: 180px;"></div>
-        <div class="bubble" style="width: 90px; height: 90px;"></div>
-    </div>
+        <div class="section">
+            <h3>Join a Special Meeting</h3>
+            <p>Enter the Meeting ID to join a special session with your doctor.</p>
+            <form action="/join_special_meeting" method="post">
+                <div class="form-group">
+                    <label for="meeting_id">Meeting ID:</label>
+                    <input type="text" id="meeting_id" name="meeting_id" class="form-control" required>
+                </div>
+                <button type="submit" class="btn btn-primary mt-2">Join Meeting</button>
+            </form>
+        </div>
 
         <!-- Upcoming Appointments -->
-        <div class="section">
-            <h3>Upcoming Appointments</h3>
-            {% if upcoming_appointments %}
-    <div class="row">
-        {% for appointment in upcoming_appointments %}
-            <div class="col-md-4">
-                <div class="card">
-                    <div class="card-body">
-                        <h5 class="card-title">Doctor: {{ appointment.doctor_name }}</h5>
-                        <p class="card-text"><strong>Specialization:</strong> {{ appointment.specialization }}</p>
-                        <p class="card-text"><strong>Date & Time:</strong> {{ appointment.appointment_datetime }}</p>
-                        <p class="card-text"><strong>Cause:</strong> {{ appointment.cause }}</p>
-                        <a href="/completed/{{ appointment._id }}" class="btn btn-upcoming">Completed</a>
+<div class="section">
+    <h3>Upcoming Appointments</h3>
+    {% if upcoming_appointments %}
+        <div class="row">
+            {% for appointment in upcoming_appointments %}
+                <div class="col-md-4">
+                    <div class="card">
+                        <div class="card-body">
+                            <h5 class="card-title">Doctor: {{ appointment.doctor_name }}</h5>
+                            <p class="card-text"><strong>Specialization:</strong> {{ appointment.specialization }}</p>
+                            <p class="card-text"><strong>Date & Time:</strong> {{ appointment.appointment_datetime }}</p>
+                            <p class="card-text"><strong>Cause:</strong> {{ appointment.cause }}</p>
+                            <a href="/meeting/{{ appointment._id }}" class="btn btn-meeting">Join Meeting</a>
+
+                            <!-- Cancel Appointment Button -->
+                            <form action="/cancel_appointment/{{ appointment._id }}" method="post" style="display:inline;">
+                                <button type="submit" class="btn btn-cancel">Cancel Appointment</button>
+                            </form>
+                        </div>
                     </div>
                 </div>
-            </div>
-        {% endfor %}
-    </div>
-{% else %}
-    <p>No upcoming appointments.</p>
-{% endif %}
+            {% endfor %}
         </div>
+    {% else %}
+        <p>No upcoming appointments.</p>
+    {% endif %}
+</div>
 
         <!-- Completed Appointments -->
         <div class="section">
@@ -167,7 +195,6 @@
                                     <p class="card-text"><strong>Specialization:</strong> {{ appointment.specialization }}</p>
                                     <p class="card-text"><strong>Date & Time:</strong> {{ appointment.appointment_datetime }}</p>
                                     <p class="card-text"><strong>Cause:</strong> {{ appointment.cause }}</p>
-                                    <a href="/completed/{{ appointment._id }}" class="btn btn-completed">Completed</a>
                                 </div>
                             </div>
                         </div>

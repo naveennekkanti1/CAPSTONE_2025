@@ -281,12 +281,85 @@
     </section>
 
     <!-- Doctors Section -->
-    <section id="doctors">
-        <h2>Our Doctors</h2>
-        <div class="doctor">
-            <h3>Dr. John Doe</h3>
-            <p>Cardiology Specialist</p>
-        </div>
+    <!-- Doctors Section with Slideshow -->
+<div id="doctors" class="section">
+    <h2>Meet Our Doctors</h2>
+    <div class="doctor-slider">
+        <div class="slides"></div>
+    </div>
+</div>
+
+<style>
+    .doctor-slider {
+        width: 80%;
+        margin: auto;
+        overflow: hidden;
+        position: relative;
+    }
+
+    .slides {
+        display: flex;
+        transition: transform 0.5s ease-in-out;
+    }
+
+    .doctor-card {
+        min-width: 100%;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        border-radius: 10px;
+        background: #022f2c;
+        color: white;
+        text-align: center;
+        padding: 20px;
+    }
+
+    .doctor-card img {
+        width: 120px;
+        height: 120px;
+        border-radius: 50%;
+        object-fit: cover;
+    }
+
+    .arrow {
+        position: absolute;
+        top: 50%;
+        transform: translateY(-50%);
+        background: rgba(255, 255, 255, 0.6);
+        border: none;
+        padding: 10px;
+        cursor: pointer;
+    }
+
+    .arrow-left { left: 10px; }
+    .arrow-right { right: 10px; }
+</style>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        fetch("/get_doctors")
+            .then(response => response.json())
+            .then(doctors => {
+                const slidesContainer = document.querySelector(".slides");
+                doctors.forEach(doctor => {
+                    const doctorCard = document.createElement("div");
+                    doctorCard.classList.add("doctor-card");
+                    doctorCard.innerHTML = `
+                        <img src="data:image/png;base64,${doctor.photo}" alt="Doctor">
+                        <h3>${doctor.first_name} ${doctor.last_name}</h3>
+                        <p>${doctor.specialization}</p>
+                    `;
+                    slidesContainer.appendChild(doctorCard);
+                });
+
+                let index = 0;
+                const totalDoctors = doctors.length;
+                setInterval(() => {
+                    index = (index + 1) % totalDoctors;
+                    slidesContainer.style.transform = `translateX(-${index * 100}%)`;
+                }, 3000);
+            });
+    });
+</script>
+
     </section>
 
     <!-- Contact Section -->

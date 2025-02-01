@@ -1,13 +1,52 @@
-from werkzeug.security import check_password_hash
+import re
+import textract
 
-# Example of a stored hashed password (this would be retrieved from your database)
-stored_hashed_password = "scrypt:32768:8:1$0Kbu9OxL0W3Lynpp$f7b808d6fa54361e2fe104a09fad8bd7b45f321fa66d058d41c2d200255d51d94fa14a8c56982495d4feadaf600dd60180c95bea30e9ca290336a48be51e424e"
+def extract_liver_report_data(file_path):
+    # Extract text from PDF using textract
+    try:
+        text = textract.process(file_path, method='tesseract')
+        text = text.decode('utf-8')  # Decode bytes to string
+    except Exception as e:
+        print(f"Error reading file: {e}")
+        return None
 
-# The password entered by the user for verification
-entered_password = "Preetham@123"
+    # Dictionary to store extracted data
+    extracted_data = {}
 
-# Verifying the entered password against the stored hash
-if check_password_hash(stored_hashed_password, entered_password):
-    print("Password is correct!")
-else:
-    print("Incorrect password.")
+    # Define patterns for test names and their values
+    patterns = {
+        "AST (SGOT)": r"AST \(SGOT\):?\s*([<>]?\d+\.?\d*\s*U/L)",
+        "ALT (SGPT)": r"ALT \(SGPT\):?\s*([<>]?\d+\.?\d*\s*U/L)",
+        "AST:ALT Ratio": r"AST:ALT Ratio:?\s*(\d+\.?\d*)",
+        "GGTP": r"GGTP:?\s*([<>]?\d+\.?\d*\s*U/L)",
+        "Alkaline Phosphatase (ALP)": r"Alkaline Phosphatase \(ALP\):?\s*([<>]?\d+\.?\d*\s*U/L)",
+        "Bilirubin Total": r"Bilirubin Total:?\s*([<>]?\d+\.?\d*\s*mg/dL)",
+        "Bilirubin Direct": r"Bilirubin Direct:?\s*([<>]?\d+\.?\d*\s*mg/dL)",
+        "Bilirubin Indirect": r"Bilirubin Indirect:?\s*([<>]?\d+\.?\d*\s*mg/dL)",
+        "Total Protein": r"Total Protein:?\s*([<>]?\d+\.?\d*\s*g/dL)",
+        "Albumin": r"Albumin:?\s*([<>]?\d+\.?\d*\s*g/dL)",
+        "A : G Ratio": r"A : G Ratio:?\s*([<>]?\d+\.?\d*)"
+    }
+
+    # Search for patterns and extract data
+    for test_name, pattern in patterns.items():
+        match = re.search(pattern, text)
+        if match:
+            extracted_data[test_name] = match.group(1)
+        else:
+            extracted_data[test_name] = "Not Found"
+
+    return extracted_data
+
+
+# Specify the path to your PDF file
+file_path = "C:\Users\ndurg\Downloads\healthcare_app_project\static\uploads\liver.pdf"
+
+# Extract data from the report
+extracted_data = extract_liver_report_data(file_path)
+
+# Print the extracted data
+if extracted_data:
+    print("Extracted Data:")
+    for key, value in extracted_data.items():
+        print(f"{key}: {value}")

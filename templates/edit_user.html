@@ -179,6 +179,11 @@
                 </div>
 
                 <div class="mb-3">
+                    <label for="phno" class="form-label">Phone Number</label>
+                    <input type="phno" class="form-control" id="phno" name="phone" value="{{ user.phone}}" required>
+                </div>
+
+                <div class="mb-3">
                     <label for="role" class="form-label">Role</label>
                     <select class="form-select" id="role" name="role" required>
                         <option value="patient" {% if user.role == 'patient' %}selected{% endif %}>Patient</option>

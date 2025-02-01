@@ -1,31 +1,30 @@
-from flask import Flask, render_template, request, redirect, url_for, session, flash, url_for
+from flask import Flask, render_template, request, redirect, url_for, session, flash, url_for,send_file,jsonify
 from flask_pymongo import PyMongo
 from werkzeug.security import generate_password_hash, check_password_hash
 from bson import ObjectId
 from werkzeug.utils import secure_filename
 from datetime import datetime
 from pymongo import MongoClient
-
+import base64
+import io
 import os
+import gridfs
 
 
 app = Flask(__name__)
-app.config['MONGO_URI'] = "mongodb://localhost:27017/RAPACT"
-app.secret_key = 'your_secret_key'  # Used for session management
-
-
-client = MongoClient("mongodb://localhost:27017/")
+app.secret_key = 'your_secret_key_here'
+app.config['MONGO_URI'] = app.config['MONGO_URI'] = "mongodb+srv://durganaveen:nekkanti@cluster0.8nibi9x.mongodb.net/RAPACT?retryWrites=true&w=majority&appName=Cluster0"
+client = MongoClient(app.config['MONGO_URI'])
 db = client['RAPACT']
 users_collection = db['users']
+fs = gridfs.GridFS(db)
 
 # File upload settings
-app.config['UPLOAD_FOLDER'] = 'static/uploads'
 app.config['ALLOWED_EXTENSIONS'] = {'pdf', 'jpg', 'jpeg', 'png'}
 
 mongo = PyMongo(app)
 
 # Ensure upload folder exists
-os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
 
 # File type check function
 def allowed_file(filename):
@@ -48,6 +47,7 @@ def register_patient():
         first_name = request.form['first_name']
         last_name = request.form['last_name']
         email = request.form['email']
+        phno=request.form['phone']
         password = request.form['password']
         confirm_password = request.form['confirm_password']
         house_no = request.form['house_no']
@@ -56,47 +56,53 @@ def register_patient():
         state = request.form['state']
         photo = request.files['photo']
 
-        # Validate passwords
         if password != confirm_password:
             flash("Passwords do not match. Please try again.", "danger")
             return redirect(url_for('register_patient'))
 
-        # Handle file upload
-        if photo and allowed_file(photo.filename):
-            photo_filename = secure_filename(photo.filename)
-            photo_path = os.path.join(app.config['UPLOAD_FOLDER'], photo_filename)
-            photo.save(photo_path)
-        else:
+        if not allowed_file(photo.filename):
             flash("Invalid file type. Only PDF, JPG, JPEG, or PNG files are allowed.", "danger")
             return redirect(url_for('register_patient'))
 
-        # Check if email is already registered
+        photo_data = base64.b64encode(photo.read()).decode('utf-8')
+
         if mongo.db.users.find_one({'email': email}):
             flash("Email already registered. Please use a different email.", "danger")
             return redirect(url_for('register_patient'))
 
-        # Hash password
         hashed_password = generate_password_hash(password)
 
-        # Save user details to the database
         mongo.db.users.insert_one({
             'first_name': first_name,
             'last_name': last_name,
             'email': email,
+            'phone':phno,
             'password': hashed_password,
             'role': 'patient',
-            'photo': photo_filename,
+            'photo': photo_data,
             'house_no': house_no,
             'village_city': village_city,
             'district': district,
             'state': state
         })
 
-        flash("Registration successful! Please log in.", "success")
         return redirect(url_for('login'))
 
-    return render_template('patient_register.html')
-# Register Doctor Route
+    return render_template('register_patient.html')
+
+app.route('/get_user_photo/<user_id>')
+def get_user_photo(user_id):
+    """Fetch user photo from MongoDB GridFS"""
+    try:
+        image_file = fs.find_one({"filename": user_id})  # Assuming each image is stored with user_id as filename
+        if image_file:
+            return send_file(io.BytesIO(image_file.read()), mimetype='image/jpeg')
+        else:
+            return send_file("static/images/default.jpg", mimetype='image/jpeg')  # Default image
+    except Exception as e:
+        return str(e), 500
+
+
 @app.route('/register_doctor', methods=['GET', 'POST'])
 def register_doctor():
     if request.method == 'POST':
@@ -112,11 +118,10 @@ def register_doctor():
             flash("Passwords do not match. Please try again.", "danger")
             return redirect(url_for('register_doctor'))
 
-        # Validate photo upload
-        photo_filename = None
-        if photo and allowed_file(photo.filename):  # Ensure you define `allowed_file` function
-            photo_filename = secure_filename(photo.filename)
-            photo.save(os.path.join(app.config['UPLOAD_FOLDER'], photo_filename))
+        # Validate photo upload and convert to base64
+        photo_data = None
+        if photo and allowed_file(photo.filename):
+            photo_data = base64.b64encode(photo.read()).decode('utf-8')
         else:
             flash("Invalid file type. Only PDF, JPG, JPEG, or PNG files are allowed.", "danger")
             return redirect(url_for('register_doctor'))
@@ -135,8 +140,8 @@ def register_doctor():
             'last_name': last_name,
             'email': email,
             'password': hashed_password,
-            'role': 'doctor',  # Hardcoded role
-            'photo': photo_filename,
+            'role': 'doctor',
+            'photo': photo_data,  # Store as base64 string
             'age': request.form['age'],
             'gender': request.form['gender'],
             'phone': request.form['phone'],
@@ -153,12 +158,14 @@ def register_doctor():
         }
 
         # Insert the doctor data into the database
-        mongo.db.users.insert_one(doctor_data)
+        try:
+            mongo.db["users"].insert_one(doctor_data)
+            flash("Registration successful! Please log in.", "success")
+            return redirect(url_for('login'))
+        except Exception as e:
+            flash(f"Database error: {str(e)}", "danger")
+            return redirect(url_for('register_doctor'))
 
-        flash("Registration successful! Please log in.", "success")
-        return redirect(url_for('login'))
-
-    # Render the doctor registration form
     return render_template('doctor_register.html')
 
 
@@ -174,17 +181,15 @@ def login():
         user = mongo.db.users.find_one({'email': email, 'role': role})
 
         if user and check_password_hash(user['password'], password):
-            # Remove verification check for doctors
             session['user_id'] = str(user['_id'])
             session['role'] = user['role']
             flash("Login successful!", "success")
-            return redirect(url_for('dashboard'))
+            return redirect(url_for('dashboard') + "?login_success=1")  # ✅ Redirect with success flag
         else:
             flash("Invalid credentials. Please try again.", "danger")
-            return redirect(url_for('login'))
+            return redirect(url_for('login') + "?login_failed=1")  # ❌ Redirect with error flag
 
     return render_template('login.html')
-
 
 
 # Dashboard route
@@ -204,18 +209,26 @@ def dashboard():
 
 @app.route('/admin_dashboard')
 def admin_dashboard():
+    if 'user_id' not in session or session.get('role') != 'admin':
+        flash("Unauthorized access.", "danger")
+        return redirect(url_for('login'))
+
+    # Fetch all users with their uploaded files
+    users = list(mongo.db.users.find({}))
+
     # Counting total users, doctors, patients, and appointments
     total_users = mongo.db.users.count_documents({})
-    total_doctors = mongo.db.doctors.count_documents({})
-    total_patients = mongo.db.patients.count_documents({})
+    total_doctors = mongo.db.users.count_documents({'role': 'doctor'})
+    total_patients = mongo.db.users.count_documents({'role': 'patient'})
     total_appointments = mongo.db.appointments.count_documents({})
-    
-    # Counting appointment statuses (you might need to adjust based on your data schema)
+
+    # Counting appointment statuses
     upcoming_appointments = mongo.db.appointments.count_documents({"status": "upcoming"})
     completed_appointments = mongo.db.appointments.count_documents({"status": "completed"})
     cancelled_appointments = mongo.db.appointments.count_documents({"status": "cancelled"})
 
     return render_template('admin_dashboard.html',
+                           users=users,
                            total_users=total_users,
                            total_doctors=total_doctors,
                            total_patients=total_patients,
@@ -227,13 +240,15 @@ def admin_dashboard():
 @app.route('/users')
 def users():
     role = request.args.get('role')
-    if role:
-        users = list(db.users.find({"role": role}))
-    else:
-        users = list(db.users.find())
+    query = {"role": role} if role else {}
+
+    users = list(mongo.db.users.find(query))
+    
+    # Convert ObjectId to string for frontend display
+    for user in users:
+        user['_id'] = str(user['_id']) 
+
     return render_template('users.html', users=users)
-
-
 
 
 @app.route('/appointments')
@@ -261,7 +276,7 @@ def patient_dashboard():
         return redirect(url_for('login'))
 
     user_id = session.get('user_id')
-    
+
     try:
         user = mongo.db.users.find_one({'_id': ObjectId(user_id)})
         if not user:
@@ -286,14 +301,14 @@ def patient_dashboard():
                 appointment['doctor_name'] = f"{doctor['first_name']} {doctor['last_name']}"
                 appointment['specialization'] = doctor['specialization']
             
-            # Convert appointment date to a proper datetime object if it's stored as a string
+            # Convert appointment date to a datetime object if stored as a string
             appointment_datetime = appointment['appointment_datetime']
             if isinstance(appointment_datetime, str):
                 appointment_datetime = datetime.strptime(appointment_datetime, "%Y-%m-%d %H:%M:%S")  # Adjust format accordingly
 
             appointment['appointment_datetime'] = appointment_datetime.strftime('%A, %d %B %Y, %I:%M %p')
 
-            # Split appointments into upcoming and completed based on date comparison
+            # Categorize appointments
             if appointment_datetime >= datetime.now():
                 upcoming_appointments.append(appointment)
             else:
@@ -311,25 +326,20 @@ def patient_dashboard():
         completed_appointments=completed_appointments
     )
 
-@app.route('/completed/<appointment_id>', methods=['GET'])
-def complete_appointment(appointment_id):
+# Route to cancel an appointment
+@app.route('/cancel_appointment/<appointment_id>', methods=['POST'])
+def cancel_appointment(appointment_id):
     if 'user_id' not in session or session.get('role') != 'patient':
         flash("Unauthorized access.", "danger")
         return redirect(url_for('login'))
 
     try:
-        # Update the appointment status to 'completed'
-        mongo.db.appointments.update_one(
-            {'_id': ObjectId(appointment_id)},
-            {'$set': {'status': 'completed'}}
-        )
-        flash("Appointment marked as completed.", "success")
+        mongo.db.appointments.delete_one({'_id': ObjectId(appointment_id)})
+        flash("Appointment canceled successfully.", "success")
     except Exception as e:
-        flash(f"Error marking appointment as completed: {str(e)}", "danger")
+        flash(f"Error canceling appointment: {str(e)}", "danger")
 
     return redirect(url_for('patient_dashboard'))
-
-
 
 @app.route('/profile')
 def profile():
@@ -350,40 +360,6 @@ def profile():
     except Exception as e:
         return f"Error fetching user details: {str(e)}", 500
 
-# Route for change password page
-@app.route('/change_password', methods=['GET', 'POST'])
-def change_password():
-    if request.method == 'POST':
-        # Get the new password from the form
-        new_password = request.form.get('new_password')
-        confirm_password = request.form.get('confirm_password')
-        
-        if new_password != confirm_password:
-            flash('Passwords do not match!', 'error')
-            return redirect(url_for('change_password'))
-        
-        user_id = session.get('user_id')
-        
-        if not user_id:
-            return redirect(url_for('login'))  # Redirect to login page if not logged in
-        
-        # Hash the new password before saving it (consider using bcrypt or similar)
-        hashed_password = generate_password_hash(new_password)
-        
-        # Update the user's password in MongoDB
-        result = mongo.db.users.update_one(
-            {"_id": user_id}, 
-            {"$set": {"password": hashed_password}}
-        )
-        
-        if result.matched_count > 0:
-            flash('Password changed successfully!', 'success')
-        else:
-            flash('Error changing password. Please try again.', 'error')
-        
-        return redirect(url_for('profile'))
-    
-    return render_template('change_password.html')
 
 # Route to update password
 
@@ -392,8 +368,36 @@ def doctor_dashboard():
     if 'user_id' in session and session['role'] == 'doctor':
         doctor_id = ObjectId(session['user_id'])
         appointments = list(mongo.db.appointments.find({"doctor_id": doctor_id}))
-        return render_template('doctor_dashboard.html', appointments=appointments)
+
+        # Classify appointments into upcoming and ongoing
+        upcoming_appointments = []
+        ongoing_appointments = []
+        current_time = datetime.now()
+
+        for appointment in appointments:
+            appointment_time = datetime.strptime(appointment['appointment_datetime'], '%Y-%m-%dT%H:%M')
+            if appointment_time > current_time:
+                upcoming_appointments.append(appointment)
+            else:
+                ongoing_appointments.append(appointment)
+
+        return render_template('doctor_dashboard.html', 
+                               upcoming_appointments=upcoming_appointments,
+                               ongoing_appointments=ongoing_appointments)
     return redirect(url_for('login'))
+
+@app.route('/give_feedback/<appointment_id>', methods=['POST'])
+def give_feedback(appointment_id):
+    if 'user_id' in session and session['role'] == 'doctor':
+        feedback = request.form.get('feedback')
+        mongo.db.appointments.update_one(
+            {"_id": ObjectId(appointment_id)},
+            {"$set": {"feedback": feedback}}
+        )
+        flash("Feedback submitted successfully.", "success")
+        return redirect(url_for('doctor_dashboard'))
+    return redirect(url_for('login'))
+
 
 # Creation of Appointment
 @app.route('/create_appointment', methods=['GET', 'POST'])
@@ -585,11 +589,15 @@ def edit_user(user_id):
     return render_template('edit_user.html', user=user)
 
 
-@app.route('/delete_user/<user_id>', methods=['POST'])
-def delete_user(user_id):
-    mongo.db.users.delete_one({'_id': ObjectId(user_id)})
-    flash("User deleted successfully!", "success")
-    return redirect(url_for('admin_dashboard'))
+@app.route("/get_doctors")
+def get_doctors():
+    doctors = list(users_collection.find(
+        {"role": "doctor"},  # Fetch only users with role "doctor"
+        {"_id": 0, "first_name": 1, "last_name": 1, "specialization": 1, "photo": 1}
+    ))
+    return jsonify(doctors)
+
+
 
 # Logout route
 @app.route('/logout')
