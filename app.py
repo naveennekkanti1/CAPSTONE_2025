@@ -14,7 +14,7 @@ import gridfs
 app = Flask(__name__)
 app.secret_key = 'your_secret_key_here'
 app.config['MONGO_URI'] = app.config['MONGO_URI'] = "mongodb+srv://durganaveen:nekkanti@cluster0.8nibi9x.mongodb.net/RAPACT?retryWrites=true&w=majority&appName=Cluster0"
-client = MongoClient(app.config['MONGO_URI'])
+client = MongoClient(app.config['MONGO_URI'],serverSelectionTimeoutMS=5000)
 db = client['RAPACT']
 users_collection = db['users']
 fs = gridfs.GridFS(db)
