@@ -34,7 +34,7 @@ def allowed_file(filename):
 @app.route('/')
 def home():
     user_logged_in = 'user_id' in session
-    return render_template('home.html', user_logged_in=user_logged_in)
+    return render_template('index.html', user_logged_in=user_logged_in)
 
 @app.route('/about')
 def about():
