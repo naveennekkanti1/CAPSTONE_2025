@@ -88,7 +88,7 @@ def register_patient():
 
         return redirect(url_for('login'))
 
-    return render_template('register_patient.html')
+    return render_template('patient_register.html')
 
 app.route('/get_user_photo/<user_id>')
 def get_user_photo(user_id):
