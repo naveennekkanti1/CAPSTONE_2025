@@ -48,6 +48,8 @@
             color: #00d9a6;
         }
 
+        
+
         /* Hero Section */
         .hero {
             height: 100vh;
@@ -231,6 +233,86 @@
             background: linear-gradient(to bottom, #00a6ff, #0080c4);
             z-index: 9999;
         }
+        .doctor-slider {
+            width: 60%;
+            margin: auto;
+            overflow: hidden;
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .slides {
+            display: flex;
+            transition: transform 0.5s ease-in-out;
+        }
+
+        .doctor-card {
+            min-width: 100%;
+            padding: 20px;
+            background: #022f2c;
+            border-radius: 10px;
+            color: #00d9a6;
+            text-align: center;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+
+        .doctor-card img {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            object-fit: cover;
+            margin-bottom: 10px;
+        }
+
+        .doctor-card h3 {
+            margin: 10px 0 5px;
+            color: #00d9a6;
+        }
+
+        .doctor-card p {
+            margin: 5px 0;
+            font-size: 1rem;
+            color: #e0e0e0;
+        }
+
+        .arrow {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            background: rgba(255, 255, 255, 0.6);
+            border: none;
+            padding: 10px;
+            cursor: pointer;
+            font-size: 18px;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+        }
+
+        .arrow-left { left: 10px; }
+        .arrow-right { right: 10px; }
+
+        /* See All Doctors Button */
+        .see-all-btn {
+            margin-top: 20px;
+        }
+
+        .see-all-btn a {
+            display: inline-block;
+            padding: 12px 24px;
+            background-color: #00a6ff;
+            color: white;
+            text-decoration: none;
+            border-radius: 50px;
+            font-size: 16px;
+            transition: background-color 0.3s ease;
+        }
+
+        .see-all-btn a:hover {
+            background-color: #0080c4;
+        }
     </style>
 </head>
 <body>
@@ -280,87 +362,18 @@
         </ul>
     </section>
 
-    <!-- Doctors Section -->
-    <!-- Doctors Section with Slideshow -->
-<div id="doctors" class="section">
+ <!-- Doctors Section -->
+ <section id="doctors">
     <h2>Meet Our Doctors</h2>
     <div class="doctor-slider">
+        <button class="arrow arrow-left">&#10094;</button>
         <div class="slides"></div>
+        <button class="arrow arrow-right">&#10095;</button>
     </div>
-</div>
-
-<style>
-    .doctor-slider {
-        width: 80%;
-        margin: auto;
-        overflow: hidden;
-        position: relative;
-    }
-
-    .slides {
-        display: flex;
-        transition: transform 0.5s ease-in-out;
-    }
-
-    .doctor-card {
-        min-width: 100%;
-        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-        border-radius: 10px;
-        background: #022f2c;
-        color: white;
-        text-align: center;
-        padding: 20px;
-    }
-
-    .doctor-card img {
-        width: 120px;
-        height: 120px;
-        border-radius: 50%;
-        object-fit: cover;
-    }
-
-    .arrow {
-        position: absolute;
-        top: 50%;
-        transform: translateY(-50%);
-        background: rgba(255, 255, 255, 0.6);
-        border: none;
-        padding: 10px;
-        cursor: pointer;
-    }
-
-    .arrow-left { left: 10px; }
-    .arrow-right { right: 10px; }
-</style>
-
-<script>
-    document.addEventListener("DOMContentLoaded", function () {
-        fetch("/get_doctors")
-            .then(response => response.json())
-            .then(doctors => {
-                const slidesContainer = document.querySelector(".slides");
-                doctors.forEach(doctor => {
-                    const doctorCard = document.createElement("div");
-                    doctorCard.classList.add("doctor-card");
-                    doctorCard.innerHTML = `
-                        <img src="data:image/png;base64,${doctor.photo}" alt="Doctor">
-                        <h3>${doctor.first_name} ${doctor.last_name}</h3>
-                        <p>${doctor.specialization}</p>
-                    `;
-                    slidesContainer.appendChild(doctorCard);
-                });
-
-                let index = 0;
-                const totalDoctors = doctors.length;
-                setInterval(() => {
-                    index = (index + 1) % totalDoctors;
-                    slidesContainer.style.transform = `translateX(-${index * 100}%)`;
-                }, 3000);
-            });
-    });
-</script>
-
-    </section>
+    <div class="see-all-btn">
+        <a href="/all_doctors">See All Doctors</a>
+    </div>
+</section>
 
     <!-- Contact Section -->
     <section id="contact">
@@ -385,6 +398,44 @@
             const windowHeight = document.documentElement.scrollHeight - window.innerHeight;
             const scrollPercentage = (scrollTop / windowHeight) * 100;
             document.querySelector('.scroll-indicator').style.height = scrollPercentage + '%';
+        });
+        
+        document.addEventListener("DOMContentLoaded", function () {
+            fetch("/get_doctors")
+                .then(response => response.json())
+                .then(doctors => {
+                    const slidesContainer = document.querySelector(".slides");
+
+                    doctors.forEach(doctor => {
+                        const doctorCard = document.createElement("div");
+                        doctorCard.classList.add("doctor-card");
+                        doctorCard.innerHTML = `
+                            <img src="data:image/png;base64,${doctor.photo}" alt="Doctor">
+                            <h3>${doctor.first_name} ${doctor.last_name}</h3>
+                            <p>Specialization: ${doctor.specialization}</p>
+                            <p>Experience: ${doctor.experience_years} years</p>
+                        `;
+                        slidesContainer.appendChild(doctorCard);
+                    });
+
+                    let index = 0;
+                    const totalDoctors = doctors.length;
+                    const slideWidth = document.querySelector(".doctor-card").offsetWidth;
+                    
+                    function slideDoctors(next = true) {
+                        if (next) {
+                            index = (index + 1) % totalDoctors;
+                        } else {
+                            index = (index - 1 + totalDoctors) % totalDoctors;
+                        }
+                        slidesContainer.style.transform = `translateX(-${index * slideWidth}px)`;
+                    }
+
+                    document.querySelector(".arrow-left").addEventListener("click", () => slideDoctors(false));
+                    document.querySelector(".arrow-right").addEventListener("click", () => slideDoctors(true));
+
+                    setInterval(() => slideDoctors(), 3000); // Auto slide every 3 seconds
+                });
         });
     </script>
 </body>

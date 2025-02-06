@@ -10,11 +10,10 @@ import io
 import os
 import gridfs
 
-
 app = Flask(__name__)
 app.secret_key = 'your_secret_key_here'
 app.config['MONGO_URI'] = app.config['MONGO_URI'] = "mongodb+srv://durganaveen:nekkanti@cluster0.8nibi9x.mongodb.net/RAPACT?retryWrites=true&w=majority&appName=Cluster0"
-client = MongoClient(app.config['MONGO_URI'],serverSelectionTimeoutMS=5000)
+client = MongoClient(app.config['MONGO_URI'])
 db = client['RAPACT']
 users_collection = db['users']
 fs = gridfs.GridFS(db)
@@ -173,13 +172,22 @@ def register_doctor():
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     if request.method == 'POST':
-        user = mongo.db.users.find_one({'email': request.form['email'], 'role': request.form['role']})
-        if user and check_password_hash(user['password'], request.form['password']):
-            session.update({'user_id': str(user['_id']), 'role': user['role']})
+        email = request.form['email']
+        password = request.form['password']
+        role = request.form['role']
+
+        # Find the user by email and role
+        user = mongo.db.users.find_one({'email': email, 'role': role})
+
+        if user and check_password_hash(user['password'], password):
+            session['user_id'] = str(user['_id'])
+            session['role'] = user['role']
             flash("Login successful!", "success")
-            return redirect(url_for('dashboard', login_success=1))
-        flash("Invalid credentials. Please try again.", "danger")
-        return redirect(url_for('login', login_failed=1))
+            return redirect(url_for('dashboard') + "?login_success=1")  # ✅ Redirect with success flag
+        else:
+            flash("Invalid credentials. Please try again.", "danger")
+            return redirect(url_for('login') + "?login_failed=1")  # ❌ Redirect with error flag
+
     return render_template('login.html')
 
 
@@ -584,11 +592,13 @@ def edit_user(user_id):
 def get_doctors():
     doctors = list(users_collection.find(
         {"role": "doctor"},  # Fetch only users with role "doctor"
-        {"_id": 0, "first_name": 1, "last_name": 1, "specialization": 1, "photo": 1}
+        {"_id": 0, "first_name": 1, "last_name": 1, "specialization": 1, "photo": 1, "experience_years":1}
     ))
     return jsonify(doctors)
 
-
+@app.route("/all_doctors")
+def all_doctors():
+    return render_template("all_doctors.html")
 
 # Logout route
 @app.route('/logout')
