@@ -4,79 +4,136 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>All Doctors | RapiACT</title>
-    
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
     <style>
-        /* Doctor Grid */
-.doctor-grid {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 20px;
-    justify-content: center;
-}
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Poppins', sans-serif;
+        }
+        body {
+            background-color: #011d1b;
+            color: white;
+            line-height: 1.6;
+            overflow-x: hidden;
+        }
+        .navbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px 30px;
+            background-color: #014340;
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+        .navbar .logo img {
+            height: 50px;
+        }
+        .navbar .links a {
+            color: white;
+            text-decoration: none;
+            margin: 0 15px;
+            font-size: 14px;
+            transition: color 0.3s ease;
+        }
+        .navbar .links a:hover {
+            color: #00d9a6;
+        }
+        section {
+            padding: 60px 30px;
+            text-align: center;
+        }
+        section h2 {
+            font-size: 2.5rem;
+            color: #00a6ff;
+            margin-bottom: 20px;
+        }
+        .filter-container {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+        .filter-container input,
+        .filter-container select,
+        .filter-container button {
+            padding: 10px;
+            border-radius: 5px;
+            border: none;
+            font-size: 1rem;
+        }
+        .filter-container button {
+            background-color: #00a6ff;
+            color: white;
+            cursor: pointer;
+        }
+        .doctor-grid {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+            justify-content: center;
+        }
+        .doctor-card {
+            background: #022f2c;
+            border-radius: 10px;
+            color: white;
+            padding: 20px;
+            text-align: center;
+            width: 250px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            transition: transform 0.3s ease;
+        }
+        .doctor-card:hover {
+            transform: scale(1.05);
+        }
+        .doctor-card img {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            object-fit: cover;
+            margin-bottom: 10px;
+        }
+        /* Contact Section */
+        #contact form {
+            max-width: 600px;
+            margin: 0 auto;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
 
-/* Doctor Card */
-.doctor-card {
-    background: #022f2c;
-    border-radius: 10px;
-    color: white;
-    padding: 20px;
-    text-align: center;
-    width: 250px;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-    transition: transform 0.3s ease;
-}
+        #contact form input, #contact form textarea {
+            width: 100%;
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 10px;
+            border: none;
+            font-size: 1rem;
+        }
 
-.doctor-card:hover {
-    transform: scale(1.05);
-}
+        #contact form button {
+            background-color: #00a6ff;
+            color: white;
+            padding: 15px 30px;
+            border-radius: 50px;
+            border: none;
+            font-size: 16px;
+            transition: background-color 0.3s ease;
+        }
 
-.doctor-card img {
-    width: 120px;
-    height: 120px;
-    border-radius: 50%;
-    object-fit: cover;
-    margin-bottom: 10px;
-}
+        #contact form button:hover {
+            background-color: #0080c4;
+        }
 
-.doctor-card h3 {
-    margin: 10px 0;
-    color: #00d9a6;
-}
-
-.doctor-card p {
-    margin: 5px 0;
-    font-size: 1rem;
-    color: #e0e0e0;
-}
-
-/* Filter Container */
-.filter-container {
-    display: flex;
-    justify-content: center;
-    gap: 15px;
-    margin-bottom: 30px;
-}
-
-.filter-container input,
-.filter-container select,
-.filter-container button {
-    padding: 10px;
-    border-radius: 5px;
-    border: none;
-    font-size: 1rem;
-}
-
-.filter-container button {
-    background-color: #00a6ff;
-    color: white;
-    cursor: pointer;
-    transition: background-color 0.3s ease;
-}
-
-.filter-container button:hover {
-    background-color: #0080c4;
-}
-
+        /* Footer */
+        footer {
+            background-color: #014340;
+            color: white;
+            text-align: center;
+            padding: 20px 0;
+        }
     </style>
 </head>
 <body>
@@ -86,17 +143,15 @@
         </div>
         <div class="links">
             <a href="/">Home</a>
-            <a href="#about">About</a>
             <a href="#services">Services</a>
-            <a href="#doctors">Doctors</a>
             <a href="#contact">Contact</a>
+            <a href="/login">Login</a>
+            <a href="/register_patient">Patient Registration</a>
+            <a href="/register_doctor">Doctor Registration</a>
         </div>
     </div>
-
     <section id="all-doctors">
         <h2>Our Expert Doctors</h2>
-
-        <!-- Filter Section -->
         <div class="filter-container">
             <input type="text" id="search-name" placeholder="Search by Name">
             <select id="filter-specialization">
@@ -110,66 +165,68 @@
             </select>
             <button onclick="applyFilters()">Apply Filters</button>
         </div>
-
-        <!-- Doctors Grid -->
         <div class="doctor-grid"></div> 
     </section>
+    <!-- Contact Section -->
+    <section id="contact">
+        <h2>Contact Us</h2>
+        <form>
+            <input type="text" placeholder="Name" required>
+            <input type="email" placeholder="Email" required>
+            <textarea placeholder="Message"></textarea>
+            <button type="submit">Send</button>
+        </form>
+    </section>
 
-    <script >
+    <!-- Footer -->
+    <footer>
+        <p>© 2025 RapiACT. All Rights Reserved.</p>
+    </footer>
+    <script>
         document.addEventListener("DOMContentLoaded", function () {
-    fetch("/get_doctors")
-        .then(response => response.json())
-        .then(doctors => {
-            const doctorGrid = document.querySelector(".doctor-grid");
-            const specializationFilter = document.getElementById("filter-specialization");
-
-            // Get unique specializations and populate filter dropdown
-            const specializations = [...new Set(doctors.map(doc => doc.specialization))];
-            specializations.forEach(spec => {
-                const option = document.createElement("option");
-                option.value = spec;
-                option.textContent = spec;
-                specializationFilter.appendChild(option);
-            });
-
-            function displayDoctors(filteredDoctors) {
-                doctorGrid.innerHTML = "";
-                filteredDoctors.forEach(doctor => {
-                    const doctorCard = document.createElement("div");
-                    doctorCard.classList.add("doctor-card");
-                    doctorCard.innerHTML = `
-                        <img src="${doctor.photo ? `data:image/png;base64,${doctor.photo}` : 'static/images/default_doctor.png'}" alt="Doctor">
-                        <h3>${doctor.first_name} ${doctor.last_name}</h3>
-                        <p><strong>Specialization:</strong> ${doctor.specialization}</p>
-                        <p><strong>Experience:</strong> ${doctor.experience_years || "N/A"} years</p>
-                    `;
-                    doctorGrid.appendChild(doctorCard);
-                });
-            }
-
-            // Initial display
-            displayDoctors(doctors);
-
-            // Apply Filters
-            window.applyFilters = function () {
-                const nameFilter = document.getElementById("search-name").value.toLowerCase();
-                const specializationFilterValue = specializationFilter.value;
-                const experienceFilterValue = document.getElementById("filter-experience").value;
-
-                const filteredDoctors = doctors.filter(doc => {
-                    return (
-                        (!nameFilter || (`${doc.first_name} ${doc.last_name}`).toLowerCase().includes(nameFilter)) &&
-                        (!specializationFilterValue || doc.specialization === specializationFilterValue) &&
-                        (!experienceFilterValue || (doc.experience && doc.experience >= parseInt(experienceFilterValue)))
-                    );
-                });
-
-                displayDoctors(filteredDoctors);
-            };
-        })
-        .catch(error => console.error("Error fetching doctors:", error));
-});
-
+            fetch("/get_doctors")
+                .then(response => response.json())
+                .then(doctors => {
+                    const doctorGrid = document.querySelector(".doctor-grid");
+                    const specializationFilter = document.getElementById("filter-specialization");
+                    const specializations = [...new Set(doctors.map(doc => doc.specialization))];
+                    specializations.forEach(spec => {
+                        const option = document.createElement("option");
+                        option.value = spec;
+                        option.textContent = spec;
+                        specializationFilter.appendChild(option);
+                    });
+                    function displayDoctors(filteredDoctors) {
+                        doctorGrid.innerHTML = "";
+                        filteredDoctors.forEach(doctor => {
+                            const doctorCard = document.createElement("div");
+                            doctorCard.classList.add("doctor-card");
+                            doctorCard.innerHTML = `
+                                <img src="${doctor.photo ? `data:image/png;base64,${doctor.photo}` : 'static/images/default_doctor.png'}" alt="Doctor">
+                                <h3>${doctor.first_name} ${doctor.last_name}</h3>
+                                <p><strong>Specialization:</strong> ${doctor.specialization}</p>
+                                <p><strong>Experience:</strong> ${doctor.experience_years || "N/A"} years</p>
+                            `;
+                            doctorGrid.appendChild(doctorCard);
+                        });
+                    }
+                    displayDoctors(doctors);
+                    window.applyFilters = function () {
+                        const nameFilter = document.getElementById("search-name").value.toLowerCase();
+                        const specializationFilterValue = specializationFilter.value;
+                        const experienceFilterValue = document.getElementById("filter-experience").value;
+                        const filteredDoctors = doctors.filter(doc => {
+                            return (
+                                (!nameFilter || (`${doc.first_name} ${doc.last_name}`).toLowerCase().includes(nameFilter)) &&
+                                (!specializationFilterValue || doc.specialization === specializationFilterValue) &&
+                                (!experienceFilterValue || (doc.experience_years && doc.experience_years >= parseInt(experienceFilterValue)))
+                            );
+                        });
+                        displayDoctors(filteredDoctors);
+                    };
+                })
+                .catch(error => console.error("Error fetching doctors:", error));
+        });
     </script>
 </body>
 </html>

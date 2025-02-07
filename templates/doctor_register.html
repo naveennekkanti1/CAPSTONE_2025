@@ -144,6 +144,25 @@
         .submit-btn:hover {
             background-color: #004494;
         }
+        .home-button {
+        margin-left: auto; /* Pushes the home button to the right */
+    }
+
+    .btn-home {
+        background-color: #0056b3;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            cursor: pointer;
+            text-decoration: none;
+            font-weight: 600;
+    }
+
+    .btn-home:hover {
+        background-color: #004494;
+    }
     </style>
 </head>
 <body>
@@ -157,8 +176,11 @@
     <div class="container">
         <div class="header">
             <div class="logo">
-                <img src="static/images/logo.jpg" alt="Logo">
-                <span>RapiACT</span>
+                    <img src="static/images/logo.jpg" alt="Logo">
+                    <span>RapiACT</span>
+            </div>
+            <div class="home-button">
+                <a href="/" class="btn-home">Home</a>
             </div>
         </div>
 

@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, redirect, url_for, session, flash, url_for,send_file,jsonify
+from flask import Flask, render_template, request, redirect, url_for, session, flash, url_for,send_file,jsonify,Response
 from flask_pymongo import PyMongo
 from werkzeug.security import generate_password_hash, check_password_hash
 from bson import ObjectId
@@ -89,17 +89,12 @@ def register_patient():
 
     return render_template('patient_register.html')
 
-app.route('/get_user_photo/<user_id>')
+@app.route("/get_user_photo/<user_id>")
 def get_user_photo(user_id):
-    """Fetch user photo from MongoDB GridFS"""
-    try:
-        image_file = fs.find_one({"filename": user_id})  # Assuming each image is stored with user_id as filename
-        if image_file:
-            return send_file(io.BytesIO(image_file.read()), mimetype='image/jpeg')
-        else:
-            return send_file("static/images/default.jpg", mimetype='image/jpeg')  # Default image
-    except Exception as e:
-        return str(e), 500
+    user = users_collection.find_one({"_id": user_id})
+    if user and "photo" in user:
+        return Response(user["photo"], mimetype="image/jpeg")  # Adjust mimetype if needed
+    return "No Image Found", 404
 
 
 @app.route('/register_doctor', methods=['GET', 'POST'])

@@ -234,65 +234,59 @@
             z-index: 9999;
         }
         .doctor-slider {
-            width: 60%;
-            margin: auto;
-            overflow: hidden;
-            position: relative;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
+    width: 60%;
+    margin: auto;
+    overflow: hidden;
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
 
-        .slides {
-            display: flex;
-            transition: transform 0.5s ease-in-out;
-        }
+.slides {
+    display: flex;
+    transition: transform 0.5s linear;
+    animation: scroll 10s linear infinite; /* Continuous scrolling */
+}
 
-        .doctor-card {
-            min-width: 100%;
-            padding: 20px;
-            background: #022f2c;
-            border-radius: 10px;
-            color: #00d9a6;
-            text-align: center;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-        }
+.doctor-card {
+    width: 100%;
+    max-width: 300px; /* Adjust to fit more cards */
+    padding: 20px;
+    background: #022f2c;
+    border-radius: 10px;
+    color: #00d9a6;
+    text-align: center;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    margin: 10px;
+    flex-shrink: 0;
+}
 
-        .doctor-card img {
-            width: 120px;
-            height: 120px;
-            border-radius: 50%;
-            object-fit: cover;
-            margin-bottom: 10px;
-        }
+.doctor-card img {
+    width: 120px;
+    height: 120px;
+    border-radius: 50%;
+    object-fit: cover;
+    margin-bottom: 10px;
+}
 
-        .doctor-card h3 {
-            margin: 10px 0 5px;
-            color: #00d9a6;
-        }
+.doctor-card h3 {
+    margin: 10px 0 5px;
+    color: #00d9a6;
+}
 
-        .doctor-card p {
-            margin: 5px 0;
-            font-size: 1rem;
-            color: #e0e0e0;
-        }
+.doctor-card p {
+    margin: 5px 0;
+    font-size: 1rem;
+    color: #e0e0e0;
+}
 
-        .arrow {
-            position: absolute;
-            top: 50%;
-            transform: translateY(-50%);
-            background: rgba(255, 255, 255, 0.6);
-            border: none;
-            padding: 10px;
-            cursor: pointer;
-            font-size: 18px;
-            border-radius: 50%;
-            width: 40px;
-            height: 40px;
-        }
+/* Keyframes for infinite sliding effect */
+@keyframes scroll {
+    0% { transform: translateX(0); }
+    100% { transform: translateX(-100%); } /* Moves continuously left */
+}
 
-        .arrow-left { left: 10px; }
-        .arrow-right { right: 10px; }
 
         /* See All Doctors Button */
         .see-all-btn {
@@ -321,18 +315,19 @@
 
     <!-- Navbar -->
     <div class="navbar">
-        <div class="logo">
+        <div class="logo" >
             <img src="static/images/logo.jpg" alt="Logo">
         </div>
         <div class="links">
-            <a href="#">Home</a>
-            <a href="#about">About</a>
+            <a href="/">Home</a>
+            <a href="/#about">About</a>
             <a href="#services">Services</a>
             <a href="#doctors">Doctors</a>
             <a href="#contact">Contact</a>
             <a href="/login">Login</a>
             <a href="/register_patient">Patient Registration</a>
             <a href="/register_doctor">Doctor Registration</a>
+            <a href="/all_doctors">Find Doctor</a>
         </div>
     </div>
 
@@ -401,42 +396,44 @@
         });
         
         document.addEventListener("DOMContentLoaded", function () {
-            fetch("/get_doctors")
-                .then(response => response.json())
-                .then(doctors => {
-                    const slidesContainer = document.querySelector(".slides");
+    fetch("/get_doctors")
+        .then(response => response.json())
+        .then(doctors => {
+            const slidesContainer = document.querySelector(".slides");
 
-                    doctors.forEach(doctor => {
-                        const doctorCard = document.createElement("div");
-                        doctorCard.classList.add("doctor-card");
-                        doctorCard.innerHTML = `
-                            <img src="data:image/png;base64,${doctor.photo}" alt="Doctor">
-                            <h3>${doctor.first_name} ${doctor.last_name}</h3>
-                            <p>Specialization: ${doctor.specialization}</p>
-                            <p>Experience: ${doctor.experience_years} years</p>
-                        `;
-                        slidesContainer.appendChild(doctorCard);
-                    });
+            // Duplicate the doctor list to create a seamless loop effect
+            const doctorsList = [...doctors, ...doctors];
 
-                    let index = 0;
-                    const totalDoctors = doctors.length;
-                    const slideWidth = document.querySelector(".doctor-card").offsetWidth;
-                    
-                    function slideDoctors(next = true) {
-                        if (next) {
-                            index = (index + 1) % totalDoctors;
-                        } else {
-                            index = (index - 1 + totalDoctors) % totalDoctors;
-                        }
-                        slidesContainer.style.transform = `translateX(-${index * slideWidth}px)`;
-                    }
+            doctorsList.forEach(doctor => {
+                const doctorCard = document.createElement("div");
+                doctorCard.classList.add("doctor-card");
+                doctorCard.innerHTML = `
+                    <img src="data:image/png;base64,${doctor.photo}" alt="Doctor">
+                    <h3>${doctor.first_name} ${doctor.last_name}</h3>
+                    <p>Specialization: ${doctor.specialization}</p>
+                    <p>Experience: ${doctor.experience_years} years</p>
+                `;
+                slidesContainer.appendChild(doctorCard);
+            });
 
-                    document.querySelector(".arrow-left").addEventListener("click", () => slideDoctors(false));
-                    document.querySelector(".arrow-right").addEventListener("click", () => slideDoctors(true));
+            let scrollAmount = 0;
+            const slideSpeed = 2; // Adjust for faster/slower scrolling
+            const slideInterval = 30; // Controls smoothness of movement
 
-                    setInterval(() => slideDoctors(), 3000); // Auto slide every 3 seconds
-                });
+            function autoScroll() {
+                scrollAmount -= slideSpeed;
+                slidesContainer.style.transform = `translateX(${scrollAmount}px)`;
+
+                // Reset position when the first set of doctors has fully scrolled
+                if (Math.abs(scrollAmount) >= slidesContainer.scrollWidth / 2) {
+                    scrollAmount = 0;
+                }
+            }
+
+            setInterval(autoScroll, slideInterval); // Continuous movement
         });
+});
+
     </script>
 </body>
 </html>
