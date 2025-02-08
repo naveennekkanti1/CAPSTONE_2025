@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>RapiACT</title>
+    <link rel="icon" type="image/jpg" href="{{ url_for('static', filename='images/logo.jpg') }}">
     <style>
         * {
             margin: 0;
@@ -328,7 +329,7 @@
         justify-content: center;
         align-items: center;
         position: relative;
-        animation: growLogo 4s linear forwards;
+        animation: growLogo 2s linear forwards;
     }
 
     /* Rotating border animation */
@@ -353,9 +354,7 @@
     /* Keyframes for growing effect */
     @keyframes growLogo {
         0% { width: 80px; height: 80px; }
-        25% { width: 100px; height: 100px; }
         50% { width: 120px; height: 120px; }
-        75% { width: 140px; height: 140px; }
         100% { width: 160px; height: 160px; }
     }
 
@@ -502,7 +501,7 @@
     document.addEventListener("DOMContentLoaded", function () {
         setTimeout(() => {
         document.querySelector('.loading-screen').style.display = 'none';
-    }, 4000);
+    }, 2000);
     });
     </script>
 </body>

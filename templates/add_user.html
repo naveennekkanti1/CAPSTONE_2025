@@ -20,10 +20,8 @@
         .container {
             width: 100%;
             max-width: 800px;
-            margin: auto;
             padding: 2rem;
             background-color: #fff;
-            border: 1px solid #ccc;
             border-radius: 10px;
             box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
         }
@@ -34,18 +32,19 @@
             margin-bottom: 1rem;
         }
         .form-group {
-            margin-bottom: 1.5rem;
+            margin-bottom: 1rem;
         }
         .form-group label {
             display: block;
             font-size: 1rem;
-            margin-bottom: 0.5rem;
+            margin-bottom: 0.3rem;
         }
-        .form-group input, .form-group select {
+        .form-group input, .form-group select, .form-group textarea {
             width: 100%;
             padding: 10px;
             border: 1px solid #ccc;
             border-radius: 5px;
+            font-size: 1rem;
         }
         .submit-btn {
             display: block;
@@ -62,21 +61,13 @@
         .submit-btn:hover {
             background-color: #004494;
         }
-        .edit-btn {
-            display: inline-block;
-            margin-top: 10px;
-            color: #0056b3;
-            cursor: pointer;
-        }
-        .edit-btn:hover {
-            text-decoration: underline;
-        }
     </style>
 </head>
 <body>
     <div class="container">
         <h1 class="form-title">Add User</h1>
         <form action="/add_user" method="POST" enctype="multipart/form-data">
+            <!-- Basic User Fields -->
             <div class="form-group">
                 <label for="first_name">First Name</label>
                 <input type="text" id="first_name" name="first_name" required>
@@ -105,11 +96,17 @@
                 </select>
             </div>
             <div class="form-group">
-                <label for="photo">Upload Photo</label>
+                <label for="photo">Upload Photo (Image/PDF)</label>
                 <input type="file" id="photo" name="photo" accept="image/*, .pdf" required>
             </div>
 
+            <!-- Patient Fields -->
             <div id="patient-fields" style="display: none;">
+                <h3>Patient Details</h3>
+                <div class="form-group">
+                    <label for="phone">Phone(Don't Include country code)</label>
+                    <input type="text" id="phone" name="phone">
+                </div>
                 <div class="form-group">
                     <label for="house_no">House No</label>
                     <input type="text" id="house_no" name="house_no">
@@ -128,7 +125,9 @@
                 </div>
             </div>
 
+            <!-- Doctor Fields -->
             <div id="doctor-fields" style="display: none;">
+                <h3>Doctor Details</h3>
                 <div class="form-group">
                     <label for="age">Age</label>
                     <input type="number" id="age" name="age">
@@ -154,8 +153,8 @@
                     <textarea id="brief_experience" name="brief_experience"></textarea>
                 </div>
                 <div class="form-group">
-                    <label for="house_no">House No</label>
-                    <input type="text" id="house_no" name="house_no">
+                    <label for="house_no_doctor">House No</label>
+                    <input type="text" id="house_no_doctor" name="house_no">
                 </div>
                 <div class="form-group">
                     <label for="city">City</label>

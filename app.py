@@ -89,12 +89,16 @@ def register_patient():
 
     return render_template('patient_register.html')
 
-@app.route("/get_user_photo/<user_id>")
-def get_user_photo(user_id):
-    user = users_collection.find_one({"_id": user_id})
+@app.route('/user_photo/<user_id>')
+def user_photo(user_id):
+    user = db.users.find_one({"_id": ObjectId(user_id)})
+    
     if user and "photo" in user:
-        return Response(user["photo"], mimetype="image/jpeg")  # Adjust mimetype if needed
-    return "No Image Found", 404
+        image_data = base64.b64decode(user["photo"])  # Convert Base64 string to bytes
+        return send_file(io.BytesIO(image_data), mimetype="image/jpeg")
+    
+    return send_file("static/images/logo.jpg", mimetype="image/png")
+
 
 
 @app.route('/register_doctor', methods=['GET', 'POST'])
@@ -449,92 +453,69 @@ def create_appointment():
 @app.route('/add_user', methods=['GET', 'POST'])
 def add_user():
     if request.method == 'POST':
-        # Retrieve user details from the form
-        first_name = request.form['first_name']
-        last_name = request.form['last_name']
-        email = request.form['email']
-        password = request.form['password']
-        confirm_password = request.form['confirm_password']
-        role = request.form['role']
-        photo = request.files['photo']
+        first_name = request.form.get('first_name')
+        last_name = request.form.get('last_name')
+        email = request.form.get('email')
+        password = request.form.get('password')
+        confirm_password = request.form.get('confirm_password')
+        role = request.form.get('role')
 
-        # Validate passwords
+        # Password confirmation check
         if password != confirm_password:
             flash("Passwords do not match. Please try again.", "danger")
             return redirect(url_for('add_user'))
 
-        # Handle file upload
+        # Handle file upload (convert to Base64)
+        photo_data = None
+        photo = request.files.get('photo')
         if photo and allowed_file(photo.filename):
-            photo_filename = secure_filename(photo.filename)
-            photo.save(os.path.join(app.config['UPLOAD_FOLDER'], photo_filename))
-        else:
+            photo_data = base64.b64encode(photo.read()).decode('utf-8')
+        elif photo and photo.filename != '':
             flash("Invalid file type. Only PDF, JPG, JPEG, or PNG files are allowed.", "danger")
             return redirect(url_for('add_user'))
-
-        # Check if email is already registered
-        if mongo.db.users.find_one({'email': email}):
-            flash("Email already registered. Please use a different email.", "danger")
-            return redirect(url_for('add_user'))
-
-        # Hash the password
         hashed_password = generate_password_hash(password)
-
-        # Create user data dictionary
+        # Common user data
         user_data = {
-            'first_name': first_name,
-            'last_name': last_name,
-            'email': email,
-            'password': hashed_password,
-            'role': role,
-            'photo': photo_filename,
+            "first_name": first_name,
+            "last_name": last_name,
+            "email": email,
+            "password": hashed_password,
+            "role": role,
+            "photo_data": photo_data
         }
 
-        # Add patient-specific fields if the role is patient
+        # Additional fields for patients
         if role == 'patient':
-            house_no = request.form['house_no']
-            village_city = request.form['village_city']
-            district = request.form['district']
-            state = request.form['state']
-
             user_data.update({
-                'house_no': house_no,
-                'village_city': village_city,
-                'district': district,
-                'state': state
+                "phone": request.form.get('phone'),
+                "house_no": request.form.get('house_no'),
+                "village_city": request.form.get('village_city'),
+                "district": request.form.get('district'),
+                "state": request.form.get('state')
             })
 
-        # Add doctor-specific fields if the role is doctor
+        # Additional fields for doctors
         elif role == 'doctor':
-            age = request.form['age']
-            gender = request.form['gender']
-            phone = request.form['phone']
-            experience_years = request.form['experience_years']
-            specialization = request.form['specialization']
-            brief_experience = request.form['brief_experience']
-
             user_data.update({
-                'age': age,
-                'gender': gender,
-                'phone': phone,
-                'experience_years': experience_years,
-                'specialization': specialization,
-                'brief_experience': brief_experience,
-                'address': {
-                    'house_no': request.form['house_no'],
-                    'city': request.form['city'],
-                    'state': request.form['state'],
-                    'country': request.form['country'],
-                    'pincode': request.form['pincode'],
-                }
+                "age": request.form.get('age'),
+                "gender": request.form.get('gender'),
+                "phone": request.form.get('phone'),
+                "experience_years": request.form.get('experience_years'),
+                "specialization": request.form.get('specialization'),
+                "brief_experience": request.form.get('brief_experience'),
+                "house_no": request.form.get('house_no'),
+                "city": request.form.get('city'),
+                "state": request.form.get('state'),
+                "country": request.form.get('country'),
+                "pincode": request.form.get('pincode')
             })
 
-        # Insert the user data into the MongoDB database
-        mongo.db.users.insert_one(user_data)
+        # Insert data into MongoDB
+        users_collection.insert_one(user_data)
 
-        flash("Registration successful! Please log in.", "success")
-        return redirect(url_for('login'))
+        flash(f"User {first_name} {last_name} registered successfully!", "success")
+        return redirect(url_for('add_user'))
 
-    # Render the user registration form
     return render_template('add_user.html')
 
 def get_user_by_id(user_id):
