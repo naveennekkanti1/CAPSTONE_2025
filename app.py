@@ -1,5 +1,6 @@
 from flask import Flask, render_template, request, redirect, url_for, session, flash, url_for,send_file,jsonify,Response
 from flask_pymongo import PyMongo
+from datetime import datetime
 from werkzeug.security import generate_password_hash, check_password_hash
 from bson import ObjectId
 from werkzeug.utils import secure_filename
@@ -38,6 +39,71 @@ def home():
 @app.route('/about')
 def about():
     return render_template('about.html')
+
+@app.route('/services')
+def services():
+    return render_template('services.html')
+
+
+@app.route('/submit_enquiry', methods=['POST'])
+def submit_enquiry():
+    name = request.form.get('name')
+    email = request.form.get('email')
+    message = request.form.get('message')
+
+    if name and email and message:
+        mongo.db.enquiry_details.insert_one({
+            "name": name,
+            "email": email,
+            "message": message,
+            "date": datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S")
+        })
+        return redirect('/')  # Redirect to home page after submission
+
+    return "Failed to submit enquiry", 400
+
+
+@app.route("/enquiry_details")
+def get_enquiry_details():
+    """ Fetch all enquiries from MongoDB sorted by newest first. """
+    enquiries = list(mongo.db.enquiry_details.find().sort("date", -1))
+
+    for enquiry in enquiries:
+        if 'date' in enquiry and isinstance(enquiry['date'], str):
+            try:
+                enquiry['date'] = datetime.strptime(enquiry['date'], "%Y-%m-%d %H:%M:%S")
+            except ValueError:
+                enquiry['date'] = None
+
+    return render_template("enquiry_details.html", enquiries=enquiries)
+
+
+
+@app.route("/mark_done", methods=["POST"])
+def mark_done():
+    """ Mark an enquiry as done and save the admin's response. """
+    data = request.json
+    enquiry_id = data.get("enquiry_id")
+    response_text = data.get("response")
+
+    if not enquiry_id or not response_text:
+        return jsonify({"success": False, "message": "Invalid data"}), 400
+
+    try:
+        result = mongo.db.enquiry_details.update_one(
+            {"_id": ObjectId(enquiry_id)},  # Convert to ObjectId
+            {"$set": {"status": "done", "response": response_text, "response_date": datetime.utcnow()}}
+        )
+
+        if result.modified_count == 1:
+            return jsonify({"success": True, "message": "Enquiry marked as done."})
+        else:
+            return jsonify({"success": False, "message": "Failed to update enquiry."}), 500
+    except Exception as e:
+        return jsonify({"success": False, "message": str(e)}), 500
+
+
+
 
 # Register Patient Route
 @app.route('/register_patient', methods=['GET', 'POST'])

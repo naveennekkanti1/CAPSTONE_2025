@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Services - RapiACT</title>
+    <link
+      rel="icon"
+      type="image/jpg"
+      href="{{ url_for('static', filename='images/logo.jpg') }}"
+    />
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      body {
+        font-family: "Poppins", sans-serif;
+        background-color: #011d1b;
+        color: white;
+        line-height: 1.6;
+      }
+
+      .navbar {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 15px 30px;
+        background-color: #014340;
+      }
+
+      .navbar .logo img {
+        height: 50px;
+      }
+
+      .navbar .links a {
+        color: white;
+        text-decoration: none;
+        margin: 0 15px;
+        transition: color 0.3s ease;
+      }
+
+      .navbar .links a:hover {
+        color: #00d9a6;
+      }
+
+      .services-container {
+        text-align: center;
+        padding: 60px 30px;
+      }
+
+      .services-container h2 {
+        font-size: 2.5rem;
+        color: #00a6ff;
+        margin-bottom: 20px;
+      }
+
+      .services-grid {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 20px;
+        padding: 20px;
+      }
+
+      .service-card {
+        background-color: #014340;
+        border-radius: 10px;
+        padding: 20px;
+        width: 280px;
+        text-align: center;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        transition: transform 0.3s ease, background-color 0.3s ease;
+      }
+
+      .service-card:hover {
+        transform: translateY(-10px);
+        background-color: #00a6ff;
+      }
+
+      .service-card img {
+        width: 60px;
+        margin-bottom: 10px;
+      }
+
+      .service-card h3 {
+        color: white;
+        margin-bottom: 10px;
+      }
+
+      .service-card p {
+        color: #e0e0e0;
+      }
+
+      /* Contact Section */
+      #contact {
+        text-align: center;
+        padding: 60px 30px;
+        background-color: #014340;
+        margin-top: 40px;
+        border-radius: 10px;
+      }
+
+      #contact h2 {
+        font-size: 2.5rem;
+        color: #00d9a6;
+        margin-bottom: 20px;
+      }
+
+      .contact-form {
+        max-width: 600px;
+        margin: 0 auto;
+        display: flex;
+        flex-direction: column;
+        gap: 15px;
+      }
+
+      .contact-form input,
+      .contact-form textarea {
+        width: 100%;
+        padding: 15px;
+        border-radius: 10px;
+        border: none;
+        font-size: 1rem;
+        background-color: #f4f4f4;
+        color: #333;
+      }
+
+      .contact-form textarea {
+        resize: none;
+        height: 120px;
+      }
+
+      .contact-form button {
+        background-color: #00a6ff;
+        color: white;
+        padding: 15px 30px;
+        border-radius: 50px;
+        border: none;
+        font-size: 16px;
+        transition: background-color 0.3s ease;
+        cursor: pointer;
+      }
+
+      .contact-form button:hover {
+        background-color: #0080c4;
+      }
+
+      footer {
+        background-color: #014340;
+        color: white;
+        text-align: center;
+        padding: 20px 0;
+        margin-top: 40px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="navbar">
+      <div class="logo">
+        <img src="static/images/logo.jpg" alt="Logo" />
+      </div>
+      <div class="links">
+        <a href="/">Home</a>
+        <a href="/about">About</a>
+        <a href="/services">Services</a>
+        <a href="/all_doctors">Doctors</a>
+        <a href="/contact">Contact</a>
+      </div>
+    </div>
+
+    <div class="services-container">
+      <h2>Our Services</h2>
+      <div class="services-grid">
+        <div class="service-card">
+          <img
+            src="static/images/consultation.png"
+            href="/login"
+            alt="Consultation"
+          />
+          <h3>Online Doctor Consultations</h3>
+          <p>Get expert medical advice from top doctors online.</p>
+        </div>
+        <div class="service-card">
+          <img src="static/images/diagnostics.png" alt="Diagnostics" />
+          <h3>Diagnostic Test Bookings</h3>
+          <p>Book lab tests and get reports delivered online.</p>
+        </div>
+        <div class="service-card">
+          <img src="static/images/health-report.png" alt="Health Reports" />
+          <h3>Personalized Health Reports</h3>
+          <p>Receive AI-driven health insights tailored for you.</p>
+        </div>
+        <div class="service-card">
+          <img src="static/images/emergency.png" alt="Emergency" />
+          <h3>Emergency Assistance</h3>
+          <p>24/7 emergency medical support at your fingertips.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Contact Section -->
+    <section id="contact">
+      <h2>Contact Us</h2>
+      <form class="contact-form" action="/submit_enquiry" method="POST">
+        <input type="text" name="name" placeholder="Your Name" required />
+        <input type="email" name="email" placeholder="Your Email" required />
+        <textarea name="message" placeholder="Your Message" required></textarea>
+        <button type="submit">Send Message</button>
+      </form>
+    </section>
+
+    <footer>
+      <p>© 2025 RapiACT. All Rights Reserved.</p>
+    </footer>
+  </body>
+</html>
