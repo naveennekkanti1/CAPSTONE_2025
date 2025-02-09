@@ -6,33 +6,12 @@
     <title>Doctor Dashboard</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/css/bootstrap.min.css" rel="stylesheet">
     <style>
-        body {
-            margin: 0;
-            height: 100vh;
-            background: #0099cc;
-            overflow: hidden;
-            position: relative;
-            font-family: 'Arial', sans-serif;
-        }
-
-        .background {
-            position: absolute;
-            width: 100%;
+        html, body {
             height: 100%;
-            z-index: -1;
-            display: flex;
-            flex-wrap: wrap;
-            justify-content: center;
-            align-items: center;
-            pointer-events: none;
-        }
-
-        .bubble {
-            position: absolute;
-            border-radius: 50%;
-            background: rgba(255, 255, 255, 0.6);
-            animation: float 10s ease-in-out infinite, scale 5s ease-in-out infinite;
-            opacity: 0.6;
+            overflow-y: auto;
+            margin: 0;
+            background: #0099cc;
+            font-family: 'Arial', sans-serif;
         }
 
         .navbar {
@@ -86,10 +65,20 @@
 
         .btn-feedback {
             background-color: #28a745;
+            color: white;
         }
 
         .btn-feedback:hover {
             background-color: #218838;
+        }
+
+        .btn-done {
+            background-color: #dc3545;
+            color: white;
+        }
+
+        .btn-done:hover {
+            background-color: #c82333;
         }
     </style>
 </head>
@@ -116,6 +105,13 @@
                                 <div class="card-body">
                                     <h5 class="card-title">Patient: {{ appointment.patient_name }}</h5>
                                     <p class="card-text"><strong>Date & Time:</strong> {{ appointment.appointment_datetime }}</p>
+                                    <p class="card-text"><strong>Report:</strong> 
+                                        {% if appointment.report_id %}
+                                            <a href="{{ url_for('get_report', file_id=appointment.report_id) }}" target="_blank">View Report</a>
+                                        {% else %}
+                                            No Report Uploaded
+                                        {% endif %}
+                                    </p>
                                     <p class="card-text"><strong>Cause:</strong> {{ appointment.cause }}</p>
                                 </div>
                             </div>
@@ -139,22 +135,54 @@
                                     <h5 class="card-title">Patient: {{ appointment.patient_name }}</h5>
                                     <p class="card-text"><strong>Date & Time:</strong> {{ appointment.appointment_datetime }}</p>
                                     <p class="card-text"><strong>Cause:</strong> {{ appointment.cause }}</p>
-                                    <form action="/give_feedback/{{ appointment._id }}" method="post">
-                                        <div class="form-group">
-                                            <label for="feedback">Feedback:</label>
-                                            <textarea id="feedback" name="feedback" class="form-control" rows="3" required></textarea>
+                                    <p class="card-text"><strong>Report:</strong> 
+                                        {% if appointment.report_id %}
+                                            <a href="{{ url_for('get_report', file_id=appointment.report_id) }}" target="_blank" class="btn btn-primary btn-sm">View Report</a>
+                                        {% else %}
+                                            <span class="text-muted">No Report Uploaded</span>
+                                        {% endif %}
+                                    </p>
+                                    
+                                    <form action="{{ url_for('give_feedback', appointment_id=appointment._id) }}" method="post">
+                                        <div class="mb-3">
+                                            <label for="feedback-{{ appointment._id }}" class="form-label">Feedback:</label>
+                                            <textarea id="feedback-{{ appointment._id }}" name="feedback" class="form-control" rows="3" required></textarea>
                                         </div>
-                                        <button type="submit" class="btn btn-feedback mt-2">Submit Feedback</button>
+                                        <button type="submit" class="btn btn-feedback w-100">Submit Feedback</button>
                                     </form>
+                                    
+                                    <form action="/mark_done/{{ appointment._id }}" method="post">
+                                        <button type="submit" class="btn btn-done w-100">Mark as Done</button>
+                                    </form>
+                                    
+                                    
                                 </div>
                             </div>
                         </div>
                     {% endfor %}
                 </div>
             {% else %}
-                <p>No ongoing appointments.</p>
+                <p class="text-muted">No ongoing appointments.</p>
             {% endif %}
         </div>
+        
+
+        <div class="section">
+            <h3>Scheduled Meetings</h3>
+            {% if meetings %}
+                <ul class="list-group">
+                    {% for meeting in meetings %}
+                        <li class="list-group-item">
+                            <strong>Meeting ID:</strong> {{ meeting.meeting_id }}<br>
+                            <strong>Date & Time:</strong> {{ meeting.meeting_datetime }}
+                        </li>
+                    {% endfor %}
+                </ul>
+            {% else %}
+                <p>No scheduled meetings.</p>
+            {% endif %}
+        </div>
+        
     </div>
 </body>
 </html>

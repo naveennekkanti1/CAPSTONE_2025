@@ -1,6 +1,6 @@
 from flask import Flask, render_template, request, redirect, url_for, session, flash, url_for,send_file,jsonify,Response
 from flask_pymongo import PyMongo
-from datetime import datetime
+from datetime import datetime,timedelta
 from werkzeug.security import generate_password_hash, check_password_hash
 from bson import ObjectId
 from werkzeug.utils import secure_filename
@@ -36,9 +36,6 @@ def home():
     user_logged_in = 'user_id' in session
     return render_template('index.html', user_logged_in=user_logged_in)
 
-@app.route('/about')
-def about():
-    return render_template('about.html')
 
 @app.route('/services')
 def services():
@@ -335,60 +332,66 @@ def appointments():
 
 @app.route('/patient_dashboard')
 def patient_dashboard():
-    if 'user_id' not in session or session.get('role') != 'patient':
-        flash("Unauthorized access.", "danger")
-        return redirect(url_for('login'))
+    if 'user_id' in session and session['role'] == 'patient':
+        patient_id = ObjectId(session['user_id'])
 
-    user_id = session.get('user_id')
-
-    try:
-        user = mongo.db.users.find_one({'_id': ObjectId(user_id)})
-        if not user:
-            flash("User not found.", "danger")
+        # Fetch patient details (first name and last name)
+        patient = mongo.db.users.find_one({'_id': patient_id}, {'first_name': 1, 'last_name': 1})
+        if not patient:
+            flash("Patient record not found.", "danger")
             return redirect(url_for('login'))
-    except Exception as e:
-        flash(f"Error retrieving user details: {str(e)}", "danger")
-        return redirect(url_for('login'))
 
-    first_name = user.get('first_name', 'Unknown')
-    last_name = user.get('last_name', 'Unknown')
+        # Fetch patient's appointments
+        appointments = list(mongo.db.appointments.find({"patient_id": patient_id}))
+        meetings = list(mongo.db.meetings.find({"patient_id": patient_id}))
 
-    # Fetch appointments for the patient
-    try:
-        appointments = list(mongo.db.appointments.find({'patient_id': ObjectId(user_id)}))
+        # Classify appointments into upcoming and ongoing
         upcoming_appointments = []
-        completed_appointments = []
+        ongoing_appointments = []
+        current_time = datetime.utcnow()
 
         for appointment in appointments:
-            doctor = mongo.db.doctors.find_one({'_id': ObjectId(appointment['doctor_id'])})
-            if doctor:
-                appointment['doctor_name'] = f"{doctor['first_name']} {doctor['last_name']}"
-                appointment['specialization'] = doctor['specialization']
-            
-            # Convert appointment date to a datetime object if stored as a string
-            appointment_datetime = appointment['appointment_datetime']
-            if isinstance(appointment_datetime, str):
-                appointment_datetime = datetime.strptime(appointment_datetime, "%Y-%m-%d %H:%M:%S")  # Adjust format accordingly
-
-            appointment['appointment_datetime'] = appointment_datetime.strftime('%A, %d %B %Y, %I:%M %p')
-
-            # Categorize appointments
-            if appointment_datetime >= datetime.now():
+            appointment_time = datetime.strptime(appointment['appointment_datetime'], '%Y-%m-%dT%H:%M')
+            if appointment_time > current_time:
                 upcoming_appointments.append(appointment)
             else:
-                completed_appointments.append(appointment)
-    except Exception as e:
-        flash(f"Error fetching appointments: {str(e)}", "danger")
-        upcoming_appointments = []
-        completed_appointments = []
+                ongoing_appointments.append(appointment)
 
-    return render_template(
-        'patient_dashboard.html',
-        first_name=first_name,
-        last_name=last_name,
-        upcoming_appointments=upcoming_appointments,
-        completed_appointments=completed_appointments
-    )
+        return render_template('patient_dashboard.html',
+                               first_name=patient.get('first_name', ''),
+                               last_name=patient.get('last_name', ''),
+                               upcoming_appointments=upcoming_appointments,
+                               ongoing_appointments=ongoing_appointments,
+                               meetings=meetings)
+
+    flash("Unauthorized access.", "danger")
+    return redirect(url_for('login'))
+
+
+@app.route('/doctor_dashboard')
+def doctor_dashboard():
+    if 'user_id' in session and session['role'] == 'doctor':
+        doctor_id = ObjectId(session['user_id'])
+        appointments = list(mongo.db.appointments.find({"doctor_id": doctor_id}))
+
+        # Classify appointments into upcoming and ongoing
+        upcoming_appointments = []
+        ongoing_appointments = []
+        current_time = datetime.now()
+
+        for appointment in appointments:
+            appointment_time = datetime.strptime(appointment['appointment_datetime'], '%Y-%m-%dT%H:%M')
+            if appointment_time > current_time:
+                upcoming_appointments.append(appointment)
+            else:
+                ongoing_appointments.append(appointment)
+
+        return render_template('doctor_dashboard.html', 
+                               upcoming_appointments=upcoming_appointments,
+                               ongoing_appointments=ongoing_appointments)
+    return redirect(url_for('login'))
+
+
 
 # Route to cancel an appointment
 @app.route('/cancel_appointment/<appointment_id>', methods=['POST'])
@@ -424,44 +427,91 @@ def profile():
     except Exception as e:
         return f"Error fetching user details: {str(e)}", 500
 
-
-# Route to update password
-
-@app.route('/doctor_dashboard')
-def doctor_dashboard():
-    if 'user_id' in session and session['role'] == 'doctor':
-        doctor_id = ObjectId(session['user_id'])
-        appointments = list(mongo.db.appointments.find({"doctor_id": doctor_id}))
-
-        # Classify appointments into upcoming and ongoing
-        upcoming_appointments = []
-        ongoing_appointments = []
-        current_time = datetime.now()
-
-        for appointment in appointments:
-            appointment_time = datetime.strptime(appointment['appointment_datetime'], '%Y-%m-%dT%H:%M')
-            if appointment_time > current_time:
-                upcoming_appointments.append(appointment)
-            else:
-                ongoing_appointments.append(appointment)
-
-        return render_template('doctor_dashboard.html', 
-                               upcoming_appointments=upcoming_appointments,
-                               ongoing_appointments=ongoing_appointments)
-    return redirect(url_for('login'))
-
 @app.route('/give_feedback/<appointment_id>', methods=['POST'])
 def give_feedback(appointment_id):
-    if 'user_id' in session and session['role'] == 'doctor':
-        feedback = request.form.get('feedback')
-        mongo.db.appointments.update_one(
-            {"_id": ObjectId(appointment_id)},
-            {"$set": {"feedback": feedback}}
-        )
-        flash("Feedback submitted successfully.", "success")
-        return redirect(url_for('doctor_dashboard'))
-    return redirect(url_for('login'))
+    feedback = request.form.get('feedback')  # Get feedback from form
+    if not feedback:
+        return jsonify({"error": "Feedback cannot be empty"}), 400
+    
+    mongo.db.appointments.update_one({"_id": ObjectId(appointment_id)}, {"$set": {"feedback": feedback}})
+    flash("Feedback submitted successfully!", "success")
+    return redirect(url_for('doctor_dashboard'))
 
+
+@app.route('/mark_done/<appointment_id>', methods=['POST'])
+def mark_done_for(appointment_id):
+    try:
+        # Ensure appointment_id is valid
+        appointment_id = ObjectId(appointment_id)
+    except Exception:
+        return jsonify({"error": "Invalid appointment ID"}), 400
+
+    # Update the appointment status
+    result = mongo.db.appointments.update_one(
+        {"_id": appointment_id}, 
+        {"$set": {"status": "completed"}}
+    )
+
+    if result.matched_count == 0:
+        flash("Appointment not found.", "danger")
+        return redirect(url_for('doctor_dashboard'))
+
+    flash("Appointment marked as done!", "success")
+    return redirect(url_for('doctor_dashboard'))
+
+
+@app.route('/get_report/<file_id>')
+def get_report(file_id):
+    try:
+        file = fs.get(ObjectId(file_id))
+        return Response(file.read(), mimetype=file.content_type, headers={"Content-Disposition": f"inline; filename={file.filename}"})
+    except:
+        flash("File not found.", "danger")
+        return redirect(url_for('doctor_dashboard'))
+
+@app.route('/schedule_meeting', methods=['GET', 'POST'])
+def schedule_meeting():
+    if 'user_id' in session and session['role'] == 'doctor':
+        doctor_id = ObjectId(session['user_id'])
+
+        if request.method == 'POST':
+            patient_id = ObjectId(request.form['patient_id'])
+            meeting_id = request.form['meeting_id']
+            meeting_datetime = request.form['meeting_datetime']
+
+            # Validate if patient exists
+            patient = mongo.db.users.find_one({'_id': patient_id})
+            if not patient:
+                flash("Selected patient does not exist.", "danger")
+                return redirect(url_for('schedule_meeting'))
+
+            # Store the meeting details
+            mongo.db.meetings.insert_one({
+                'doctor_id': doctor_id,
+                'patient_id': patient_id,
+                'meeting_id': meeting_id,
+                'meeting_datetime': meeting_datetime
+            })
+
+            flash("Meeting scheduled successfully!", "success")
+            return redirect(url_for('doctor_dashboard'))
+
+        # Fetch all patients for dropdown selection
+        patients = mongo.db.users.find({'role': 'patient'}, {'_id': 1, 'first_name': 1, 'last_name': 1})
+        return render_template('schedule_meeting.html', patients=patients)
+
+    flash("Unauthorized access.", "danger")
+    return redirect(url_for('login'))
+@app.route('/join_meeting/<meeting_id>')
+def join_meeting(meeting_id):
+    if 'user_id' in session:
+        meeting = mongo.db.meetings.find_one({"meeting_id": meeting_id})
+        if meeting:
+            return redirect(f"https://your-video-platform.com/{meeting_id}")  # Replace with your meeting service
+        flash("Meeting not found.", "danger")
+        return redirect(url_for('patient_dashboard'))
+    flash("Unauthorized access.", "danger")
+    return redirect(url_for('login'))
 
 # Creation of Appointment
 @app.route('/create_appointment', methods=['GET', 'POST'])
@@ -470,7 +520,7 @@ def create_appointment():
         if request.method == 'POST':
             # Get form data
             patient_name = request.form['patient_name']
-            doctor_id = request.form['doctor_id']  # This will be the ObjectId of the doctor
+            doctor_id = request.form['doctor_id']
             age = request.form['age']
             phone = request.form['phone']
             height = request.form['height']
@@ -478,19 +528,18 @@ def create_appointment():
             cause = request.form['cause']
             appointment_datetime = request.form['appointment_datetime']
             email = mongo.db.users.find_one({'_id': ObjectId(session['user_id'])})['email']
-            
-            # File upload (optional)
+
+            # File upload (store in GridFS)
             report = request.files['report']
-            filename = None
-            if report and allowed_file(report.filename):
-                filename = secure_filename(report.filename)
-                report.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
+            file_id = None
+            if report:
+                file_id = fs.put(report, filename=secure_filename(report.filename), content_type=report.content_type)
 
             # Find the doctor's name to include in the flash message
             doctor = mongo.db.users.find_one({'_id': ObjectId(doctor_id)})
             doctor_name = f"{doctor['first_name']} {doctor['last_name']}"
 
-            # Insert appointment into database
+            # Insert appointment into the database
             mongo.db.appointments.insert_one({
                 'patient_name': patient_name,
                 'doctor_id': ObjectId(doctor_id),
@@ -501,7 +550,7 @@ def create_appointment():
                 'weight': weight,
                 'cause': cause,
                 'appointment_datetime': appointment_datetime,
-                'report': filename,
+                'report_id': file_id,  # Store the file ID from GridFS
                 'patient_id': ObjectId(session['user_id']),
             })
 
@@ -512,7 +561,7 @@ def create_appointment():
         # Fetch doctors from the database for selection
         doctors = list(mongo.db.users.find({'role': 'doctor'}))
         return render_template('create_appointment.html', doctors=doctors)
-    
+
     flash("Unauthorized access.", "danger")
     return redirect(url_for('login'))
 
