@@ -369,26 +369,58 @@ def patient_dashboard():
 
 
 @app.route('/doctor_dashboard')
-def doctor_dashboard():
+@app.route('/doctor_dashboard/<appointment_type>')
+def doctor_dashboard(appointment_type=None):
     if 'user_id' in session and session['role'] == 'doctor':
         doctor_id = ObjectId(session['user_id'])
-        appointments = list(mongo.db.appointments.find({"doctor_id": doctor_id}))
 
-        # Classify appointments into upcoming and ongoing
+        # Fetch patient details (first name and last name)
+        doctor = mongo.db.users.find_one({'_id': doctor_id}, {'first_name': 1, 'last_name': 1})
+        if not doctor:
+            flash(" record not found.", "danger")
+            return redirect(url_for('login'))
+
+        appointments = list(db.appointments.find({"doctor_id": doctor_id}))
+
+        # Classify appointments into upcoming, ongoing, and completed
         upcoming_appointments = []
         ongoing_appointments = []
+        completed_appointments = []
         current_time = datetime.now()
 
         for appointment in appointments:
             appointment_time = datetime.strptime(appointment['appointment_datetime'], '%Y-%m-%dT%H:%M')
-            if appointment_time > current_time:
+
+            if appointment.get("status") in ["done", "completed"]:
+                completed_appointments.append(appointment)
+            elif appointment_time > current_time:
                 upcoming_appointments.append(appointment)
             else:
                 ongoing_appointments.append(appointment)
 
+        # If appointment_type is provided, filter accordingly
+        if appointment_type == "upcoming":
+            return render_template('doctor_dashboard.html', 
+                upcoming_appointments=upcoming_appointments, 
+                ongoing_appointments=[], 
+                completed_appointments=[])
+        elif appointment_type == "ongoing":
+            return render_template('doctor_dashboard.html', 
+                upcoming_appointments=[], 
+                ongoing_appointments=ongoing_appointments, 
+                completed_appointments=[])
+        elif appointment_type == "completed":
+            return render_template('doctor_dashboard.html', 
+                upcoming_appointments=[], 
+                ongoing_appointments=[], 
+                completed_appointments=completed_appointments)
+
+        # Default: Show all insights
         return render_template('doctor_dashboard.html', 
-                               upcoming_appointments=upcoming_appointments,
-                               ongoing_appointments=ongoing_appointments)
+            upcoming_appointments=upcoming_appointments,
+            ongoing_appointments=ongoing_appointments,
+            completed_appointments=completed_appointments
+        )
     return redirect(url_for('login'))
 
 
@@ -429,35 +461,37 @@ def profile():
 
 @app.route('/give_feedback/<appointment_id>', methods=['POST'])
 def give_feedback(appointment_id):
-    feedback = request.form.get('feedback')  # Get feedback from form
+    feedback = request.form.get('feedback')
     if not feedback:
         return jsonify({"error": "Feedback cannot be empty"}), 400
-    
-    mongo.db.appointments.update_one({"_id": ObjectId(appointment_id)}, {"$set": {"feedback": feedback}})
+
+    try:
+        obj_id = ObjectId(appointment_id)
+    except Exception:
+        return jsonify({"error": "Invalid appointment ID"}), 400
+
+    result = db.appointments.update_one({"_id": obj_id}, {"$set": {"feedback": feedback}})
+    if result.modified_count == 0:
+        return jsonify({"error": "Feedback not saved. Appointment not found."}), 400
+
     flash("Feedback submitted successfully!", "success")
     return redirect(url_for('doctor_dashboard'))
 
 
-@app.route('/mark_done/<appointment_id>', methods=['POST'])
-def mark_done_for(appointment_id):
+@app.route('/mark_as_done/<appointment_id>', methods=['POST'])
+def mark_as_done(appointment_id):
     try:
-        # Ensure appointment_id is valid
-        appointment_id = ObjectId(appointment_id)
+        obj_id = ObjectId(appointment_id)
     except Exception:
         return jsonify({"error": "Invalid appointment ID"}), 400
 
-    # Update the appointment status
-    result = mongo.db.appointments.update_one(
-        {"_id": appointment_id}, 
-        {"$set": {"status": "completed"}}
-    )
-
-    if result.matched_count == 0:
-        flash("Appointment not found.", "danger")
-        return redirect(url_for('doctor_dashboard'))
+    result = db.appointments.update_one({"_id": obj_id}, {"$set": {"status": "done"}})
+    if result.modified_count == 0:
+        return jsonify({"error": "Could not mark appointment as done"}), 400
 
     flash("Appointment marked as done!", "success")
     return redirect(url_for('doctor_dashboard'))
+
 
 
 @app.route('/get_report/<file_id>')

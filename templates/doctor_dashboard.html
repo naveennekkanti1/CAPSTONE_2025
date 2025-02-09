@@ -8,181 +8,148 @@
     <style>
         html, body {
             height: 100%;
-            overflow-y: auto;
             margin: 0;
             background: #0099cc;
             font-family: 'Arial', sans-serif;
-        }
-
-        .navbar {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            background: rgba(0, 0, 0, 0.7);
-            color: white;
-            padding: 10px 20px;
             display: flex;
-            justify-content: space-between;
-            align-items: center;
-            z-index: 10;
         }
-
-        .navbar a {
+        
+        .sidebar {
+            width: 250px;
+            background: rgba(0, 0, 0, 0.8);
+            color: white;
+            padding: 20px;
+            position: fixed;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+        
+        .sidebar h3, .sidebar p {
+            text-align: center;
+            margin-bottom: 10px;
+        }
+        
+        .sidebar a {
+            display: block;
             color: white;
             text-decoration: none;
-            margin: 0 15px;
+            padding: 12px;
             font-weight: bold;
+            border-radius: 5px;
+            transition: transform 0.3s ease, background 0.3s ease;
         }
-
-        .navbar a:hover {
-            text-decoration: underline;
+        
+        .sidebar a:hover {
+            background: rgba(255, 255, 255, 0.2);
+            transform: translateX(5px);
         }
-
-        .container {
-            z-index: 1;
-            position: relative;
-            color: black;
-            padding-top: 80px;
-            text-align: center;
+        
+        .main-content {
+            margin-left: 270px;
+            padding: 20px;
+            flex-grow: 1;
         }
-
+        
         .section {
-            margin-top: 30px;
-            background-color: rgba(255, 255, 255, 0.6);
+            background-color: rgba(255, 255, 255, 0.8);
             padding: 20px;
             border-radius: 10px;
             box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+            margin-bottom: 20px;
         }
-
+        
         .card {
             margin: 10px;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
         }
-
-        .card-body {
-            text-align: left;
-        }
-
+        
         .btn-feedback {
+            background-color: #007bff;
+            color: white;
+            margin-top: 10px;
+        }
+        
+        .btn-done {
             background-color: #28a745;
             color: white;
-        }
-
-        .btn-feedback:hover {
-            background-color: #218838;
-        }
-
-        .btn-done {
-            background-color: #dc3545;
-            color: white;
-        }
-
-        .btn-done:hover {
-            background-color: #c82333;
+            margin-top: 10px;
         }
     </style>
 </head>
 <body>
-    <div class="navbar">
-        <span>Welcome, Dr. {{ first_name }} {{ last_name }}</span>
-        <div>
-            <a href="/profile">Profile</a>
-            <a href="/logout">Logout</a>
-        </div>
+    <div class="sidebar">
+        <h3>Welcome</h3>
+        <p>Dr. {{ first_name }} {{ last_name }}</p>
+        <hr>
+        <a href="/profile">Profile</a>
+        <a href="/doctor_dashboard">All Appointments</a>
+        <a href="/doctor_dashboard/upcoming">Upcoming Appointments</a>
+        <a href="/doctor_dashboard/ongoing">Ongoing Appointments</a>
+        <a href="/doctor_dashboard/completed">Completed Appointments</a>
+        <hr>
+        <a href="/logout">Logout</a>
     </div>
-
-    <div class="container">
-        <h2>Doctor Dashboard</h2>
-
-        <!-- Upcoming Appointments -->
-        <div class="section">
-            <h3>Upcoming Appointments</h3>
-            {% if upcoming_appointments %}
-                <div class="row">
-                    {% for appointment in upcoming_appointments %}
-                        <div class="col-md-4">
-                            <div class="card">
-                                <div class="card-body">
-                                    <h5 class="card-title">Patient: {{ appointment.patient_name }}</h5>
-                                    <p class="card-text"><strong>Date & Time:</strong> {{ appointment.appointment_datetime }}</p>
-                                    <p class="card-text"><strong>Report:</strong> 
-                                        {% if appointment.report_id %}
-                                            <a href="{{ url_for('get_report', file_id=appointment.report_id) }}" target="_blank">View Report</a>
-                                        {% else %}
-                                            No Report Uploaded
+    
+    <div class="main-content">
+        {% if upcoming_appointments or ongoing_appointments or completed_appointments %}
+            {% for section, title, appointments in [('upcoming', 'Upcoming Appointments', upcoming_appointments), 
+                                                     ('ongoing', 'Ongoing Appointments', ongoing_appointments),
+                                                     ('completed', 'Completed Appointments', completed_appointments)] %}
+                {% if appointments %}
+                <div id="{{ section }}" class="section">
+                    <h3>{{ title }}</h3>
+                    <div class="row">
+                        {% for appointment in appointments %}
+                            <div class="col-md-4">
+                                <div class="card">
+                                    <div class="card-body">
+                                        <h5 class="card-title">Patient: {{ appointment.patient_name }}</h5>
+                                        <p class="card-text"><strong>Date & Time:</strong> {{ appointment.appointment_datetime }}</p>
+                                        <p class="card-text"><strong>Cause:</strong> {{ appointment.cause }}</p>
+                                        <p class="card-text"><strong>Report:</strong> 
+                                            {% if appointment.report_id %}
+                                                <a href="{{ url_for('get_report', file_id=appointment.report_id) }}" target="_blank" class="btn btn-primary btn-sm">View Report</a>
+                                            {% else %}
+                                                <span class="text-muted">No Report Uploaded</span>
+                                            {% endif %}
+                                        </p>
+                                        {% if section == 'ongoing' %}
+                                            <form action="{{ url_for('give_feedback', appointment_id=appointment._id) }}" method="post">
+                                                <div class="mb-3">
+                                                    <label for="feedback-{{ appointment._id }}" class="form-label">Feedback:</label>
+                                                    <textarea id="feedback-{{ appointment._id }}" name="feedback" class="form-control" rows="3" required></textarea>
+                                                </div>
+                                                <button type="submit" class="btn btn-feedback w-100">Submit Feedback</button>
+                                            </form>
+                                            <form action="{{ url_for('mark_as_done', appointment_id=appointment._id) }}" method="POST">
+                                                <button type="submit" class="btn btn-done w-100">Mark as Done</button>
+                                            </form>
                                         {% endif %}
-                                    </p>
-                                    <p class="card-text"><strong>Cause:</strong> {{ appointment.cause }}</p>
+                                    </div>
                                 </div>
                             </div>
-                        </div>
-                    {% endfor %}
+                        {% endfor %}
+                    </div>
                 </div>
-            {% else %}
-                <p>No upcoming appointments.</p>
-            {% endif %}
-        </div>
-
-        <!-- Ongoing Appointments -->
-        <div class="section">
-            <h3>Ongoing Appointments</h3>
-            {% if ongoing_appointments %}
-                <div class="row">
-                    {% for appointment in ongoing_appointments %}
-                        <div class="col-md-4">
-                            <div class="card">
-                                <div class="card-body">
-                                    <h5 class="card-title">Patient: {{ appointment.patient_name }}</h5>
-                                    <p class="card-text"><strong>Date & Time:</strong> {{ appointment.appointment_datetime }}</p>
-                                    <p class="card-text"><strong>Cause:</strong> {{ appointment.cause }}</p>
-                                    <p class="card-text"><strong>Report:</strong> 
-                                        {% if appointment.report_id %}
-                                            <a href="{{ url_for('get_report', file_id=appointment.report_id) }}" target="_blank" class="btn btn-primary btn-sm">View Report</a>
-                                        {% else %}
-                                            <span class="text-muted">No Report Uploaded</span>
-                                        {% endif %}
-                                    </p>
-                                    
-                                    <form action="{{ url_for('give_feedback', appointment_id=appointment._id) }}" method="post">
-                                        <div class="mb-3">
-                                            <label for="feedback-{{ appointment._id }}" class="form-label">Feedback:</label>
-                                            <textarea id="feedback-{{ appointment._id }}" name="feedback" class="form-control" rows="3" required></textarea>
-                                        </div>
-                                        <button type="submit" class="btn btn-feedback w-100">Submit Feedback</button>
-                                    </form>
-                                    
-                                    <form action="/mark_done/{{ appointment._id }}" method="post">
-                                        <button type="submit" class="btn btn-done w-100">Mark as Done</button>
-                                    </form>
-                                    
-                                    
-                                </div>
-                            </div>
-                        </div>
-                    {% endfor %}
-                </div>
-            {% else %}
-                <p class="text-muted">No ongoing appointments.</p>
-            {% endif %}
-        </div>
-        
-
-        <div class="section">
-            <h3>Scheduled Meetings</h3>
-            {% if meetings %}
-                <ul class="list-group">
-                    {% for meeting in meetings %}
-                        <li class="list-group-item">
-                            <strong>Meeting ID:</strong> {{ meeting.meeting_id }}<br>
-                            <strong>Date & Time:</strong> {{ meeting.meeting_datetime }}
-                        </li>
-                    {% endfor %}
-                </ul>
-            {% else %}
-                <p>No scheduled meetings.</p>
-            {% endif %}
-        </div>
-        
+                {% endif %}
+            {% endfor %}
+        {% else %}
+            <p>No appointments available.</p>
+        {% endif %}
     </div>
+    <script>document.getElementById("mark-done-btn").addEventListener("click", function() {
+        fetch(`/mark_as_done/${appointment_id}`, {
+            method: "POST",
+            headers: {"Content-Type": "application/json"},
+            body: JSON.stringify({})
+        }).then(response => response.json()).then(data => {
+            alert(data.message);
+            location.reload();
+        }).catch(error => console.error("Error:", error));
+    });
+    </script>
 </body>
 </html>

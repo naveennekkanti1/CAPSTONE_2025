@@ -197,7 +197,11 @@
                             <p><strong>Age:</strong> {{ appointment.age }}</p>
                             <p><strong>Patient Name:</strong> {{ appointment.patient_name }}</p>
                             <p><strong>Doctor ID:</strong> {{ appointment.doctor_id }}</p>
-                            <p><strong>Report:</strong> {{ appointment.file_id }}</p>
+                            <p><strong>Report:</strong> {% if appointment.report_id %}
+                                <a href="{{ url_for('get_report', file_id=appointment.report_id) }}" target="_blank" class="btn btn-primary btn-sm">View Report</a>
+                            {% else %}
+                                <span class="text-muted">No Report Uploaded</span>
+                            {% endif %}</p>
                             <p><strong>Date & Time:</strong> {{ appointment.appointment_datetime }}</p>
                             <p><strong>Cause for Visiting:</strong> {{ appointment.cause }}</p>
                         </div>
