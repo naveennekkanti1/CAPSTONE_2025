@@ -13,5 +13,3 @@ credentials = service_account.Credentials.from_service_account_file(
 )
 
 service = googleapiclient.discovery.build("calendar", "v3", credentials=credentials)
-
-print("Google Calendar API connected successfully!")
