@@ -331,41 +331,72 @@ def appointments():
 
 
 @app.route('/patient_dashboard')
-def patient_dashboard():
-    if 'user_id' in session and session['role'] == 'patient':
-        patient_id = ObjectId(session['user_id'])
+@app.route('/patient_dashboard/<appointment_type>')
+def patient_dashboard(appointment_type=None):
+    if 'user_id' not in session or session['role'] != 'patient':
+        flash("Unauthorized access.", "danger")
+        return redirect(url_for('login'))
 
-        # Fetch patient details (first name and last name)
-        patient = mongo.db.users.find_one({'_id': patient_id}, {'first_name': 1, 'last_name': 1})
-        if not patient:
-            flash("Patient record not found.", "danger")
-            return redirect(url_for('login'))
+    patient_id = ObjectId(session['user_id'])
 
-        # Fetch patient's appointments
-        appointments = list(mongo.db.appointments.find({"patient_id": patient_id}))
-        meetings = list(mongo.db.meetings.find({"patient_id": patient_id}))
+    # Fetch patient details
+    patient = mongo.db.users.find_one({'_id': patient_id}, {'first_name': 1, 'last_name': 1})
+    if not patient:
+        flash("Patient record not found.", "danger")
+        return redirect(url_for('login'))
 
-        # Classify appointments into upcoming and ongoing
-        upcoming_appointments = []
-        ongoing_appointments = []
-        current_time = datetime.utcnow()
+    # Fetch patient's appointments and meetings
+    appointments = list(mongo.db.appointments.find({"patient_id": patient_id}))
+    meetings = list(mongo.db.meetings.find({"patient_id": patient_id}))
 
-        for appointment in appointments:
+    # Fetch doctor details for each appointment
+    for appointment in appointments:
+        doctor = mongo.db.users.find_one({"_id": appointment["doctor_id"]}, {"first_name": 1,"last_name":1, "specialization": 1})
+        if doctor:
+            appointment["doctor_name"] = doctor.get("first_name","last_name")
+            appointment["specialization"] = doctor.get("specialization")
+        else:
+            appointment["doctor_name"] = "Unknown"
+            appointment["specialization"] = "Unknown"
+
+    # Classify appointments
+    upcoming_appointments, ongoing_appointments, completed_appointments = [], [], []
+    current_time = datetime.utcnow()
+
+    for appointment in appointments:
+        try:
             appointment_time = datetime.strptime(appointment['appointment_datetime'], '%Y-%m-%dT%H:%M')
-            if appointment_time > current_time:
-                upcoming_appointments.append(appointment)
-            else:
-                ongoing_appointments.append(appointment)
+        except ValueError:
+            flash("Invalid appointment date format.", "danger")
+            continue
 
-        return render_template('patient_dashboard.html',
-                               first_name=patient.get('first_name', ''),
-                               last_name=patient.get('last_name', ''),
-                               upcoming_appointments=upcoming_appointments,
-                               ongoing_appointments=ongoing_appointments,
-                               meetings=meetings)
+        if appointment.get("status") in ["done", "completed"]:
+            completed_appointments.append(appointment)
+        elif appointment_time > current_time:
+            upcoming_appointments.append(appointment)
+        else:
+            ongoing_appointments.append(appointment)
 
-    flash("Unauthorized access.", "danger")
-    return redirect(url_for('login'))
+    # Filter by `appointment_type`
+    appointment_filters = {
+        "upcoming": (upcoming_appointments, [], []),
+        "ongoing": ([], ongoing_appointments, []),
+        "completed": ([], [], completed_appointments)
+    }
+
+    filtered_appointments = appointment_filters.get(appointment_type, 
+        (upcoming_appointments, ongoing_appointments, completed_appointments))
+
+    return render_template(
+        'patient_dashboard.html',
+        first_name=patient.get('first_name', ''),
+        last_name=patient.get('last_name', ''),
+        upcoming_appointments=filtered_appointments[0],
+        ongoing_appointments=filtered_appointments[1],
+        completed_appointments=filtered_appointments[2],
+        meetings=meetings
+    )
+
 
 
 @app.route('/doctor_dashboard')
