@@ -13,7 +13,7 @@
             font-family: 'Arial', sans-serif;
             display: flex;
         }
-        
+
         .sidebar {
             width: 250px;
             background: rgba(0, 0, 0, 0.8);
@@ -25,12 +25,12 @@
             flex-direction: column;
             gap: 15px;
         }
-        
+
         .sidebar h3, .sidebar p {
             text-align: center;
             margin-bottom: 10px;
         }
-        
+
         .sidebar a {
             display: block;
             color: white;
@@ -40,18 +40,18 @@
             border-radius: 5px;
             transition: transform 0.3s ease, background 0.3s ease;
         }
-        
+
         .sidebar a:hover {
             background: rgba(255, 255, 255, 0.2);
             transform: translateX(5px);
         }
-        
+
         .main-content {
             margin-left: 270px;
             padding: 20px;
             flex-grow: 1;
         }
-        
+
         .section {
             background-color: rgba(255, 255, 255, 0.8);
             padding: 20px;
@@ -59,21 +59,27 @@
             box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
             margin-bottom: 20px;
         }
-        
+
         .card {
             margin: 10px;
             border-radius: 8px;
             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
         }
-        
+
         .btn-feedback {
             background-color: #007bff;
             color: white;
             margin-top: 10px;
         }
-        
+
         .btn-done {
             background-color: #28a745;
+            color: white;
+            margin-top: 10px;
+        }
+
+        .btn-meeting {
+            background-color: #ff9900;
             color: white;
             margin-top: 10px;
         }
@@ -89,10 +95,11 @@
         <a href="/doctor_dashboard/upcoming">Upcoming Appointments</a>
         <a href="/doctor_dashboard/ongoing">Ongoing Appointments</a>
         <a href="/doctor_dashboard/completed">Completed Appointments</a>
+        <a href="/schedule_meeting">Schedule a Meeting</a>  <!-- Added Schedule Meeting Option -->
         <hr>
         <a href="/logout">Logout</a>
     </div>
-    
+
     <div class="main-content">
         {% if upcoming_appointments or ongoing_appointments or completed_appointments %}
             {% for section, title, appointments in [('upcoming', 'Upcoming Appointments', upcoming_appointments), 
@@ -116,6 +123,11 @@
                                                 <span class="text-muted">No Report Uploaded</span>
                                             {% endif %}
                                         </p>
+                                        
+                                        {% if section == 'upcoming' %}
+                                            <a href="{{ url_for('schedule_meeting', appointment_id=appointment._id) }}" class="btn btn-meeting w-100">Schedule Meeting</a>
+                                        {% endif %}
+
                                         {% if section == 'ongoing' %}
                                             <form action="{{ url_for('give_feedback', appointment_id=appointment._id) }}" method="post">
                                                 <div class="mb-3">
@@ -140,16 +152,5 @@
             <p>No appointments available.</p>
         {% endif %}
     </div>
-    <script>document.getElementById("mark-done-btn").addEventListener("click", function() {
-        fetch(`/mark_as_done/${appointment_id}`, {
-            method: "POST",
-            headers: {"Content-Type": "application/json"},
-            body: JSON.stringify({})
-        }).then(response => response.json()).then(data => {
-            alert(data.message);
-            location.reload();
-        }).catch(error => console.error("Error:", error));
-    });
-    </script>
 </body>
 </html>

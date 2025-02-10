@@ -1,4 +1,17 @@
-from pymongo import MongoClient
+import os
+from google.oauth2 import service_account
+import googleapiclient.discovery
 
-uri = "mongodb+srv://naveennekkanti:naveennekkanti@cluster0.2zvzf.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0"
-client = MongoClient(uri)  # Check connection
+SCOPES = ["https://www.googleapis.com/auth/calendar"]
+
+# Ensure the path to your JSON file is correct
+SERVICE_ACCOUNT_FILE = os.path.join(os.getcwd(), "templates/credentials.json")
+
+# Load credentials from service account JSON
+credentials = service_account.Credentials.from_service_account_file(
+    SERVICE_ACCOUNT_FILE, scopes=SCOPES
+)
+
+service = googleapiclient.discovery.build("calendar", "v3", credentials=credentials)
+
+print("Google Calendar API connected successfully!")

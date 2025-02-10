@@ -1,15 +1,23 @@
 from flask import Flask, render_template, request, redirect, url_for, session, flash, url_for,send_file,jsonify,Response
 from flask_pymongo import PyMongo
-from datetime import datetime,timedelta
 from werkzeug.security import generate_password_hash, check_password_hash
 from bson import ObjectId
 from werkzeug.utils import secure_filename
-from datetime import datetime
-from pymongo import MongoClient
+from datetime import datetime,timedelta
+from pymongo import MongoClient,DESCENDING
 import base64
 import io
 import os
+from google.oauth2.credentials import Credentials
+from google_auth_oauthlib.flow import InstalledAppFlow
+from googleapiclient.discovery import build
+from flask_mail import Mail, Message
 import gridfs
+import threading
+from google.oauth2.service_account import Credentials as ServiceAccountCredentials
+import uuid
+
+
 
 app = Flask(__name__)
 app.secret_key = 'your_secret_key_here'
@@ -18,6 +26,17 @@ client = MongoClient(app.config['MONGO_URI'])
 db = client['RAPACT']
 users_collection = db['users']
 fs = gridfs.GridFS(db)
+SCOPES = ["https://www.googleapis.com/auth/calendar"]
+
+#Flask-Mail Sending
+app.config['MAIL_SERVER'] = 'smtp.gmail.com'
+app.config['MAIL_PORT'] = 587
+app.config['MAIL_USE_TLS'] = True
+app.config['MAIL_USERNAME'] = 'srmcorporationservices@gmail.com'  # Update this
+app.config['MAIL_PASSWORD'] = 'bxxo qcvd njfj kcsa'   # Update this
+app.config['MAIL_DEFAULT_SENDER'] = 'srmcorporationservices@gmail.com'
+
+mail = Mail(app)
 
 # File upload settings
 app.config['ALLOWED_EXTENSIONS'] = {'pdf', 'jpg', 'jpeg', 'png'}
@@ -99,7 +118,205 @@ def mark_done():
     except Exception as e:
         return jsonify({"success": False, "message": str(e)}), 500
 
+def send_email(subject, recipients, body):
+    """Function to send emails."""
+    try:
+        msg = Message(subject, recipients=recipients, body=body)
+        mail.send(msg)
+    except Exception as e:
+        print(f"Error sending email: {e}")
 
+def schedule_email(subject, recipients, body, send_time):
+    """Schedule an email to be sent at a later time."""
+    delay = (send_time - datetime.now()).total_seconds()
+    if delay > 0:
+        threading.Timer(delay, send_email, [subject, recipients, body]).start()
+def get_google_credentials():
+    creds = None
+    token_path = 'token.json'  # Stores user's access token
+
+    # Load existing credentials if available
+    if os.path.exists(token_path):
+        creds = Credentials.from_authorized_user_file(token_path, SCOPES)
+
+    # If no valid credentials, prompt login
+    if not creds or not creds.valid:
+        flow = InstalledAppFlow.from_client_secrets_file(
+            'templates/credentials.json', SCOPES)  # Use your OAuth 2.0 client secret
+        creds = flow.run_local_server(port=0)
+
+        # Save credentials for future use
+        with open(token_path, 'w') as token:
+            token.write(creds.to_json())
+
+    return creds
+
+def create_google_meet(patient_email, doctor_email, meeting_datetime):
+    credentials = get_google_credentials()  # OAuth 2.0 authentication
+    service = build('calendar', 'v3', credentials=credentials)
+
+    event = {
+        'summary': 'Doctor Consultation',
+        'description': f'Meeting between {doctor_email} and {patient_email}',
+        'start': {
+            'dateTime': datetime.fromisoformat(meeting_datetime).isoformat(),
+            'timeZone': 'Asia/Kolkata',
+        },
+        'end': {
+            'dateTime': (datetime.fromisoformat(meeting_datetime) + timedelta(minutes=30)).isoformat(),
+            'timeZone': 'Asia/Kolkata',
+        },
+        'attendees': [
+            {'email': doctor_email},  # Doctor email
+            {'email': patient_email}  # Patient email
+        ],
+        'conferenceData': {
+            'createRequest': {
+                'requestId': str(uuid.uuid4()),
+                'conferenceSolutionKey': {
+                    'type': 'hangoutsMeet'
+                }
+            }
+        }
+    }
+
+    try:
+        event = service.events().insert(
+            calendarId='primary',
+            body=event,
+            conferenceDataVersion=1
+        ).execute()
+
+        return event.get('hangoutLink')  # Return Google Meet link
+    except Exception as e:
+        print(f"Error creating Google Meet: {e}")
+        return None
+
+
+from datetime import datetime
+
+@app.route('/schedule_meeting', methods=['GET', 'POST'])
+def schedule_meeting():
+    if 'user_id' in session and session['role'] in ['doctor', 'admin']:  
+        doctor_id = ObjectId(session['user_id'])
+
+        if request.method == 'POST':
+            patient_id = ObjectId(request.form['patient_id'])
+            meeting_datetime = request.form['meeting_datetime']
+
+            # Validate if patient exists
+            patient = mongo.db.users.find_one({'_id': patient_id}, {'first_name': 1, 'last_name': 1, 'email': 1})
+            if not patient or 'email' not in patient:
+                flash("Selected patient does not exist or has no email.", "danger")
+                return redirect(url_for('schedule_meeting'))
+
+            patient_email = patient['email']
+
+            # Validate if doctor exists
+            doctor = mongo.db.users.find_one({'_id': doctor_id}, {'first_name': 1, 'last_name': 1, 'email': 1})
+            if not doctor or 'email' not in doctor:
+                flash("Doctor account issue: No email found.", "danger")
+                return redirect(url_for('schedule_meeting'))
+
+            doctor_email = doctor['email']
+
+            # Generate Google Meet link
+            try:
+                meeting_link = create_google_meet(patient_email, doctor_email, meeting_datetime)
+            except Exception as e:
+                flash(f"Error creating Google Meet: {str(e)}", "danger")
+                return redirect(url_for('schedule_meeting'))
+
+            # Store the meeting details
+            meeting_id = meeting_link.split('/')[-1]  # Extract Google Meet ID
+            mongo.db.meetings.insert_one({
+                'doctor_id': doctor_id,
+                'patient_id': patient_id,
+                'meeting_id': meeting_id,
+                'meeting_datetime': meeting_datetime,
+                'meeting_link': meeting_link
+            })
+
+            # Send email notification
+            subject = "📅 Your Medical Appointment is Scheduled"
+            body = f"""
+        Dear {patient['first_name']},
+
+        Your meeting with Dr. {doctor['first_name']} {doctor['last_name']} has been scheduled.
+
+        📅 Date & Time: {meeting_datetime}
+        🔗 Join Here: {meeting_link}
+
+        Please ensure you join on time.
+
+        Regards,
+        RapiACT! Team ❤️
+        """
+            send_email(subject, [patient_email], body)
+
+            flash("Meeting scheduled successfully!", "success")
+            return redirect(url_for('schedule_meeting'))
+
+        # Fetch all patients for dropdown selection
+        patients = list(mongo.db.users.find({'role': 'patient'}, {'_id': 1, 'first_name': 1, 'last_name': 1}))
+
+        # Fetch all scheduled meetings for the logged-in doctor
+        meetings = list(mongo.db.meetings.find({'doctor_id': doctor_id}))
+
+        # Separate meetings into ongoing, upcoming, and past
+        ongoing_meetings = []
+        upcoming_meetings = []
+        past_meetings = []
+        current_time = datetime.utcnow()
+
+        for meeting in meetings:
+            patient = mongo.db.users.find_one({'_id': meeting['patient_id']}, {'first_name': 1, 'last_name': 1})
+            meeting['patient_name'] = f"{patient['first_name']} {patient['last_name']}" if patient else "Unknown"
+
+            meeting_time = datetime.strptime(meeting['meeting_datetime'], "%Y-%m-%dT%H:%M")
+            
+            # Check if meeting is ongoing (within a 1-hour window)
+            if meeting_time <= current_time <= meeting_time.replace(hour=meeting_time.hour + 1):
+                ongoing_meetings.append(meeting)
+            elif meeting_time > current_time:
+                upcoming_meetings.append(meeting)
+            else:
+                past_meetings.append(meeting)
+
+        return render_template('schedule_meeting.html', 
+                               patients=patients, 
+                               ongoing_meetings=ongoing_meetings, 
+                               upcoming_meetings=upcoming_meetings, 
+                               past_meetings=past_meetings)
+
+    flash("Unauthorized access.", "danger")
+    return redirect(url_for('login'))
+
+
+
+def get_scheduled_meetings():
+    meetings = db.meetings.find().sort("meeting_datetime", DESCENDING)
+    
+    meeting_list = []
+    for meeting in meetings:
+        meeting_list.append({
+            "patient_name": f"{meetings.get('patient_first_name', 'Unknown')} {meeting.get('patient_last_name', '')}",
+            "meeting_datetime": meetings.get("meeting_datetime", "Not Scheduled"),
+            "meeting_link": meetings.get("meeting_link", "#")  # Default to "#" if link is missing
+        })
+    
+    return meeting_list
+
+@app.route('/join_meeting/<meeting_id>')
+def join_meeting(meeting_id):
+    if 'user_id' in session:
+        meeting = mongo.db.meetings.find_one({"meeting_id": meeting_id})
+        if meeting:
+            return redirect(meeting['meeting_link'])  # Redirect to Google Meet
+        flash("Meeting not found.", "danger")
+        return redirect(url_for('patient_dashboard'))
+    flash("Unauthorized access.", "danger")
+    return redirect(url_for('login'))
 
 
 # Register Patient Route
@@ -274,29 +491,26 @@ def admin_dashboard():
         flash("Unauthorized access.", "danger")
         return redirect(url_for('login'))
 
-    # Fetch all users with their uploaded files
-    users = list(mongo.db.users.find({}))
-
-    # Counting total users, doctors, patients, and appointments
+    # Fetch user counts and details
     total_users = mongo.db.users.count_documents({})
     total_doctors = mongo.db.users.count_documents({'role': 'doctor'})
     total_patients = mongo.db.users.count_documents({'role': 'patient'})
     total_appointments = mongo.db.appointments.count_documents({})
 
-    # Counting appointment statuses
-    upcoming_appointments = mongo.db.appointments.count_documents({"status": "upcoming"})
-    completed_appointments = mongo.db.appointments.count_documents({"status": "completed"})
-    cancelled_appointments = mongo.db.appointments.count_documents({"status": "cancelled"})
-
+    # Fetch patient list for scheduling meetings
+    patients = list(mongo.db.users.find({'role': 'patient'}, {'_id': 1, 'first_name': 1, 'last_name': 1}))
+    
+    # Fetch upcoming meetings
+    meetings = list(mongo.db.meetings.find({}, {'patient_name': 1, 'meeting_datetime': 1, 'meeting_link': 1}))
+    
     return render_template('admin_dashboard.html',
-                           users=users,
                            total_users=total_users,
                            total_doctors=total_doctors,
                            total_patients=total_patients,
                            total_appointments=total_appointments,
-                           upcoming_appointments=upcoming_appointments,
-                           completed_appointments=completed_appointments,
-                           cancelled_appointments=cancelled_appointments)
+                           patients=patients,
+                           meetings=meetings)
+
 
 @app.route('/users')
 def users():
@@ -399,59 +613,62 @@ def patient_dashboard(appointment_type=None):
 
 
 
+def get_doctor_info():
+    if 'user_id' in session and session['role'] == 'doctor':
+        doctor_id = ObjectId(session['user_id'])
+        doctor = mongo.db.users.find_one({'_id': doctor_id}, {'first_name': 1, 'last_name': 1})
+        return doctor
+    return None
+
 @app.route('/doctor_dashboard')
 @app.route('/doctor_dashboard/<appointment_type>')
 def doctor_dashboard(appointment_type=None):
     if 'user_id' in session and session['role'] == 'doctor':
         doctor_id = ObjectId(session['user_id'])
-
-        # Fetch patient details (first name and last name)
-        doctor = mongo.db.users.find_one({'_id': doctor_id}, {'first_name': 1, 'last_name': 1})
+        doctor = get_doctor_info()
+        
         if not doctor:
-            flash(" record not found.", "danger")
+            flash("Doctor record not found.", "danger")
             return redirect(url_for('login'))
-
-        appointments = list(db.appointments.find({"doctor_id": doctor_id}))
-
-        # Classify appointments into upcoming, ongoing, and completed
+        
+        appointments = list(mongo.db.appointments.find({"doctor_id": doctor_id}))
         upcoming_appointments = []
         ongoing_appointments = []
         completed_appointments = []
         current_time = datetime.now()
-
+        
         for appointment in appointments:
             appointment_time = datetime.strptime(appointment['appointment_datetime'], '%Y-%m-%dT%H:%M')
-
+            
             if appointment.get("status") in ["done", "completed"]:
                 completed_appointments.append(appointment)
             elif appointment_time > current_time:
                 upcoming_appointments.append(appointment)
             else:
                 ongoing_appointments.append(appointment)
-
-        # If appointment_type is provided, filter accordingly
+        
+        # Filter based on appointment_type
         if appointment_type == "upcoming":
-            return render_template('doctor_dashboard.html', 
-                upcoming_appointments=upcoming_appointments, 
-                ongoing_appointments=[], 
-                completed_appointments=[])
+            return render_template('doctor_dashboard.html', doctor=doctor,
+                                   upcoming_appointments=upcoming_appointments, 
+                                   ongoing_appointments=[], 
+                                   completed_appointments=[])
         elif appointment_type == "ongoing":
-            return render_template('doctor_dashboard.html', 
-                upcoming_appointments=[], 
-                ongoing_appointments=ongoing_appointments, 
-                completed_appointments=[])
+            return render_template('doctor_dashboard.html', doctor=doctor,
+                                   upcoming_appointments=[], 
+                                   ongoing_appointments=ongoing_appointments, 
+                                   completed_appointments=[])
         elif appointment_type == "completed":
-            return render_template('doctor_dashboard.html', 
-                upcoming_appointments=[], 
-                ongoing_appointments=[], 
-                completed_appointments=completed_appointments)
-
-        # Default: Show all insights
-        return render_template('doctor_dashboard.html', 
-            upcoming_appointments=upcoming_appointments,
-            ongoing_appointments=ongoing_appointments,
-            completed_appointments=completed_appointments
-        )
+            return render_template('doctor_dashboard.html', doctor=doctor,
+                                   upcoming_appointments=[], 
+                                   ongoing_appointments=[], 
+                                   completed_appointments=completed_appointments)
+        
+        # Default: Show all
+        return render_template('doctor_dashboard.html', doctor=doctor,
+                               upcoming_appointments=upcoming_appointments,
+                               ongoing_appointments=ongoing_appointments,
+                               completed_appointments=completed_appointments)
     return redirect(url_for('login'))
 
 
@@ -459,17 +676,24 @@ def doctor_dashboard(appointment_type=None):
 # Route to cancel an appointment
 @app.route('/cancel_appointment/<appointment_id>', methods=['POST'])
 def cancel_appointment(appointment_id):
-    if 'user_id' not in session or session.get('role') != 'patient':
-        flash("Unauthorized access.", "danger")
-        return redirect(url_for('login'))
+    if 'user_id' in session:
+        appointment = mongo.db.appointments.find_one({'_id': ObjectId(appointment_id)})
+        if appointment and appointment['patient_id'] == ObjectId(session['user_id']):
+            mongo.db.appointments.delete_one({'_id': ObjectId(appointment_id)})
 
-    try:
-        mongo.db.appointments.delete_one({'_id': ObjectId(appointment_id)})
-        flash("Appointment canceled successfully.", "success")
-    except Exception as e:
-        flash(f"Error canceling appointment: {str(e)}", "danger")
+            # Send cancellation email to patient
+            email = appointment['email']
+            subject = "Appointment Cancellation"
+            body = f"Dear {appointment['patient_name']},\n\nYour appointment has been canceled.\n\nThank you!"
+            send_email(subject, [email], body)
 
-    return redirect(url_for('patient_dashboard'))
+            flash("Appointment canceled successfully.", "success")
+        else:
+            flash("Unauthorized action.", "danger")
+
+        return redirect(url_for('patient_dashboard'))
+    return redirect(url_for('login'))
+
 
 @app.route('/profile')
 def profile():
@@ -534,56 +758,11 @@ def get_report(file_id):
         flash("File not found.", "danger")
         return redirect(url_for('doctor_dashboard'))
 
-@app.route('/schedule_meeting', methods=['GET', 'POST'])
-def schedule_meeting():
-    if 'user_id' in session and session['role'] == 'doctor':
-        doctor_id = ObjectId(session['user_id'])
-
-        if request.method == 'POST':
-            patient_id = ObjectId(request.form['patient_id'])
-            meeting_id = request.form['meeting_id']
-            meeting_datetime = request.form['meeting_datetime']
-
-            # Validate if patient exists
-            patient = mongo.db.users.find_one({'_id': patient_id})
-            if not patient:
-                flash("Selected patient does not exist.", "danger")
-                return redirect(url_for('schedule_meeting'))
-
-            # Store the meeting details
-            mongo.db.meetings.insert_one({
-                'doctor_id': doctor_id,
-                'patient_id': patient_id,
-                'meeting_id': meeting_id,
-                'meeting_datetime': meeting_datetime
-            })
-
-            flash("Meeting scheduled successfully!", "success")
-            return redirect(url_for('doctor_dashboard'))
-
-        # Fetch all patients for dropdown selection
-        patients = mongo.db.users.find({'role': 'patient'}, {'_id': 1, 'first_name': 1, 'last_name': 1})
-        return render_template('schedule_meeting.html', patients=patients)
-
-    flash("Unauthorized access.", "danger")
-    return redirect(url_for('login'))
-@app.route('/join_meeting/<meeting_id>')
-def join_meeting(meeting_id):
-    if 'user_id' in session:
-        meeting = mongo.db.meetings.find_one({"meeting_id": meeting_id})
-        if meeting:
-            return redirect(f"https://your-video-platform.com/{meeting_id}")  # Replace with your meeting service
-        flash("Meeting not found.", "danger")
-        return redirect(url_for('patient_dashboard'))
-    flash("Unauthorized access.", "danger")
-    return redirect(url_for('login'))
-
 # Creation of Appointment
 @app.route('/create_appointment', methods=['GET', 'POST'])
 def create_appointment():
     if 'user_id' in session and session.get('role') == 'patient':
         if request.method == 'POST':
-            # Get form data
             patient_name = request.form['patient_name']
             doctor_id = request.form['doctor_id']
             age = request.form['age']
@@ -594,18 +773,18 @@ def create_appointment():
             appointment_datetime = request.form['appointment_datetime']
             email = mongo.db.users.find_one({'_id': ObjectId(session['user_id'])})['email']
 
-            # File upload (store in GridFS)
+            # File upload (GridFS)
             report = request.files['report']
             file_id = None
             if report:
                 file_id = fs.put(report, filename=secure_filename(report.filename), content_type=report.content_type)
 
-            # Find the doctor's name to include in the flash message
             doctor = mongo.db.users.find_one({'_id': ObjectId(doctor_id)})
             doctor_name = f"{doctor['first_name']} {doctor['last_name']}"
+            doctor_email = doctor['email']
 
-            # Insert appointment into the database
-            mongo.db.appointments.insert_one({
+            # Insert appointment into DB
+            appointment_id = mongo.db.appointments.insert_one({
                 'patient_name': patient_name,
                 'doctor_id': ObjectId(doctor_id),
                 'age': age,
@@ -615,20 +794,35 @@ def create_appointment():
                 'weight': weight,
                 'cause': cause,
                 'appointment_datetime': appointment_datetime,
-                'report_id': file_id,  # Store the file ID from GridFS
+                'report_id': file_id,
                 'patient_id': ObjectId(session['user_id']),
-            })
+            }).inserted_id
 
-            # Flash message with doctor name
+            # Email content
+            subject = "Appointment Confirmation"
+            body_patient = f"Dear {patient_name},\n\nYour appointment with Dr. {doctor_name} is confirmed on {appointment_datetime}.\n\nThank you!\n RapiACT!"
+            body_doctor = f"Dear Dr. {doctor_name},\n\nYou have a new appointment with {patient_name} on {appointment_datetime}.\n\nThank you!\n RapiACT!"
+
+            # Send emails
+            send_email(subject, [email], body_patient)
+            send_email(subject, [doctor_email], body_doctor)
+
+            # Schedule reminder email
+            appointment_time = datetime.strptime(appointment_datetime, "%Y-%m-%dT%H:%M")
+            reminder_time = appointment_time - timedelta(minutes=5)
+            reminder_subject = "Appointment Reminder"
+            reminder_body = f"Dear {patient_name},\n\nThis is a reminder that your appointment with Dr. {doctor_name} is in 5 minutes."
+            schedule_email(reminder_subject, [email], reminder_body, reminder_time)
+
             flash(f"Appointment created successfully with Dr. {doctor_name}!", "success")
             return redirect(url_for('patient_dashboard'))
 
-        # Fetch doctors from the database for selection
         doctors = list(mongo.db.users.find({'role': 'doctor'}))
         return render_template('create_appointment.html', doctors=doctors)
 
     flash("Unauthorized access.", "danger")
     return redirect(url_for('login'))
+
 
 @app.route('/add_user', methods=['GET', 'POST'])
 def add_user():

@@ -13,7 +13,6 @@
             font-family: 'Arial', sans-serif;
             color: #fff;
         }
-
         .background {
             position: fixed;
             width: 100%;
@@ -21,115 +20,29 @@
             z-index: -1;
             overflow: hidden;
         }
-
-        .star {
-            position: absolute;
-            width: 2px;
-            height: 2px;
-            background: white;
-            border-radius: 50%;
-            animation: sparkle 5s infinite ease-in-out;
-        }
-
-        @keyframes sparkle {
-            0%, 100% {
-                opacity: 0.3;
-                transform: scale(0.5);
-            }
-            50% {
-                opacity: 1;
-                transform: scale(1);
-            }
-        }
-
-        .navbar {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            background: rgba(0, 0, 0, 0.7);
-            color: white;
-            z-index: 10;
-        }
-
-        .navbar-brand {
-            display: flex;
-            align-items: center;
-        }
-
-        .navbar-brand img {
-            height: 40px;
-            margin-right: 10px;
-        }
-
-        .navbar-brand span {
-            color: #007bff;
-            font-weight: bold;
-        }
-
-        .navbar .nav-link.dropdown-toggle {
-            color: #007bff !important;
-        }
-
-        .navbar .nav-link.dropdown-toggle:hover {
-            color: #0056b3 !important;
-        }
-
-        .dropdown-menu a {
-            color: black;
-        }
-
-        .dropdown-menu a:hover {
-            background-color: #f1f1f1;
-        }
-
         .container {
             padding: 100px 20px 20px;
         }
-
         .section {
             margin-top: 30px;
-            background-color:black(255, 255, 255, 0.9);
+            background-color: rgba(255, 255, 255, 0.9);
             padding: 20px;
             border-radius: 10px;
             box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
             overflow-y: auto;
+            color: #333;
         }
-
         .card-container {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
             gap: 20px;
-            position: relative;
         }
-
         .card {
             background: white;
             border-radius: 10px;
             padding: 15px;
             text-align: center;
             color: #333;
-            position: relative;
-        }
-
-        .card .edit-btn {
-            position: absolute;
-            top: 10px;
-            right: 10px;
-            background-color: transparent;
-            border: none;
-            font-size: 1.5rem;
-            color: #007bff;
-        }
-
-        .card .edit-btn:hover {
-            color: #0056b3;
-        }
-
-        @media (max-width: 768px) {
-            .card-container {
-                grid-template-columns: 1fr;
-            }
         }
     </style>
 </head>
@@ -137,21 +50,18 @@
     <nav class="navbar navbar-expand-lg">
         <div class="container-fluid">
             <a class="navbar-brand" href="/admin_dashboard">
-                <img src="static/images/logo.jpg" alt="Logo">
+                <img src="static/images/logo.jpg" alt="Logo" height="40">
                 <span>RapiACT</span>
             </a>
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNavDropdown">
-                <span class="navbar-toggler-icon"></span>
-            </button>
-            <div class="collapse navbar-collapse justify-content-end" id="navbarNavDropdown">
+            <div class="collapse navbar-collapse justify-content-end">
                 <ul class="navbar-nav">
                     <li class="nav-item dropdown">
-                        <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                        <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown">
                             Menu
                         </a>
-                        <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="navbarDropdown">
+                        <ul class="dropdown-menu dropdown-menu-end">
                             <li><a class="dropdown-item" href="/admin_dashboard">Dashboard</a></li>
-                            <li><a class= "dropdown-item" href="/add_user">Add User</aclass></a></li>
+                            <li><a class="dropdown-item" href="/add_user">Add User</a></li>
                             <li><a class="dropdown-item" href="/users">Users</a></li>
                             <li><a class="dropdown-item" href="/appointments">Appointments</a></li>
                             <li><a class="dropdown-item" href="/enquiry_details">Contact Queries</a></li>
@@ -165,108 +75,52 @@
 
     <div class="container">
         <h2 class="text-center">Admin Dashboard</h2>
-
         <div class="section card-container">
-            <div class="card">
-                <h5>Total Users</h5>
-                <p>{{ total_users }}</p>
-            </div>
-            <div class="card">
-                <h5>Total Doctors</h5>
-                <p>{{ total_doctors }}</p>
-            </div>
-            <div class="card">
-                <h5>Total Patients</h5>
-                <p>{{ total_patients }}</p>
-            </div>
-            <div class="card">
-                <h5>Total Appointments</h5>
-                <p>{{ total_appointments }}</p>
-            </div>
+            <div class="card"><h5>Total Users</h5><p>{{ total_users }}</p></div>
+            <div class="card"><h5>Total Doctors</h5><p>{{ total_doctors }}</p></div>
+            <div class="card"><h5>Total Patients</h5><p>{{ total_patients }}</p></div>
+            <div class="card"><h5>Total Appointments</h5><p>{{ total_appointments }}</p></div>
         </div>
 
         <div class="section">
-            <h3>User Insights</h3>
-            <canvas id="userChart" class="chart"></canvas>
+            <h3>Schedule a Meeting</h3>
+            <form action="{{ url_for('schedule_meeting') }}" method="POST">
+                <label for="patient_id">Select Patient:</label>
+                <select name="patient_id" required>
+                    {% for patient in patients %}
+                        <option value="{{ patient._id }}">{{ patient.first_name }} {{ patient.last_name }}</option>
+                    {% endfor %}
+                </select>
+                <label for="meeting_datetime">Meeting Date & Time:</label>
+                <input type="datetime-local" name="meeting_datetime" required>
+                <button type="submit">Schedule Meeting</button>
+            </form>
         </div>
 
         <div class="section">
-            <h3>Appointment Insights</h3>
-            <canvas id="appointmentChart" class="chart"></canvas>
+            <h3>Upcoming Meetings</h3>
+            <table class="table table-bordered table-striped">
+                <thead>
+                    <tr>
+                        <th>Patient Name</th>
+                        <th>Meeting Date & Time</th>
+                        <th>Meeting Link</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for meeting in meetings %}
+                    <tr>
+                        <td>{{ meeting.patient_name }}</td>
+                        <td>{{ meeting.meeting_datetime }}</td>
+                        <td><a href="{{ meeting.meeting_link }}" target="_blank">Join</a></td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
         </div>
     </div>
 
     <div class="background"></div>
-
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script>
-
-        // User insights graph
-        const userChartCtx = document.getElementById('userChart').getContext('2d');
-        const userChart = new Chart(userChartCtx, {
-            type: 'pie',
-            data: {
-                labels: ['Doctors', 'Patients'],
-                datasets: [{
-                    data: [totalDoctors, totalPatients],
-                    backgroundColor: ['#FF6384', '#36A2EB'],
-                    hoverOffset: 4
-                }]
-            },
-            options: {
-                responsive: true,
-                plugins: {
-                    legend: {
-                        position: 'top',
-                    },
-                    tooltip: {
-                        callbacks: {
-                            label: function(tooltipItem) {
-                                return tooltipItem.label + ': ' + tooltipItem.raw;
-                            }
-                        }
-                    }
-                }
-            }
-        });
-
-        // Appointment insights graph
-        const appointmentChartCtx = document.getElementById('appointmentChart').getContext('2d');
-        const appointmentChart = new Chart(appointmentChartCtx, {
-            type: 'bar',
-            data: {
-                labels: ['Upcoming', 'Completed', 'Cancelled'],
-                datasets: [{
-                    label: 'Appointments',
-                    data: [upcomingAppointments, completedAppointments, cancelledAppointments],
-                    backgroundColor: ['#FF9F40', '#4BC0C0', '#FFCD56'],
-                    borderColor: ['#FF7A33', '#4F6D68', '#FFB93E'],
-                    borderWidth: 1
-                }]
-            },
-            options: {
-                responsive: true,
-                plugins: {
-                    legend: {
-                        position: 'top',
-                    },
-                    tooltip: {
-                        callbacks: {
-                            label: function(tooltipItem) {
-                                return tooltipItem.label + ': ' + tooltipItem.raw;
-                            }
-                        }
-                    }
-                },
-                scales: {
-                    y: {
-                        beginAtZero: true
-                    }
-                }
-            }
-        });
-    </script>
-    
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
