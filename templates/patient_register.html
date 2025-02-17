@@ -1,221 +1,173 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Patient Registration</title>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
-    <style>
-        body {
-            font-family: 'Poppins', sans-serif;
-            background-color: #0099cc;
-            color: #333;
-            margin: 0;
-            padding: 0;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            min-height: 100vh;
-        }
-
-        .background {
-            position: absolute;
-            width: 100%;
-            height: 100%;
-            z-index: 0;
-            display: flex;
-            flex-wrap: wrap;
-            justify-content: center;
-            align-items: center;
-            pointer-events: none;
-        }
-
-        .bubble {
-            position: absolute;
-            border-radius: 50%;
-            background:rgba(255, 255, 255, 0.6);
-            animation: float 10s ease-in-out infinite, scale 5s ease-in-out infinite;
-            opacity: 0.6;
-        }
-
-        .bubble:nth-child(1) { width: 80px; height: 80px; left: 10%; top: 10%; animation-duration: 12s, 20s; }
-        .bubble:nth-child(2) { width: 120px; height: 120px; left: 30%; top: 40%; animation-duration: 10s, 18s; }
-        .bubble:nth-child(3) { width: 90px; height: 90px; left: 60%; top: 20%; animation-duration: 15s, 25s; }
-        .bubble:nth-child(4) { width: 110px; height: 110px; left: 80%; top: 50%; animation-duration: 13s, 22s; }
-
-        @keyframes float { 0% { transform: translate3d(0, 100vh, 0); } 100% { transform: translate3d(0, -100vh, 0); } }
-        @keyframes scale { 0% { transform: scale(0.8); } 100% { transform: scale(1.2); } }
-
-        .container {
-            width: 100%;
-            max-width: 800px;
-            margin: auto;
-            padding: 2rem;
-            background-color: #fff;
-            border: 1px solid #ccc;
-            border-radius: 10px;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-        }
-
-        .header {
-            display: flex;
-            align-items: center;
-            margin-bottom: 1rem;
-        }
-
-        .logo {
-            display: flex;
-            align-items: center;
-        }
-
-        .logo img {
-            height: 50px;
-            width: 50px;
-            margin-right: 10px;
-        }
-
-        .logo span {
-            font-size: 1.5rem;
-            font-weight: 600;
-            color: #0056b3;
-        }
-
-        .form-title {
-            text-align: center;
-            font-size: 1.8rem;
-            font-weight: 600;
-            margin-bottom: 1rem;
-            color: #333;
-        }
-
-        .form-group {
-            margin-bottom: 1.5rem;
-        }
-
-        .form-group label {
-            display: block;
-            font-size: 1rem;
-            font-weight: 500;
-            margin-bottom: 0.5rem;
-            color: #555;
-        }
-
-        .form-group input, .form-group textarea {
-            width: 100%;
-            padding: 10px;
-            font-size: 1rem;
-            border: 1px solid #ccc;
-            border-radius: 5px;
-            box-sizing: border-box;
-        }
-
-        .form-group textarea {
-            resize: vertical;
-        }
-
-        .form-group input:focus, .form-group textarea:focus {
-            outline: none;
-            border-color: #0056b3;
-            box-shadow: 0 0 5px rgba(0, 86, 179, 0.3);
-        }
-
-        .submit-btn {
-            display: block;
-            width: 100%;
-            padding: 10px;
-            background-color: #0056b3;
-            color: white;
-            font-size: 1rem;
-            font-weight: 600;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-            margin-top: 1rem;
-            text-align: center;
-        }
-
-        .submit-btn:hover {
-            background-color: #004494;
-        }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Patient Registration</title>
+  <style>
+    body {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      background: url("static/images/patientbg.jpg");
+      background-size: cover;
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+    }
+    .registration_form {
+      background: #ffffff;
+      padding: 40px;
+      border-radius: 10px;
+      box-shadow: 0 10px 20px rgba(0, 0, 0, 0.15);
+      max-width: 500px;
+      width: 100%;
+      text-align: center;
+    }
+    h3 {
+      margin-bottom: 20px;
+      font-size: 24px;
+    }
+    .input_box {
+      margin-bottom: 15px;
+      text-align: left;
+    }
+    .input_box label {
+      display: block;
+      font-size: 14px;
+      margin-bottom: 5px;
+    }
+    .required {
+      color: red;
+    }
+    .input_box input, .input_box select, .input_box textarea {
+      width: 100%;
+      height: 45px;
+      padding: 10px;
+      font-size: 16px;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+      box-sizing: border-box;
+    }
+    .input_box textarea {
+      height: 80px;
+      resize: none;
+    }
+    .phone_input {
+      display: flex;
+      align-items: center;
+    }
+    .phone_input span {
+      background: #e0e0e0;
+      padding: 12px;
+      border-radius: 5px 0 0 5px;
+      border: 1px solid #ccc;
+      font-size: 16px;
+    }
+    .phone_input input {
+      flex: 1;
+      border-radius: 0 5px 5px 0;
+      border-left: none;
+    }
+    button {
+      width: 100%;
+      padding: 12px;
+      background: #4CAF50;
+      color: #fff;
+      border: none;
+      border-radius: 5px;
+      font-size: 16px;
+      cursor: pointer;
+      transition: 0.3s;
+    }
+    button:hover {
+      background: #45a049;
+    }
+  </style>
 </head>
 <body>
-    <div class="background">
-        <div class="bubble"></div>
-        <div class="bubble"></div>
-        <div class="bubble"></div>
-        <div class="bubble"></div>
-    </div>
-
-    <div class="container">
-        <div class="header">
-            <div class="logo">
-                <img src="static/images/logo.jpg" alt="Logo">
-                <span>RapiACT</span>
-            </div>
+  <div class="registration_form">
+    <h3>Patient Registration</h3>
+    <form id="patientForm" onsubmit="return validateForm()">
+      <div class="input_box">
+        <label for="age">Age <span class="required">*</span></label>
+        <input type="number" id="age" name="age" placeholder="Enter your age" required min="1" />
+      </div>
+      <div class="input_box">
+        <label for="gender">Gender <span class="required">*</span></label>
+        <select id="gender" name="gender" required>
+          <option value="Male">Male</option>
+          <option value="Female">Female</option>
+          <option value="Other">Other</option>
+        </select>
+      </div>
+      <div class="input_box">
+        <label for="photo">Photo <span class="required">*</span></label>
+        <input type="file" id="photo" name="photo" accept="image/png, image/jpeg, image/jpg, image/gif, image/bmp, image/webp" required />
+      </div>
+      <div class="input_box">
+        <label for="phone">Phone No <span class="required">*</span></label>
+        <div class="phone_input">
+          <span>+91</span>
+          <input type="tel" id="phone" name="phone" placeholder="Enter phone number" required pattern="[0-9]{10}" maxlength="10" oninput="validatePhone()"/>
         </div>
+      </div>
+      <div class="input_box">
+        <label for="address">Address <span class="required">*</span></label>
+        <textarea id="address" name="address" placeholder="Enter your address" required></textarea>
+      </div>
+      <button type="submit">PROCEED</button>
+    </form>
+  </div>
 
-        <h1 class="form-title">Patient Registration</h1>
+  <script>
+    function validatePhone() {
+      const phoneInput = document.getElementById('phone');
+      if (phoneInput.value.length > 10) {
+        alert("Phone number cannot exceed 10 digits.");
+        phoneInput.value = phoneInput.value.slice(0, 10);
+      }
+    }
 
-        <form action="/register_patient" method="POST" enctype="multipart/form-data">
-            <div class="form-group">
-                <label for="first_name">First Name</label>
-                <input type="text" id="first_name" name="first_name" placeholder="Enter first name" required>
-            </div>
+    function validateForm() {
+      const age = document.getElementById('age').value;
+      if (age <= 0) {
+        alert("Age must be a positive number.");
+        return false;
+      }
+      return true;
+    }
 
-            <div class="form-group">
-                <label for="last_name">Last Name</label>
-                <input type="text" id="last_name" name="last_name" placeholder="Enter last name" required>
-            </div>
+    document.getElementById("patientForm").addEventListener("submit", function(event) {
+      event.preventDefault();
+      
+      let formData = new FormData(this);
+      let submitButton = document.querySelector("button[type='submit']");
 
-            <div class="form-group">
-                <label for="email">Email</label>
-                <input type="email" id="email" name="email" placeholder="Enter email address" required>
-            </div>
-
-            <div class="form-group">
-                <label for="phone">Phone</label>
-                <input type="text" id="phone" name="phone" placeholder="Enter phone number" required>
-            </div>
-            
-
-            <div class="form-group">
-                <label for="password">Password</label>
-                <input type="password" id="password" name="password" placeholder="Enter password" required>
-            </div>
-
-            <div class="form-group">
-                <label for="confirm_password">Confirm Password</label>
-                <input type="password" id="confirm_password" name="confirm_password" placeholder="Confirm password" required>
-            </div>
-
-            <div class="form-group">
-                <label for="photo">Upload Photo</label>
-                <input type="file" id="photo" name="photo" required>
-            </div>
-
-            <div class="form-group">
-                <label for="house_no">House No</label>
-                <input type="text" id="house_no" name="house_no" placeholder="Enter house number" required>
-            </div>
-
-            <div class="form-group">
-                <label for="village_city">Village/City</label>
-                <input type="text" id="village_city" name="village_city" placeholder="Enter village or city" required>
-            </div>
-
-            <div class="form-group">
-                <label for="district">District</label>
-                <input type="text" id="district" name="district" placeholder="Enter district" required>
-            </div>
-
-            <div class="form-group">
-                <label for="state">State</label>
-                <input type="text" id="state" name="state" placeholder="Enter State" required>
-            </div>
-
-            <button type="submit" class="submit-btn">Register</button>
-        </form>
-    </div>
+      submitButton.disabled = true;
+      submitButton.innerText = "Processing...";
+  
+      fetch("/patient_register", {
+          method: "POST",
+          body: formData
+      })
+      .then(response => response.json())
+      .then(data => {
+          if (data.error) {
+              alert(data.error);
+              submitButton.disabled = false;  // Re-enable button if error occurs
+              submitButton.innerText = "PROCEED";
+          } else {
+              alert(data.message);
+              window.location.href = data.redirect_url;
+          }
+      })
+      .catch(error => console.error("Error:", error));
+        alert("An error occurred. Please try again.");
+        submitButton.disabled = false;  // Re-enable button if fetch fails
+        submitButton.innerText = "PROCEED";
+  });
+  </script>
 </body>
 </html>

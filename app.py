@@ -1,21 +1,22 @@
 from flask import Flask, render_template, request, redirect, url_for, session, flash, url_for,send_file,jsonify,Response
 from flask_pymongo import PyMongo
 from werkzeug.security import generate_password_hash, check_password_hash
+
 from bson import ObjectId
 from werkzeug.utils import secure_filename
 from datetime import datetime,timedelta
 from pymongo import MongoClient,DESCENDING
 import base64
-import io
+import io,random
 import os
 from google.oauth2.credentials import Credentials
 from google_auth_oauthlib.flow import InstalledAppFlow
 from googleapiclient.discovery import build
 from flask_mail import Mail, Message
-import gridfs
+import gridfs,logging
 import threading
 from google.oauth2.service_account import Credentials as ServiceAccountCredentials
-import uuid
+import uuid,smtplib
 
 
 
@@ -25,6 +26,7 @@ app.config['MONGO_URI'] = app.config['MONGO_URI'] = "mongodb+srv://durganaveen:n
 client = MongoClient(app.config['MONGO_URI'])
 db = client['RAPACT']
 users_collection = db['users']
+appointments = db['appointments']
 fs = gridfs.GridFS(db)
 SCOPES = ["https://www.googleapis.com/auth/calendar"]
 
@@ -32,10 +34,10 @@ SCOPES = ["https://www.googleapis.com/auth/calendar"]
 app.config['MAIL_SERVER'] = 'smtp.gmail.com'
 app.config['MAIL_PORT'] = 587
 app.config['MAIL_USE_TLS'] = True
-app.config['MAIL_USERNAME'] = 'srmcorporationservices@gmail.com'  # Update this
-app.config['MAIL_PASSWORD'] = 'bxxo qcvd njfj kcsa'   # Update this
+app.config['MAIL_USERNAME'] = 'srmcorporationservices@gmail.com'
+app.config['MAIL_PASSWORD'] = 'bxxo qcvd njfj kcsa'
 app.config['MAIL_DEFAULT_SENDER'] = 'srmcorporationservices@gmail.com'
-
+otp_store = {}  
 mail = Mail(app)
 
 # File upload settings
@@ -205,7 +207,7 @@ def schedule_meeting():
             meeting_datetime = request.form['meeting_datetime']
 
             # Validate if patient exists
-            patient = mongo.db.users.find_one({'_id': patient_id}, {'first_name': 1, 'last_name': 1, 'email': 1})
+            patient = mongo.db.users.find_one({'_id': patient_id}, {'name': 1, 'email': 1})
             if not patient or 'email' not in patient:
                 flash("Selected patient does not exist or has no email.", "danger")
                 return redirect(url_for('schedule_meeting'))
@@ -213,7 +215,7 @@ def schedule_meeting():
             patient_email = patient['email']
 
             # Validate if doctor exists
-            doctor = mongo.db.users.find_one({'_id': doctor_id}, {'first_name': 1, 'last_name': 1, 'email': 1})
+            doctor = mongo.db.users.find_one({'_id': doctor_id}, {'name':1, 'email': 1})
             if not doctor or 'email' not in doctor:
                 flash("Doctor account issue: No email found.", "danger")
                 return redirect(url_for('schedule_meeting'))
@@ -240,9 +242,9 @@ def schedule_meeting():
             # Send email notification
             subject = "📅 Your Medical Appointment is Scheduled"
             body = f"""
-        Dear {patient['first_name']},
+        Dear {patient['name']},
 
-        Your meeting with Dr. {doctor['first_name']} {doctor['last_name']} has been scheduled.
+        Your meeting with Dr. {doctor['name']} has been scheduled.
 
         📅 Date & Time: {meeting_datetime}
         🔗 Join Here: {meeting_link}
@@ -258,7 +260,7 @@ def schedule_meeting():
             return redirect(url_for('schedule_meeting'))
 
         # Fetch all patients for dropdown selection
-        patients = list(mongo.db.users.find({'role': 'patient'}, {'_id': 1, 'first_name': 1, 'last_name': 1}))
+        patients = list(mongo.db.users.find({'role': 'patient'}, {'_id': 1,'name': 1}))
 
         # Fetch all scheduled meetings for the logged-in doctor
         meetings = list(mongo.db.meetings.find({'doctor_id': doctor_id}))
@@ -270,8 +272,8 @@ def schedule_meeting():
         current_time = datetime.utcnow()
 
         for meeting in meetings:
-            patient = mongo.db.users.find_one({'_id': meeting['patient_id']}, {'first_name': 1, 'last_name': 1})
-            meeting['patient_name'] = f"{patient['first_name']} {patient['last_name']}" if patient else "Unknown"
+            patient = mongo.db.users.find_one({'_id': meeting['patient_id']}, {'name': 1})
+            meeting['patient_name'] = f"{patient['name']}" if patient else "Unknown"
 
             meeting_time = datetime.strptime(meeting['meeting_datetime'], "%Y-%m-%dT%H:%M")
             
@@ -300,7 +302,7 @@ def get_scheduled_meetings():
     meeting_list = []
     for meeting in meetings:
         meeting_list.append({
-            "patient_name": f"{meetings.get('patient_first_name', 'Unknown')} {meeting.get('patient_last_name', '')}",
+            "patient_name": f"{meeting.get('patient_name', '')}",
             "meeting_datetime": meetings.get("meeting_datetime", "Not Scheduled"),
             "meeting_link": meetings.get("meeting_link", "#")  # Default to "#" if link is missing
         })
@@ -319,55 +321,297 @@ def join_meeting(meeting_id):
     return redirect(url_for('login'))
 
 
-# Register Patient Route
-@app.route('/register_patient', methods=['GET', 'POST'])
-def register_patient():
-    if request.method == 'POST':
-        first_name = request.form['first_name']
-        last_name = request.form['last_name']
-        email = request.form['email']
-        phno=request.form['phone']
-        password = request.form['password']
-        confirm_password = request.form['confirm_password']
-        house_no = request.form['house_no']
-        village_city = request.form['village_city']
-        district = request.form['district']
-        state = request.form['state']
-        photo = request.files['photo']
+
+@app.route('/register', methods=['GET', 'POST'])
+def register():
+    if request.method == 'GET':
+        return render_template('register.html')
+
+    elif request.method == 'POST':
+        data = request.json
+        email = data.get('email')
+        password = data.get('password')
+        confirm_password = data.get('confirm_password')
+        role = data.get('role')
+
+        if not email or not password or not confirm_password or not role:
+            flash("All fields are required!", "danger")
+            return redirect(url_for('register'))
 
         if password != confirm_password:
-            flash("Passwords do not match. Please try again.", "danger")
-            return redirect(url_for('register_patient'))
+            flash("Passwords do not match!", "danger")
+            return redirect(url_for('register'))
 
-        if not allowed_file(photo.filename):
-            flash("Invalid file type. Only PDF, JPG, JPEG, or PNG files are allowed.", "danger")
-            return redirect(url_for('register_patient'))
+        if users_collection.find_one({"email": email}):
+            flash("User already registered!", "danger")
+            return redirect(url_for('register'))
 
-        photo_data = base64.b64encode(photo.read()).decode('utf-8')
-
-        if mongo.db.users.find_one({'email': email}):
-            flash("Email already registered. Please use a different email.", "danger")
-            return redirect(url_for('register_patient'))
+        if email not in otp_store:
+            flash("OTP not verified!", "danger")
+            return redirect(url_for('register'))
 
         hashed_password = generate_password_hash(password)
 
-        mongo.db.users.insert_one({
-            'first_name': first_name,
-            'last_name': last_name,
-            'email': email,
-            'phone':phno,
-            'password': hashed_password,
-            'role': 'patient',
-            'photo': photo_data,
-            'house_no': house_no,
-            'village_city': village_city,
-            'district': district,
-            'state': state
-        })
+        user_data = {
+            "email": email,
+            "password": hashed_password,
+            "role": role,
+            "created_at": datetime.utcnow()
+        }
+        users_collection.insert_one(user_data)
+        del otp_store[email]
 
+        flash("Registration successful!", "success")
         return redirect(url_for('login'))
 
-    return render_template('patient_register.html')
+@app.route('/send-otp', methods=['POST'])
+def send_otp():
+    data = request.json
+    email = data.get('email')
+
+    if not email:
+        return jsonify({"error": "Email is required"}), 400
+    
+    if users_collection.find_one({"email": email}):
+        return jsonify({"error": "User already registered!"}), 400
+
+    otp = str(random.randint(100000, 999999))
+    otp_store[email] = otp
+
+    subject = "Your OTP Code"
+    body = f"Hello,\n\nYour OTP code is: {otp}\n\nUse this code to complete your registration.\n\nThanks,\nRapiACT! Team"
+    
+    try:
+        msg = Message(subject=subject, recipients=[email], body=body)
+        mail.send(msg)
+        return jsonify({"message": "OTP sent successfully!"})
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+@app.route('/verify-otp', methods=['POST'])
+def verify_otp():
+    data = request.json
+    email = data.get('email')
+    otp_entered = data.get('otp')
+    name = data.get('name')
+    password = data.get('password')
+    role = data.get('role')
+
+    if not email or not otp_entered:
+        return jsonify({"error": "Email and OTP are required"}), 400
+
+    if users_collection.find_one({"email": email}):
+        return jsonify({"error": "User already registered!"}), 400  
+
+    if email in otp_store and otp_store[email] == otp_entered:
+        hashed_password = generate_password_hash(password)
+        session.permanent = True  # Ensure session persists
+        session["pending_user"] = {
+            "name": name,
+            "email": email,
+            "password": hashed_password,
+            "role": role
+        }
+        del otp_store[email]  # Remove OTP after successful verification
+
+        return jsonify({"message": "OTP verified successfully!", "redirect_url": url_for('register')})
+
+    return jsonify({"error": "Invalid OTP. Please try again!"}), 400
+
+
+@app.route('/patient_register', methods=['GET', 'POST'])
+def patient_register():
+    if request.method == 'GET':
+        return render_template('patient_register.html')
+
+    elif request.method == 'POST':
+        if "pending_user" not in session:
+            return jsonify({"error": "No user session found. Please register again."}), 400
+
+        data = request.form
+        phone = data.get("phone")
+        age = data.get("age")
+        gender = data.get("gender")
+        address = data.get("address")
+
+        if not (phone and age and gender and address):
+            return jsonify({"error": "All fields are required"}), 400
+
+        # Get pending user details from session
+        user_data = session["pending_user"]
+
+        # Handle photo upload
+        if 'photo' not in request.files:
+            return jsonify({"error": "Photo is required"}), 400
+
+        photo = request.files['photo']
+        if photo.filename == '':
+            return jsonify({"error": "Invalid photo file"}), 400
+
+        # Store photo in GridFS
+        photo_id = fs.put(photo, filename=photo.filename)
+
+        # Complete user data
+        user_data.update({
+            "role": "patient",
+            "phone": phone,
+            "age": age,
+            "gender": gender,
+            "address": address,
+            "photo": photo_id,  # Store reference to photo in MongoDB
+            "created_at": datetime.utcnow()
+        })
+
+        # Save user in MongoDB
+        users_collection.insert_one(user_data)
+
+        # Remove session data
+        session.pop("pending_user", None)
+
+        return jsonify({"message": "Registration successful!", "redirect_url": url_for('login')})
+
+@app.route('/doctor_register', methods=['GET', 'POST'])
+def doctor_register():
+    if request.method == 'GET':
+        return render_template('doctor_register.html')
+
+    elif request.method == 'POST':
+        if "pending_user" not in session:
+            return jsonify({"error": "No user session found. Please register again."}), 400
+
+        data = request.form
+        phone = data.get("phone")
+        age = data.get("age")
+        gender = data.get("gender")
+        address = data.get("address")
+        specialization = data.get("specialization")
+        years_experience = data.get("experience")
+        professional_experience = data.get("pro_experience", "")
+
+        if not (phone and age and gender and specialization and years_experience and address):
+            return jsonify({"error": "All fields are required."}), 400
+
+        if 'photo' not in request.files:
+            return jsonify({"error": "Photo is required"}), 400
+
+        photo = request.files['photo']
+        if photo.filename == '':
+            return jsonify({"error": "Invalid photo file"}), 400
+
+        photo_id = fs.put(photo, filename=photo.filename)
+
+        # Retrieve email from session
+        pending_user = session["pending_user"]
+        name=pending_user.get("name")
+        email = pending_user.get("email")
+        password = pending_user.get("password")
+
+        if not email:
+            return jsonify({"error": "Email is missing. Please register again."}), 400
+
+        user_data = {
+            "email": email,  # Ensure email is saved
+            "password": password,  # Save hashed password
+            "name":name,
+            "role": "doctor",
+            "phone": phone,
+            "age": age,
+            "gender": gender,
+            "address": address,
+            "specialization": specialization,
+            "years_experience": years_experience,
+            "professional_experience": professional_experience,
+            "photo": photo_id,
+            "created_at": datetime.utcnow(),
+            "account_status": "pending"
+        }
+
+        users_collection.insert_one(user_data)
+
+        # Remove session data after registration
+        session.pop("pending_user", None)
+
+        return jsonify({"message": "Registration successful! Await admin approval.", "redirect_url": url_for('login')})
+
+
+# ---- Login ----
+@app.route('/login', methods=['GET', 'POST'])
+def login():
+    if request.method == 'GET':
+        return render_template('login.html')
+
+    elif request.method == 'POST':
+        data = request.form
+        email = data.get("email")
+        password = data.get("password")
+
+        if not (email and password):
+            flash("Email and password are required", "danger")
+            return redirect(url_for('login'))
+
+        user = users_collection.find_one({"email": email})
+
+        if not user or not check_password_hash(user["password"], password):
+            flash("Invalid credentials", "danger")
+            return redirect(url_for('login'))
+
+        if user.get("role") == "doctor" and user.get("account_status") != "approved":
+            flash("Your account is pending approval from the administrator.", "warning")
+            return redirect(url_for('login'))
+
+        session["user_id"] = str(user["_id"])
+        session["role"] = user.get("role")
+
+        flash("You have successfully logged in!", "success")
+        return redirect(url_for('dashboard'))
+
+# ---- Admin Dashboard ----
+@app.route('/admin_dashboard')
+def admin_dashboard():
+    if 'user_id' not in session or session.get('role') != 'admin':
+        flash("Unauthorized access.", "danger")
+        return redirect(url_for('login'))
+
+    total_users = users_collection.count_documents({})
+    total_doctors = users_collection.count_documents({'role': 'doctor'})
+    total_patients = users_collection.count_documents({'role': 'patient'})
+
+    unapproved_doctors = list(users_collection.find({'role': 'doctor', 'account_status': 'pending'},
+                                                     {'_id': 1, 'name': 1, 'email': 1}))
+
+    return render_template('admin_dashboard.html',
+                           total_users=total_users,
+                           total_doctors=total_doctors,
+                           total_patients=total_patients,
+                           unapproved_doctors=unapproved_doctors)
+
+# ---- Approve Doctor ----
+@app.route('/approve_doctor/<doctor_id>', methods=['POST'])
+def approve_doctor(doctor_id):
+    if 'user_id' not in session or session.get('role') != 'admin':
+        return jsonify({"error": "Unauthorized access"}), 403
+
+    doctor = users_collection.find_one({'_id': ObjectId(doctor_id)}, {'email': 1, 'name':1})
+
+    if not doctor:
+        return jsonify({"error": "Doctor not found"}), 404
+
+    if 'email' not in doctor:
+        return jsonify({"error": "Doctor email missing in database"}), 400
+
+    # Approve the doctor
+    users_collection.update_one({'_id': ObjectId(doctor_id)}, {'$set': {'account_status': 'approved'}})
+
+    subject = "Doctor Registration Approved"
+    recipients = [doctor['email']]
+    body = f"Hello {doctor.get('name', 'Doctor')},\n\nYour registration has been approved. You can now log in.\n\nThanks,\nRapiACT! Team"
+
+    send_email(subject, recipients, body)
+
+    # Add email-sending functionality here if required
+
+    return jsonify({"message": "Doctor approved successfully"})
+
 
 @app.route('/user_photo/<user_id>')
 def user_photo(user_id):
@@ -378,96 +622,6 @@ def user_photo(user_id):
         return send_file(io.BytesIO(image_data), mimetype="image/jpeg")
     
     return send_file("static/images/logo.jpg", mimetype="image/png")
-
-
-
-@app.route('/register_doctor', methods=['GET', 'POST'])
-def register_doctor():
-    if request.method == 'POST':
-        first_name = request.form['first_name']
-        last_name = request.form['last_name']
-        email = request.form['email']
-        password = request.form['password']
-        confirm_password = request.form['confirm_password']
-        photo = request.files['photo']
-
-        # Validate passwords
-        if password != confirm_password:
-            flash("Passwords do not match. Please try again.", "danger")
-            return redirect(url_for('register_doctor'))
-
-        # Validate photo upload and convert to base64
-        photo_data = None
-        if photo and allowed_file(photo.filename):
-            photo_data = base64.b64encode(photo.read()).decode('utf-8')
-        else:
-            flash("Invalid file type. Only PDF, JPG, JPEG, or PNG files are allowed.", "danger")
-            return redirect(url_for('register_doctor'))
-
-        # Check if the email is already registered
-        if mongo.db.users.find_one({'email': email}):
-            flash("Email already registered. Please use a different email.", "danger")
-            return redirect(url_for('register_doctor'))
-
-        # Hash the password
-        hashed_password = generate_password_hash(password)
-
-        # Doctor-specific fields
-        doctor_data = {
-            'first_name': first_name,
-            'last_name': last_name,
-            'email': email,
-            'password': hashed_password,
-            'role': 'doctor',
-            'photo': photo_data,  # Store as base64 string
-            'age': request.form['age'],
-            'gender': request.form['gender'],
-            'phone': request.form['phone'],
-            'experience_years': request.form['experience_years'],
-            'specialization': request.form['specialization'],
-            'brief_experience': request.form['brief_experience'],
-            'address': {
-                'house_no': request.form['house_no'],
-                'city': request.form['city'],
-                'state': request.form['state'],
-                'country': request.form['country'],
-                'pincode': request.form['pincode'],
-            }
-        }
-
-        # Insert the doctor data into the database
-        try:
-            mongo.db["users"].insert_one(doctor_data)
-            flash("Registration successful! Please log in.", "success")
-            return redirect(url_for('login'))
-        except Exception as e:
-            flash(f"Database error: {str(e)}", "danger")
-            return redirect(url_for('register_doctor'))
-
-    return render_template('doctor_register.html')
-
-
-# Login route
-@app.route('/login', methods=['GET', 'POST'])
-def login():
-    if request.method == 'POST':
-        email = request.form['email']
-        password = request.form['password']
-        role = request.form['role']
-
-        # Find the user by email and role
-        user = mongo.db.users.find_one({'email': email, 'role': role})
-
-        if user and check_password_hash(user['password'], password):
-            session['user_id'] = str(user['_id'])
-            session['role'] = user['role']
-            flash("Login successful!", "success")
-            return redirect(url_for('dashboard') + "?login_success=1")  # ✅ Redirect with success flag
-        else:
-            flash("Invalid credentials. Please try again.", "danger")
-            return redirect(url_for('login') + "?login_failed=1")  # ❌ Redirect with error flag
-
-    return render_template('login.html')
 
 
 # Dashboard route
@@ -484,32 +638,6 @@ def dashboard():
     flash("Please log in first.", "danger")
     return redirect(url_for('login'))
 # admin dashboard
-
-@app.route('/admin_dashboard')
-def admin_dashboard():
-    if 'user_id' not in session or session.get('role') != 'admin':
-        flash("Unauthorized access.", "danger")
-        return redirect(url_for('login'))
-
-    # Fetch user counts and details
-    total_users = mongo.db.users.count_documents({})
-    total_doctors = mongo.db.users.count_documents({'role': 'doctor'})
-    total_patients = mongo.db.users.count_documents({'role': 'patient'})
-    total_appointments = mongo.db.appointments.count_documents({})
-
-    # Fetch patient list for scheduling meetings
-    patients = list(mongo.db.users.find({'role': 'patient'}, {'_id': 1, 'first_name': 1, 'last_name': 1}))
-    
-    # Fetch upcoming meetings
-    meetings = list(mongo.db.meetings.find({}, {'patient_name': 1, 'meeting_datetime': 1, 'meeting_link': 1}))
-    
-    return render_template('admin_dashboard.html',
-                           total_users=total_users,
-                           total_doctors=total_doctors,
-                           total_patients=total_patients,
-                           total_appointments=total_appointments,
-                           patients=patients,
-                           meetings=meetings)
 
 
 @app.route('/users')
@@ -535,7 +663,7 @@ def appointments():
     for appointment in appointments:
         doctor = db.doctors.find_one({"_id": appointment["doctor_id"]})
         if doctor:
-            appointment["doctor_name"] = doctor.get("first_name", "Unknown")
+            appointment["doctor_name"] = doctor.get("name", "Unknown")
             appointment["doctor_specialization"] = doctor.get("specialization", "Unknown")
         else:
             appointment["doctor_name"] = "Unknown"
@@ -554,7 +682,7 @@ def patient_dashboard(appointment_type=None):
     patient_id = ObjectId(session['user_id'])
 
     # Fetch patient details
-    patient = mongo.db.users.find_one({'_id': patient_id}, {'first_name': 1, 'last_name': 1})
+    patient = mongo.db.users.find_one({'_id': patient_id}, {'name': 1})
     if not patient:
         flash("Patient record not found.", "danger")
         return redirect(url_for('login'))
@@ -565,9 +693,9 @@ def patient_dashboard(appointment_type=None):
 
     # Fetch doctor details for each appointment
     for appointment in appointments:
-        doctor = mongo.db.users.find_one({"_id": appointment["doctor_id"]}, {"first_name": 1,"last_name":1, "specialization": 1})
+        doctor = mongo.db.users.find_one({"_id": appointment["doctor_id"]}, {"name":1, "specialization": 1})
         if doctor:
-            appointment["doctor_name"] = doctor.get("first_name","last_name")
+            appointment["doctor_name"] = doctor.get("name")
             appointment["specialization"] = doctor.get("specialization")
         else:
             appointment["doctor_name"] = "Unknown"
@@ -603,8 +731,7 @@ def patient_dashboard(appointment_type=None):
 
     return render_template(
         'patient_dashboard.html',
-        first_name=patient.get('first_name', ''),
-        last_name=patient.get('last_name', ''),
+        last_name=patient.get('name', ''),
         upcoming_appointments=filtered_appointments[0],
         ongoing_appointments=filtered_appointments[1],
         completed_appointments=filtered_appointments[2],
@@ -616,7 +743,7 @@ def patient_dashboard(appointment_type=None):
 def get_doctor_info():
     if 'user_id' in session and session['role'] == 'doctor':
         doctor_id = ObjectId(session['user_id'])
-        doctor = mongo.db.users.find_one({'_id': doctor_id}, {'first_name': 1, 'last_name': 1})
+        doctor = mongo.db.users.find_one({'_id': doctor_id}, {'name': 1})
         return doctor
     return None
 
@@ -780,7 +907,7 @@ def create_appointment():
                 file_id = fs.put(report, filename=secure_filename(report.filename), content_type=report.content_type)
 
             doctor = mongo.db.users.find_one({'_id': ObjectId(doctor_id)})
-            doctor_name = f"{doctor['first_name']} {doctor['last_name']}"
+            doctor_name = f"{doctor['name']}"
             doctor_email = doctor['email']
 
             # Insert appointment into DB
@@ -827,8 +954,7 @@ def create_appointment():
 @app.route('/add_user', methods=['GET', 'POST'])
 def add_user():
     if request.method == 'POST':
-        first_name = request.form.get('first_name')
-        last_name = request.form.get('last_name')
+        name = request.form.get('name')
         email = request.form.get('email')
         password = request.form.get('password')
         confirm_password = request.form.get('confirm_password')
@@ -850,8 +976,7 @@ def add_user():
         hashed_password = generate_password_hash(password)
         # Common user data
         user_data = {
-            "first_name": first_name,
-            "last_name": last_name,
+            "name": name,
             "email": email,
             "password": hashed_password,
             "role": role,
@@ -887,7 +1012,7 @@ def add_user():
         # Insert data into MongoDB
         users_collection.insert_one(user_data)
 
-        flash(f"User {first_name} {last_name} registered successfully!", "success")
+        flash(f"User {name} registered successfully!", "success")
         return redirect(url_for('add_user'))
 
     return render_template('add_user.html')
@@ -910,8 +1035,7 @@ def edit_user(user_id):
     if request.method == 'POST':
         # Extracting updated data from the form
         updated_data = {
-            'first_name': request.form['first_name'],
-            'last_name': request.form['last_name'],
+            'name': request.form['name'],
             'email': request.form['email'],
             'role': request.form['role'],
         }
@@ -942,7 +1066,7 @@ def edit_user(user_id):
 def get_doctors():
     doctors = list(users_collection.find(
         {"role": "doctor"},  # Fetch only users with role "doctor"
-        {"_id": 0, "first_name": 1, "last_name": 1, "specialization": 1, "photo": 1, "experience_years":1}
+        {"_id": 0,"name": 1, "specialization": 1, "photo": 1, "experience_years":1}
     ))
     return jsonify(doctors)
 
