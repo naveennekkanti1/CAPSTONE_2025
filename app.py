@@ -1,8 +1,7 @@
 from flask import Flask, render_template, request, redirect, url_for, session, flash, url_for,send_file,jsonify,Response
 from flask_pymongo import PyMongo
 from werkzeug.security import generate_password_hash, check_password_hash
-
-from bson import ObjectId
+from bson import ObjectId,errors
 from werkzeug.utils import secure_filename
 from datetime import datetime,timedelta
 from pymongo import MongoClient,DESCENDING
@@ -615,13 +614,22 @@ def approve_doctor(doctor_id):
 
 @app.route('/user_photo/<user_id>')
 def user_photo(user_id):
-    user = db.users.find_one({"_id": ObjectId(user_id)})
+    try:
+        # Ensure user_id is a valid ObjectId
+        user_id = ObjectId(user_id)
+    except errors.InvalidId:
+        return send_file("static/images/logo.jpg", mimetype="image/png")  # Return default image if invalid ID
+
+    user = db.users.find_one({"_id": user_id})
     
     if user and "photo" in user:
-        image_data = base64.b64decode(user["photo"])  # Convert Base64 string to bytes
-        return send_file(io.BytesIO(image_data), mimetype="image/jpeg")
+        try:
+            image = fs.get(ObjectId(user["photo"]))  # Fetch image from GridFS
+            return send_file(io.BytesIO(image.read()), mimetype="image/jpeg")
+        except Exception as e:
+            print(f"Error fetching image: {e}")
     
-    return send_file("static/images/logo.jpg", mimetype="image/png")
+    return send_file("static/images/logo.jpg", mimetype="image/png")  # Default image if error
 
 
 # Dashboard route
@@ -731,7 +739,7 @@ def patient_dashboard(appointment_type=None):
 
     return render_template(
         'patient_dashboard.html',
-        last_name=patient.get('name', ''),
+        name=patient.get('name', ''),
         upcoming_appointments=filtered_appointments[0],
         ongoing_appointments=filtered_appointments[1],
         completed_appointments=filtered_appointments[2],
@@ -1062,13 +1070,13 @@ def edit_user(user_id):
     return render_template('edit_user.html', user=user)
 
 
-@app.route("/get_doctors")
+from bson.json_util import dumps
+
+@app.route('/get_doctors', methods=['GET'])
 def get_doctors():
-    doctors = list(users_collection.find(
-        {"role": "doctor"},  # Fetch only users with role "doctor"
-        {"_id": 0,"name": 1, "specialization": 1, "photo": 1, "experience_years":1}
-    ))
-    return jsonify(doctors)
+    doctors = list(mongo.db.users.find({"role": "doctor"}))
+    return dumps(doctors), 200, {'Content-Type': 'application/json'}
+
 
 @app.route("/all_doctors")
 def all_doctors():

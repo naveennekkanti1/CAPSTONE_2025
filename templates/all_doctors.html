@@ -103,7 +103,6 @@
             flex-direction: column;
             align-items: center;
         }
-
         #contact form input, #contact form textarea {
             width: 100%;
             padding: 15px;
@@ -112,7 +111,6 @@
             border: none;
             font-size: 1rem;
         }
-
         #contact form button {
             background-color: #00a6ff;
             color: white;
@@ -122,11 +120,9 @@
             font-size: 16px;
             transition: background-color 0.3s ease;
         }
-
         #contact form button:hover {
             background-color: #0080c4;
         }
-
         /* Footer */
         footer {
             background-color: #014340;
@@ -146,10 +142,10 @@
             <a href="/services">Services</a>
             <a href="#contact">Contact</a>
             <a href="/login">Login</a>
-            <a href="/register_patient">Patient Registration</a>
-            <a href="/register_doctor">Doctor Registration</a>
+            <a href="/register">Registration</a>
         </div>
     </div>
+
     <section id="all-doctors">
         <h2>Our Expert Doctors</h2>
         <div class="filter-container">
@@ -167,66 +163,86 @@
         </div>
         <div class="doctor-grid"></div> 
     </section>
-    <!-- Contact Section -->
-    <section id="contact">
-        <h2>Contact Us</h2>
-        <form>
-            <input type="text" placeholder="Name" required>
-            <input type="email" placeholder="Email" required>
-            <textarea placeholder="Message"></textarea>
-            <button type="submit">Send</button>
-        </form>
-    </section>
 
     <!-- Footer -->
     <footer>
         <p>© 2025 RapiACT. All Rights Reserved.</p>
     </footer>
+
+    <!-- JavaScript -->
     <script>
         document.addEventListener("DOMContentLoaded", function () {
             fetch("/get_doctors")
                 .then(response => response.json())
                 .then(doctors => {
                     const doctorGrid = document.querySelector(".doctor-grid");
-                    const specializationFilter = document.getElementById("filter-specialization");
-                    const specializations = [...new Set(doctors.map(doc => doc.specialization))];
-                    specializations.forEach(spec => {
+                    const specializationDropdown = document.getElementById("filter-specialization");
+    
+                    // Extract unique specializations
+                    const specializations = [...new Set(doctors.map(doctor => doctor.specialization).filter(s => s))];
+    
+                    // Populate specialization dropdown
+                    specializations.forEach(specialization => {
                         const option = document.createElement("option");
-                        option.value = spec;
-                        option.textContent = spec;
-                        specializationFilter.appendChild(option);
+                        option.value = specialization;
+                        option.textContent = specialization;
+                        specializationDropdown.appendChild(option);
                     });
+    
                     function displayDoctors(filteredDoctors) {
                         doctorGrid.innerHTML = "";
+                        if (filteredDoctors.length === 0) {
+                            doctorGrid.innerHTML = "<p>No doctors found.</p>";
+                            return;
+                        }
+    
                         filteredDoctors.forEach(doctor => {
+                            let doctorId = "";
+                            if (doctor._id) {
+                                doctorId = (typeof doctor._id === "object" && "$oid" in doctor._id) 
+                                    ? doctor._id.$oid 
+                                    : doctor._id;
+                            }
+    
+                            const photoSrc = doctorId 
+                                ? `/user_photo/${doctorId}`
+                                : 'static/images/logo.jpg';
+    
                             const doctorCard = document.createElement("div");
                             doctorCard.classList.add("doctor-card");
                             doctorCard.innerHTML = `
-                                <img src="${doctor.photo ? `data:image/png;base64,${doctor.photo}` : 'static/images/default_doctor.png'}" alt="Doctor">
-                                <h3>${doctor.first_name} ${doctor.last_name}</h3>
+                                <img src="${photoSrc}" alt="Doctor Image">
+                                <p><strong>Name:</strong> ${doctor.name}</p>
                                 <p><strong>Specialization:</strong> ${doctor.specialization}</p>
-                                <p><strong>Experience:</strong> ${doctor.experience_years || "N/A"} years</p>
+                                <p><strong>Experience:</strong> ${doctor.years_experience || "N/A"} years</p>
                             `;
                             doctorGrid.appendChild(doctorCard);
                         });
                     }
+    
+                    // Display all doctors initially
                     displayDoctors(doctors);
+    
+                    // Filter Function
                     window.applyFilters = function () {
                         const nameFilter = document.getElementById("search-name").value.toLowerCase();
-                        const specializationFilterValue = specializationFilter.value;
-                        const experienceFilterValue = document.getElementById("filter-experience").value;
-                        const filteredDoctors = doctors.filter(doc => {
+                        const specializationFilter = specializationDropdown.value;
+                        const experienceFilter = document.getElementById("filter-experience").value;
+    
+                        const filteredDoctors = doctors.filter(doctor => {
                             return (
-                                (!nameFilter || (`${doc.first_name} ${doc.last_name}`).toLowerCase().includes(nameFilter)) &&
-                                (!specializationFilterValue || doc.specialization === specializationFilterValue) &&
-                                (!experienceFilterValue || (doc.experience_years && doc.experience_years >= parseInt(experienceFilterValue)))
+                                (!nameFilter || doctor.name.toLowerCase().includes(nameFilter)) &&
+                                (!specializationFilter || doctor.specialization === specializationFilter) &&
+                                (!experienceFilter || (doctor.years_experience && doctor.years_experience >= parseInt(experienceFilter)))
                             );
                         });
+    
                         displayDoctors(filteredDoctors);
                     };
                 })
                 .catch(error => console.error("Error fetching doctors:", error));
         });
     </script>
+    
 </body>
 </html>
