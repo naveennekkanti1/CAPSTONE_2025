@@ -25,7 +25,7 @@ app.config['MONGO_URI'] = app.config['MONGO_URI'] = "mongodb+srv://durganaveen:n
 client = MongoClient(app.config['MONGO_URI'])
 db = client['RAPACT']
 users_collection = db['users']
-appointments = db['appointments']
+appointments_collection = db['appointments']
 fs = gridfs.GridFS(db)
 SCOPES = ["https://www.googleapis.com/auth/calendar"]
 
@@ -574,6 +574,7 @@ def admin_dashboard():
     total_users = users_collection.count_documents({})
     total_doctors = users_collection.count_documents({'role': 'doctor'})
     total_patients = users_collection.count_documents({'role': 'patient'})
+    total_appointments=appointments_collection.count_documents({})
 
     unapproved_doctors = list(users_collection.find({'role': 'doctor', 'account_status': 'pending'},
                                                      {'_id': 1, 'name': 1, 'email': 1}))
@@ -582,6 +583,7 @@ def admin_dashboard():
                            total_users=total_users,
                            total_doctors=total_doctors,
                            total_patients=total_patients,
+                           total_appointments=total_appointments,
                            unapproved_doctors=unapproved_doctors)
 
 # ---- Approve Doctor ----
@@ -1081,6 +1083,11 @@ def get_doctors():
 @app.route("/all_doctors")
 def all_doctors():
     return render_template("all_doctors.html")
+
+@app.route("/get_visitors")
+def get_visitors():
+    visitor_data = mongo.db.visitors.find_one({})
+    return jsonify({"count": visitor_data["count"] if visitor_data else 0})
 
 # Logout route
 @app.route('/logout')
