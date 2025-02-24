@@ -26,6 +26,8 @@ client = MongoClient(app.config['MONGO_URI'])
 db = client['RAPACT']
 users_collection = db['users']
 appointments_collection = db['appointments']
+meetings_collection=db['meetings']
+enquiry_collection=db['enquiry_details']
 fs = gridfs.GridFS(db)
 SCOPES = ["https://www.googleapis.com/auth/calendar"]
 
@@ -575,15 +577,19 @@ def admin_dashboard():
     total_doctors = users_collection.count_documents({'role': 'doctor'})
     total_patients = users_collection.count_documents({'role': 'patient'})
     total_appointments=appointments_collection.count_documents({})
+    total_meetings=meetings_collection.count_documents({})
+    total_enquires=enquiry_collection.count_documents({})
 
     unapproved_doctors = list(users_collection.find({'role': 'doctor', 'account_status': 'pending'},
-                                                     {'_id': 1, 'name': 1, 'email': 1}))
+                                                     {'_id': 1, 'name': 1, 'email': 1,'specialization':1,'years_experience':1,'professional_experience':1,'age':1,'gender':1}))
 
     return render_template('admin_dashboard.html',
                            total_users=total_users,
                            total_doctors=total_doctors,
                            total_patients=total_patients,
                            total_appointments=total_appointments,
+                           total_meetings=total_meetings,
+                           total_enquires=total_enquires,
                            unapproved_doctors=unapproved_doctors)
 
 # ---- Approve Doctor ----
@@ -605,13 +611,38 @@ def approve_doctor(doctor_id):
 
     subject = "Doctor Registration Approved"
     recipients = [doctor['email']]
-    body = f"Hello {doctor.get('name', 'Doctor')},\n\nYour registration has been approved. You can now log in.\n\nThanks,\nRapiACT! Team"
+    body = f"Hello {doctor.get('name', 'Doctor')},\n\nYour registration has been approved by the RapiACT Team!❤️. You can now log in.\n\nThanks,\nRapiACT! Team"
 
     send_email(subject, recipients, body)
 
     # Add email-sending functionality here if required
 
     return jsonify({"message": "Doctor approved successfully"})
+
+
+@app.route('/reject_doctor/<doctor_id>', methods=['POST'])
+def reject_doctor(doctor_id):
+    if 'user_id' not in session or session.get('role') != 'admin':
+        return jsonify({"error": "Unauthorized access"}), 403
+
+    doctor = users_collection.find_one({'_id': ObjectId(doctor_id)}, {'email': 1, 'name': 1})
+
+    if not doctor:
+        return jsonify({"error": "Doctor not found"}), 404
+
+    if 'email' not in doctor:
+        return jsonify({"error": "Doctor email missing in database"}), 400
+
+    # Delete the doctor from the database
+    users_collection.delete_one({'_id': ObjectId(doctor_id)})
+
+    subject = "Doctor Registration Rejected"
+    recipients = [doctor['email']]
+    body = f"Hello {doctor.get('name', 'Doctor')},\n\nWe regret to inform you that your registration with RapiACT has been rejected.\n\nFor any queries, feel free to contact us.\n\nThanks,\nRapiACT! Team"
+
+    send_email(subject, recipients, body)
+
+    return jsonify({"message": "Doctor rejected and removed successfully"})
 
 
 @app.route('/user_photo/<user_id>')
@@ -1086,8 +1117,17 @@ def all_doctors():
 
 @app.route("/get_visitors")
 def get_visitors():
+    # Ensure the visitors collection exists
     visitor_data = mongo.db.visitors.find_one({})
-    return jsonify({"count": visitor_data["count"] if visitor_data else 0})
+    
+    if not visitor_data:
+        mongo.db.visitors.insert_one({"count": 1})  # Initialize if not present
+        count = 1
+    else:
+        mongo.db.visitors.update_one({}, {"$inc": {"count": 1}})
+        count = visitor_data["count"] + 1  # Predict the updated count
+    
+    return jsonify({"count": count})
 
 # Logout route
 @app.route('/logout')

@@ -253,18 +253,95 @@
             vertical-align: middle;
         }
 
-        .btn-success {
-            background: linear-gradient(90deg, #28a745, #20c997);
-            border: none;
-            padding: 8px 20px;
-            border-radius: 5px;
-            transition: all var(--transition-speed) ease;
-        }
+        .btn-group {
+    display: flex;
+    gap: 10px;
+}
 
-        .btn-success:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(40, 167, 69, 0.3);
-        }
+.btn-success {
+    background: linear-gradient(90deg, #28a745, #20c997);
+    border: none;
+    padding: 8px 20px;
+    border-radius: 5px;
+    transition: all 0.3s ease;
+    cursor: pointer;
+    display: inline-block;
+}
+
+.btn-success:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(40, 167, 69, 0.3);
+}
+
+.btn-danger {
+    background: linear-gradient(90deg, #dc3545, #ff6b6b);
+    border: none;
+    padding: 8px 20px;
+    border-radius: 5px;
+    transition: all 0.3s ease;
+    cursor: pointer;
+    display: inline-block;
+}
+
+.btn-danger:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(220, 53, 69, 0.3);
+}
+
+/* Hide checkboxes */
+.popup-checkbox {
+    display: none;
+}
+
+/* Popup Styling */
+.popup {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s ease;
+}
+
+/* Show popup when checkbox is checked */
+.popup-checkbox:checked + .popup {
+    opacity: 1;
+    pointer-events: auto;
+}
+
+/* Popup content box */
+.popup-content {
+    background: white;
+    padding: 20px;
+    border-radius: 10px;
+    text-align: center;
+    width: 300px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+/* Button inside popup */
+.btn-primary {
+    display: inline-block;
+    background: linear-gradient(90deg, #007bff, #0056b3);
+    border: none;
+    padding: 8px 20px;
+    color: white;
+    border-radius: 5px;
+    cursor: pointer;
+    text-decoration: none;
+}
+
+.btn-primary:hover {
+    background: linear-gradient(90deg, #0056b3, #007bff);
+}
+
+
 
         .menu-toggle {
             display: none;
@@ -307,6 +384,8 @@
                 font-size: 2rem;
             }
         }
+
+
     </style>
 </head>
 <body>
@@ -357,8 +436,26 @@
                         <h5>Total Appointments</h5>
                         <p class="counter">{{ total_appointments }}</p>
                     </div>
+                    <div class="card">
+                        <i class="fa-solid fa-handshake"></i>
+                        <h5>Total Meetings</h5>
+                        <p class="counter">{{ total_meetings }}</p>
+                    </div>
+                    <div class="card">
+                        <i class="fa-solid fa-address-card"></i>
+                        <h5>Contact Queries</h5>
+                        <p class="counter">{{ total_enquires }}</p>
+                    </div>
                 </div>
             </div>
+
+            <div id="statusPopup" class="popup">
+                <div class="popup-content">
+                    <p id="popupMessage">Action completed successfully!</p>
+                    <button onclick="closePopup()" class="btn btn-primary">OK</button>
+                </div>
+            </div>
+            
 
             <div class="section">
                 <h3><i class="fas fa-user-check mr-2"></i> Pending Doctor Approvals</h3>
@@ -367,6 +464,10 @@
                         <tr>
                             <th>Name</th>
                             <th>Email</th>
+                            <th>Gender</th>
+                            <th>Experience Years</th>
+                            <th>Age</th>
+                            <th>Experience</th>
                             <th>Action</th>
                         </tr>
                     </thead>
@@ -375,17 +476,38 @@
                         <tr>
                             <td>{{ doctor.name }}</td>
                             <td>{{ doctor.email }}</td>
+                            <td>{{ doctor.gender }}</td>
+                            <td>{{ doctor.years_experience }}</td>
+                            <td>{{ doctor.age }}</td>
+                            <td>{{ doctor.professional_experience }}</td>
                             <td>
-                                <form action="{{ url_for('approve_doctor', doctor_id=doctor._id) }}" method="post">
-                                    <button type="submit" class="btn btn-success">
-                                        <i class="fas fa-check mr-1"></i> Approve
-                                    </button>
-                                </form>
+                                <div class="btn-group">
+                                    <form action="{{ url_for('approve_doctor', doctor_id=doctor._id) }}" method="post" onsubmit="showPopup('Doctor approved successfully!'); return false;">
+                                        <button type="submit" class="btn btn-success">
+                                            <i class="fas fa-check mr-1"></i> Approve
+                                        </button>
+                                    </form>
+                                    
+                                    <form action="{{ url_for('reject_doctor', doctor_id=doctor._id) }}" method="post" onsubmit="showPopup('Doctor rejected successfully!'); return false;">
+                                        <button type="submit" class="btn btn-danger">
+                                            <i class="fas fa-times mr-1"></i> Reject
+                                        </button>
+                                    </form>
+                                </div>
                             </td>
                         </tr>
                         {% endfor %}
                     </tbody>
                 </table>
+            </div>
+            
+            <!-- Popup Message -->
+            <input type="checkbox" id="popupToggle" class="popup-checkbox">
+            <div class="popup">
+                <div class="popup-content">
+                    <p id="popupMessage">The account status has been updated!</p>
+                    <label for="popupToggle" class="btn-primary">OK</label>
+                </div>
             </div>
         </div>
     </div>
@@ -430,6 +552,7 @@
                 sidebar.classList.remove('active');
             }
         });
+
     </script>
 </body>
 </html>
