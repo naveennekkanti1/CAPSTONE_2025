@@ -306,6 +306,10 @@
                                 <p><strong>Doctor ID:</strong> {{ appointment.doctor_id }}</p>
                                 <p><strong>Date & Time:</strong> {{ appointment.appointment_datetime }}</p>
                                 <p><strong>Cause for Visiting:</strong> {{ appointment.cause }}</p>
+                                <p><strong>Feedback➡️:</strong>{% if appointment.feedback %}{{appointment.feedback}}
+                                {% else %}
+                                    <span>No FeedBack Avaliable That You are safe👌👌</span>
+                                {% endif %}</p>
                                 <p><strong>Report:</strong> {% if appointment.report_id %}
                                     <a href="{{ url_for('get_report', file_id=appointment.report_id) }}" target="_blank" class="btn btn-primary btn-sm">View Report</a>
                                 {% else %}

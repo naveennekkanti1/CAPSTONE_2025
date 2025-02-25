@@ -7,214 +7,641 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <style>
-        /* Previous styles remain the same until .user-card */
-        
-        .search-filter-container {
+        :root {
+            --primary-dark: #1a237e;
+            --primary-light: #5c6bc0;
+            --accent-color: #7c4dff;
+            --sidebar-width: 250px;
+            --transition-speed: 0.3s;
+        }
+
+        @keyframes gradientBG {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        html, body {
+            height: 100%;
+            margin: 0;
+            background: linear-gradient(-45deg, #1a237e, #3949ab, #5c6bc0, #7c4dff);
+            background-size: 400% 400%;
+            animation: gradientBG 15s ease infinite;
+            font-family: 'Arial', sans-serif;
             display: flex;
-            gap: 20px;
-            justify-content: center;
+            color: white;
+            overflow-x: hidden;
+        }
+
+        .sidebar {
+            width: var(--sidebar-width);
+            background: rgba(26, 35, 126, 0.9);
+            color: white;
+            padding: 20px;
+            position: fixed;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            text-align: center;
+            backdrop-filter: blur(10px);
+            transition: transform var(--transition-speed) ease;
+            z-index: 1000;
+        }
+
+        .logo-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px 0;
+        }
+
+        .logo {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            object-fit: cover;
+            box-shadow: 0 0 20px rgba(255, 255, 255, 0.2);
+            transition: transform var(--transition-speed) ease;
+        }
+
+        .logo:hover {
+            transform: scale(1.1);
+        }
+
+        .sidebar a {
+            display: flex;
+            align-items: center;
+            color: white;
+            text-decoration: none;
+            padding: 12px 20px;
+            font-weight: bold;
+            border-radius: 10px;
+            transition: all var(--transition-speed) ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .sidebar a i {
+            margin-right: 10px;
+            width: 20px;
+            text-align: center;
+        }
+
+        .sidebar a::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+            transition: left 0.5s ease;
+        }
+
+        .sidebar a:hover::before {
+            left: 100%;
+        }
+
+        .sidebar a:hover {
+            background: rgba(255, 255, 255, 0.1);
+            transform: translateX(5px);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        .main-content {
+            margin-left: var(--sidebar-width);
+            padding: 40px;
+            flex-grow: 1;
+            width: calc(100% - var(--sidebar-width));
+            min-height: 100vh;
+        }
+
+        .main-content-wrapper {
+            width: 100%;
+            max-width: 100%;
+            margin: 0 auto;
+            animation: fadeInUp 0.6s ease-out;
+        }
+
+        .dashboard-header {
+            width: 100%;
             margin-bottom: 30px;
+            text-align: center;
+            padding: 20px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            backdrop-filter: blur(10px);
+            animation: fadeInUp 0.6s ease-out;
         }
 
-        .search-filter-container .form-control,
-        .search-filter-container .form-select {
-            max-width: 300px;
+        .dashboard-header h2 {
+            margin: 0;
+            font-size: 2.5rem;
+            font-weight: 600;
+            color: white;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2);
         }
 
-        #userCards {
+        .section {
+            background-color: rgba(255, 255, 255, 0.95);
+            padding: 30px;
+            border-radius: 20px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+            color: #333;
+            margin-bottom: 30px;
+            width: calc(100vw - 40px);
+            max-width: 100%;
+            margin-left: auto;
+            margin-right: auto;
+            animation: fadeInUp 0.6s ease-out;
+        }
+
+        /* Modern Card Design */
+        .users-grid {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
             gap: 20px;
-            width: 100%;
+            margin-top: 30px;
         }
 
         .user-card {
             background: white;
-            border-radius: 15px;
-            padding: 20px;
-            height: 100%;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            border-radius: 12px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
             transition: all 0.3s ease;
+            position: relative;
             display: flex;
             flex-direction: column;
         }
 
         .user-card:hover {
             transform: translateY(-5px);
-            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
         }
 
-        .user-header {
+        .user-card-header {
+            padding: 15px;
             display: flex;
             align-items: center;
-            margin-bottom: 15px;
-            padding-bottom: 15px;
-            border-bottom: 1px solid #eee;
+            border-bottom: 1px solid #f0f0f0;
         }
 
+        /* Updated user photo to be a small icon */
         .user-photo {
-            width: 50px;
-            height: 50px;
+            width: 40px;
+            height: 40px;
             border-radius: 50%;
             margin-right: 15px;
             object-fit: cover;
+            background-color: #e9ecef;
+            border: 2px solid white;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
         }
 
-        .user-name {
-            color: #1a75ff;
-            margin: 0;
-            font-size: 1.1rem;
+        .user-role {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .user-role.admin {
+            background-color: #ff5252;
+            color: white;
+        }
+
+        .user-role.doctor {
+            background-color: #2ecc71;
+            color: white;
+        }
+
+        .user-role.patient {
+            background-color: #3498db;
+            color: white;
         }
 
         .user-info {
-            flex-grow: 1;
+            padding: 20px;
         }
 
-        .user-info p {
-            margin-bottom: 8px;
-            line-height: 1.4;
+        .user-name {
+            font-size: 1.4rem;
+            font-weight: 600;
+            margin-bottom: 5px;
+            color: #333;
         }
 
-        .role-badge {
-            display: inline-block;
-            padding: 4px 8px;
-            border-radius: 12px;
-            font-size: 0.85rem;
+        .user-id {
+            display: block;
+            font-size: 0.8rem;
+            color: #777;
+            margin-bottom: 15px;
+            font-family: monospace;
+        }
+
+        .info-item {
+            margin-bottom: 12px;
+            display: flex;
+        }
+
+        .info-label {
+            font-weight: 600;
+            width: 80px;
+            color: #555;
+        }
+
+        .info-value {
+            color: #333;
+            flex: 1; /* Added to ensure proper spacing */
+        }
+
+        .chart-icon {
+            height: 40px;
+            margin-right: 10px;
+        }
+
+        .filter-container {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+
+        .filter-label {
+            font-weight: 600;
+            margin-right: 5px;
+            color: #333;
+        }
+
+        .filter-btn {
+            padding: 8px 15px;
+            border-radius: 20px;
+            border: none;
             font-weight: 500;
-            margin-left: 10px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            background-color: #f0f0f0;
+            color: #555;
         }
 
-        .role-admin {
-            background-color: #ff4444;
+        .filter-btn:hover, .filter-btn.active {
+            transform: translateY(-2px);
+        }
+
+        .filter-btn.all.active {
+            background-color: #6c757d;
             color: white;
         }
 
-        .role-doctor {
-            background-color: #00C851;
+        .filter-btn.admin.active {
+            background-color: #ff5252;
             color: white;
         }
 
-        .role-patient {
-            background-color: #33b5e5;
+        .filter-btn.doctor.active {
+            background-color: #2ecc71;
             color: white;
+        }
+
+        .filter-btn.patient.active {
+            background-color: #3498db;
+            color: white;
+        }
+
+        .search-container {
+            position: relative;
+            margin-bottom: 20px;
+        }
+
+        .search-icon {
+            position: absolute;
+            top: 50%;
+            left: 15px;
+            transform: translateY(-50%);
+            color: #aaa;
+        }
+
+        #searchInput {
+            padding: 12px 20px 12px 45px;
+            border-radius: 25px;
+            border: 1px solid #ddd;
+            box-shadow: 0 3px 8px rgba(0, 0, 0, 0.05);
+            width: 100%;
+            font-size: 0.95rem;
+            transition: all 0.3s ease;
+        }
+
+        #searchInput:focus {
+            border-color: var(--accent-color);
+            box-shadow: 0 5px 15px rgba(124, 77, 255, 0.2);
+            outline: none;
+        }
+
+        .edit-btn {
+            margin-top: 15px;
+            padding: 8px 15px;
+            border-radius: 5px;
+            background-color: var(--primary-light);
+            color: white;
+            border: none;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: inline-block;
+            text-decoration: none;
+            font-size: 0.9rem;
+        }
+
+        .edit-btn:hover {
+            background-color: var(--primary-dark);
+            transform: translateY(-2px);
+        }
+
+        .menu-toggle {
+            display: none;
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            z-index: 1001;
+            background: rgba(255, 255, 255, 0.2);
+            border: none;
+            padding: 10px;
+            border-radius: 5px;
+            cursor: pointer;
+            backdrop-filter: blur(10px);
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        @media (max-width: 992px) {
+            .users-grid {
+                grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            }
         }
 
         @media (max-width: 768px) {
-            .search-filter-container {
-                flex-direction: column;
-                align-items: center;
+            .menu-toggle {
+                display: block;
             }
 
-            .search-filter-container .form-control,
-            .search-filter-container .form-select {
+            .sidebar {
+                transform: translateX(-100%);
+            }
+
+            .sidebar.active {
+                transform: translateX(0);
+            }
+
+            .main-content {
+                margin-left: 0;
                 width: 100%;
-                max-width: 100%;
+                padding: 20px;
             }
 
-            #userCards {
+            .users-grid {
                 grid-template-columns: 1fr;
+            }
+
+            .dashboard-header h2 {
+                font-size: 2rem;
             }
         }
     </style>
 </head>
 <body>
-    <!-- Sidebar remains the same -->
+    <button class="menu-toggle">
+        <i class="fas fa-bars"></i>
+    </button>
+
     <div class="sidebar">
-        <!-- Sidebar content remains the same -->
+        <div class="logo-container">
+            <img src="static/images/logo.jpg" alt="Logo" class="logo">
+            <h3>RapiACT!</h3>
+        </div>
+        <hr>
+        <a href="/admin_dashboard"><i class="fas fa-home"></i> Dashboard</a>
+        <a href="/add_user"><i class="fas fa-user-plus"></i> Add User</a>
+        <a href="/users"><i class="fas fa-users"></i> Users</a>
+        <a href="/appointments"><i class="fas fa-calendar-check"></i> Appointments</a>
+        <a href="/enquiry_details"><i class="fas fa-question-circle"></i>Contact Queries</a>
+        <a href="/logout"><i class="fas fa-sign-out-alt"></i> Logout</a>
     </div>
 
     <div class="main-content">
         <div class="section">
             <h2 class="text-center mb-4">Users</h2>
-            <div class="search-filter-container">
-                <input type="text" id="searchInput" class="form-control" placeholder="Search users...">
-                <select id="roleFilter" class="form-select">
-                    <option value="">All Roles</option>
-                    <option value="admin">Admin</option>
-                    <option value="doctor">Doctor</option>
-                    <option value="patient">Patient</option>
-                </select>
+            
+            <div class="search-container">
+                <i class="fas fa-search search-icon"></i>
+                <input type="text" id="searchInput" placeholder="Search users by name, email, phone..." class="form-control">
             </div>
-            <div id="userCards">
+            
+            <div class="filter-container">
+                <span class="filter-label">Filter by role:</span>
+                <button class="filter-btn all active" data-role="all">All</button>
+                <button class="filter-btn admin" data-role="admin">Admin</button>
+                <button class="filter-btn doctor" data-role="doctor">Doctor</button>
+                <button class="filter-btn patient" data-role="patient">Patient</button>
+            </div>
+            
+            <div id="usersContainer" class="users-grid">
                 {% if users %}
                     {% for user in users %}
                         <div class="user-card" data-role="{{ user.role }}">
-                            <div class="user-header">
+                            <div class="user-card-header">
                                 <img src="/user_photo/{{ user._id }}" alt="User Photo" class="user-photo">
+                                
                                 <div>
-                                    <h5 class="user-name">
-                                        {{ user.name }}
-                                        <span class="role-badge role-{{ user.role }}">{{ user.role }}</span>
-                                    </h5>
+                                    <h3 class="user-name">{{ user.name }}</h3>
                                 </div>
+                                
+                                <span class="user-role {{ user.role }}">{{ user.role }}</span>
                             </div>
+                            
                             <div class="user-info">
-                                <p><strong>ID:</strong> {{ user._id }}</p>
-                                <p><strong>Email:</strong> {{ user.email }}</p>
-                                <p><strong>Phone:</strong> {{ user.phone or 'N/A' }}</p>
+                                <div class="info-item">
+                                    <span class="info-label">Email:</span>
+                                    <span class="info-value">{{ user.email }}</span>
+                                </div>
+                                
+                                <div class="info-item">
+                                    <span class="info-label">Phone:</span>
+                                    <span class="info-value">{{ user.phone }}</span>
+                                </div>
+                                
+                                <div class="info-item">
+                                    <span class="info-label">Address:</span>
+                                    <span class="info-value">{{ user.address }}</span>
+                                </div>
+                                
+                                {% if user.role == 'doctor' %}
+                                <div class="info-item">
+                                    <span class="info-label">Specialty:</span>
+                                    <span class="info-value">{{ user.specialization }}</span>
+                                </div>
+                                
+                                <div class="info-item">
+                                    <span class="info-label">Experience: </span>
+                                    <span class="info-value">{{ user.years_experience }} years</span>
+                                </div>
+                                {% endif %}
+                                
+                                <div class="action-buttons">
+                                    <a href="{{ url_for('edit_user', user_id=user._id) }}" class="edit-btn">
+                                        <i class="fas fa-edit"></i> Edit
+                                    </a>
+                                </div>
                             </div>
                         </div>
                     {% endfor %}
                 {% else %}
-                    <div class="text-center">No users found.</div>
+                    <div class="text-center w-100">No users found.</div>
                 {% endif %}
             </div>
         </div>
     </div>
 
     <script>
-        function filterUsers() {
-            const searchTerm = document.getElementById('searchInput').value.toLowerCase();
-            const roleFilter = document.getElementById('roleFilter').value.toLowerCase();
+        document.addEventListener('DOMContentLoaded', () => {
+            // Menu toggle for mobile
+            const menuToggle = document.querySelector('.menu-toggle');
+            const sidebar = document.querySelector('.sidebar');
+            
+            if (menuToggle) {
+                menuToggle.addEventListener('click', () => {
+                    sidebar.classList.toggle('active');
+                });
+            }
+            
+            // Role filtering
+            const filterButtons = document.querySelectorAll('.filter-btn');
             const userCards = document.querySelectorAll('.user-card');
             
-            userCards.forEach(card => {
-                const cardText = card.textContent.toLowerCase();
-                const cardRole = card.dataset.role.toLowerCase();
-                
-                const matchesSearch = cardText.includes(searchTerm);
-                const matchesRole = roleFilter === '' || cardRole === roleFilter;
-                
-                if (matchesSearch && matchesRole) {
-                    card.style.display = 'block';
-                    card.style.opacity = '1';
-                    card.style.transform = 'translateY(0)';
-                } else {
-                    card.style.display = 'none';
-                    card.style.opacity = '0';
-                    card.style.transform = 'translateY(20px)';
-                }
+            filterButtons.forEach(button => {
+                button.addEventListener('click', () => {
+                    // Remove active class from all buttons
+                    filterButtons.forEach(btn => btn.classList.remove('active'));
+                    
+                    // Add active class to clicked button
+                    button.classList.add('active');
+                    
+                    const selectedRole = button.getAttribute('data-role');
+                    
+                    // Filter cards
+                    userCards.forEach(card => {
+                        if (selectedRole === 'all' || card.getAttribute('data-role') === selectedRole) {
+                            card.style.display = 'block';
+                            setTimeout(() => {
+                                card.style.opacity = '1';
+                                card.style.transform = 'translateY(0)';
+                            }, 50);
+                        } else {
+                            card.style.opacity = '0';
+                            card.style.transform = 'translateY(20px)';
+                            setTimeout(() => {
+                                card.style.display = 'none';
+                            }, 300);
+                        }
+                    });
+                    
+                    // Check if no results
+                    checkNoResults();
+                });
             });
-
-            updateNoResultsMessage(searchTerm, roleFilter);
-        }
-
-        function updateNoResultsMessage(searchTerm, roleFilter) {
-            const visibleCards = document.querySelectorAll('.user-card[style="display: block"]');
-            const noResultsMessage = document.querySelector('.no-results-message');
             
-            if (visibleCards.length === 0 && (searchTerm !== '' || roleFilter !== '')) {
-                if (!noResultsMessage) {
-                    const message = document.createElement('div');
-                    message.className = 'no-results-message text-center mt-4';
-                    message.textContent = 'No users found matching your criteria.';
-                    document.getElementById('userCards').appendChild(message);
+            // Search functionality
+            const searchInput = document.getElementById('searchInput');
+            
+            searchInput.addEventListener('input', debounce(() => {
+                const searchTerm = searchInput.value.toLowerCase();
+                
+                userCards.forEach(card => {
+                    const cardText = card.textContent.toLowerCase();
+                    const cardRole = card.getAttribute('data-role');
+                    const activeFilterRole = document.querySelector('.filter-btn.active').getAttribute('data-role');
+                    
+                    const matchesSearch = cardText.includes(searchTerm);
+                    const matchesFilter = activeFilterRole === 'all' || activeFilterRole === cardRole;
+                    
+                    if (matchesSearch && matchesFilter) {
+                        card.style.display = 'block';
+                        setTimeout(() => {
+                            card.style.opacity = '1';
+                            card.style.transform = 'translateY(0)';
+                        }, 50);
+                    } else {
+                        card.style.opacity = '0';
+                        card.style.transform = 'translateY(20px)';
+                        setTimeout(() => {
+                            card.style.display = 'none';
+                        }, 300);
+                    }
+                });
+                
+                // Check if no results
+                checkNoResults();
+            }, 300));
+            
+            // Function to check if no results and show message
+            function checkNoResults() {
+                const visibleCards = Array.from(userCards).filter(card => 
+                    card.style.display !== 'none' && card.style.opacity !== '0'
+                );
+                
+                let noResultsMessage = document.querySelector('.no-results-message');
+                
+                if (visibleCards.length === 0) {
+                    if (!noResultsMessage) {
+                        noResultsMessage = document.createElement('div');
+                        noResultsMessage.className = 'no-results-message text-center w-100 mt-4';
+                        noResultsMessage.textContent = 'No users found matching your criteria.';
+                        document.getElementById('usersContainer').appendChild(noResultsMessage);
+                    }
+                } else if (noResultsMessage) {
+                    noResultsMessage.remove();
                 }
-            } else if (noResultsMessage) {
-                noResultsMessage.remove();
             }
-        }
-
-        // Event listeners for search and filter
-        document.getElementById('searchInput').addEventListener('input', filterUsers);
-        document.getElementById('roleFilter').addEventListener('change', filterUsers);
-
-        // Add transitions
-        document.addEventListener('DOMContentLoaded', () => {
+            
+            // Debounce function to improve performance
+            function debounce(func, wait) {
+                let timeout;
+                return function executedFunction(...args) {
+                    const later = () => {
+                        clearTimeout(timeout);
+                        func(...args);
+                    };
+                    clearTimeout(timeout);
+                    timeout = setTimeout(later, wait);
+                };
+            }
+            
+            // Add transition styles
             const style = document.createElement('style');
             style.textContent = `
                 .user-card {
-                    transition: opacity 0.3s ease, transform 0.3s ease;
+                    transition: opacity 0.3s ease, transform 0.3s ease, display 0.3s ease;
                 }
                 .no-results-message {
                     animation: fadeIn 0.3s ease;

@@ -71,16 +71,22 @@ def submit_enquiry():
     message = request.form.get('message')
 
     if name and email and message:
+        # Store in MongoDB
         mongo.db.enquiry_details.insert_one({
             "name": name,
             "email": email,
             "message": message,
             "date": datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S")
         })
+
+        # Send Confirmation Email
+        msg = Message("Enquiry Received", recipients=[email])
+        msg.body = f"Hello {name},\n\nThank you for reaching out! We have received your enquiry and will get back to you soon.\n\nYour Message:\n{message}\n\nBest Regards,\nRapiACT! Team❤️"
+        mail.send(msg)
+
         return redirect('/')  # Redirect to home page after submission
 
     return "Failed to submit enquiry", 400
-
 
 @app.route("/enquiry_details")
 def get_enquiry_details():
@@ -98,9 +104,10 @@ def get_enquiry_details():
 
 
 
+
 @app.route("/mark_done", methods=["POST"])
 def mark_done():
-    """ Mark an enquiry as done and save the admin's response. """
+    """ Mark an enquiry as done and send a response email. """
     data = request.json
     enquiry_id = data.get("enquiry_id")
     response_text = data.get("response")
@@ -109,13 +116,47 @@ def mark_done():
         return jsonify({"success": False, "message": "Invalid data"}), 400
 
     try:
+        # Fetch the enquiry details
+        enquiry = mongo.db.enquiry_details.find_one({"_id": ObjectId(enquiry_id)})
+
+        if not enquiry:
+            return jsonify({"success": False, "message": "Enquiry not found"}), 404
+
+        # Update the enquiry status
         result = mongo.db.enquiry_details.update_one(
-            {"_id": ObjectId(enquiry_id)},  # Convert to ObjectId
+            {"_id": ObjectId(enquiry_id)},  
             {"$set": {"status": "done", "response": response_text, "response_date": datetime.utcnow()}}
         )
 
         if result.modified_count == 1:
-            return jsonify({"success": True, "message": "Enquiry marked as done."})
+            # Send response email
+            user_email = enquiry.get("email")
+            user_name = enquiry.get("name")
+
+            if user_email:
+                msg = Message(
+                    subject="Your Enquiry has been Resolved",
+                    recipients=[user_email]
+                )
+                msg.body = f"""
+                Hello {user_name},
+
+                Your enquiry has been marked as resolved. 
+
+                **Your Message:**
+                {enquiry.get('message')}
+
+                **Admin Response:**
+                {response_text}
+
+                If you have any further questions, feel free to reach out.
+
+                Best Regards,
+                RapiACT! Team❤️
+                """
+                mail.send(msg)
+
+            return jsonify({"success": True, "message": "Enquiry marked as done and email sent."})
         else:
             return jsonify({"success": False, "message": "Failed to update enquiry."}), 500
     except Exception as e:
@@ -992,70 +1033,68 @@ def create_appointment():
     return redirect(url_for('login'))
 
 
-@app.route('/add_user', methods=['GET', 'POST'])
+@app.route('/add_user', methods=['POST'])
 def add_user():
-    if request.method == 'POST':
+    try:
         name = request.form.get('name')
         email = request.form.get('email')
         password = request.form.get('password')
         confirm_password = request.form.get('confirm_password')
         role = request.form.get('role')
 
-        # Password confirmation check
         if password != confirm_password:
-            flash("Passwords do not match. Please try again.", "danger")
-            return redirect(url_for('add_user'))
+            return jsonify({"success": False, "message": "Passwords do not match."})
 
-        # Handle file upload (convert to Base64)
-        photo_data = None
+        # Handle file upload
+        photo_id = None
         photo = request.files.get('photo')
         if photo and allowed_file(photo.filename):
-            photo_data = base64.b64encode(photo.read()).decode('utf-8')
+            photo_id = mongo.db.photos.insert_one({"data": base64.b64encode(photo.read()).decode('utf-8')}).inserted_id
         elif photo and photo.filename != '':
-            flash("Invalid file type. Only PDF, JPG, JPEG, or PNG files are allowed.", "danger")
-            return redirect(url_for('add_user'))
+            return jsonify({"success": False, "message": "Invalid file type. Only PDF, JPG, JPEG, or PNG files are allowed."})
+
         hashed_password = generate_password_hash(password)
+
         # Common user data
         user_data = {
             "name": name,
             "email": email,
             "password": hashed_password,
             "role": role,
-            "photo_data": photo_data
+            "photo": photo_id,
+            "created_at": request.form.get("created_at", None)
         }
 
-        # Additional fields for patients
         if role == 'patient':
             user_data.update({
                 "phone": request.form.get('phone'),
-                "house_no": request.form.get('house_no'),
-                "village_city": request.form.get('village_city'),
-                "district": request.form.get('district'),
-                "state": request.form.get('state')
-            })
-
-        # Additional fields for doctors
-        elif role == 'doctor':
-            user_data.update({
                 "age": request.form.get('age'),
                 "gender": request.form.get('gender'),
-                "phone": request.form.get('phone'),
-                "experience_years": request.form.get('experience_years'),
-                "specialization": request.form.get('specialization'),
-                "brief_experience": request.form.get('brief_experience'),
-                "house_no": request.form.get('house_no'),
-                "city": request.form.get('city'),
-                "state": request.form.get('state'),
-                "country": request.form.get('country'),
-                "pincode": request.form.get('pincode')
+                "address": request.form.get('address')
             })
 
-        # Insert data into MongoDB
-        users_collection.insert_one(user_data)
+        elif role == 'doctor':
+            user_data.update({
+                "phone": request.form.get('phone'),
+                "age": request.form.get('age'),
+                "gender": request.form.get('gender'),
+                "specialization": request.form.get('specialization'),
+                "years_experience": request.form.get('experience_years'),
+                "professional_experience": request.form.get('brief_experience'),
+                "address": request.form.get('address'),
+                "account_status": "pending"
+            })
 
-        flash(f"User {name} registered successfully!", "success")
-        return redirect(url_for('add_user'))
+        # Insert into MongoDB
+        mongo.db.users.insert_one(user_data)
 
+        return jsonify({"success": True, "message": f"User {name} registered successfully!"})
+
+    except Exception as e:
+        return jsonify({"success": False, "message": str(e)})
+
+@app.route('/add_user', methods=['GET'])
+def add_user_page():
     return render_template('add_user.html')
 
 def get_user_by_id(user_id):
@@ -1132,9 +1171,10 @@ def get_visitors():
 # Logout route
 @app.route('/logout')
 def logout():
-    session.clear()
+    session.clear() 
     flash("You have been logged out.", "success")
     return redirect(url_for('home'))
+
 
 if __name__ == '__main__':
     app.run(debug=True)
