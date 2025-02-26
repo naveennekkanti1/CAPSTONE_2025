@@ -306,6 +306,7 @@ def schedule_meeting():
 
         # Fetch all scheduled meetings for the logged-in doctor
         meetings = list(mongo.db.meetings.find({'doctor_id': doctor_id}))
+        doctor_name = mongo.db.users.find_one({'_id': doctor_id}, {'name': 1})
 
         # Separate meetings into ongoing, upcoming, and past
         ongoing_meetings = []
@@ -328,6 +329,7 @@ def schedule_meeting():
                 past_meetings.append(meeting)
 
         return render_template('schedule_meeting.html', 
+                               name=doctor_name.get('name',''),
                                patients=patients, 
                                ongoing_meetings=ongoing_meetings, 
                                upcoming_meetings=upcoming_meetings, 
@@ -588,13 +590,13 @@ def login():
         password = data.get("password")
 
         if not (email and password):
-            flash("Email and password are required", "danger")
+            flash("Email and password are required", "error")  # Changed from "danger" to "error" to match your CSS
             return redirect(url_for('login'))
 
         user = users_collection.find_one({"email": email})
 
         if not user or not check_password_hash(user["password"], password):
-            flash("Invalid credentials", "danger")
+            flash("Invalid credentials", "error")  # Changed from "danger" to "error" to match your CSS
             return redirect(url_for('login'))
 
         if user.get("role") == "doctor" and user.get("account_status") != "approved":
@@ -835,6 +837,7 @@ def doctor_dashboard(appointment_type=None):
     if 'user_id' in session and session['role'] == 'doctor':
         doctor_id = ObjectId(session['user_id'])
         doctor = get_doctor_info()
+        doctor_name = mongo.db.users.find_one({'_id': doctor_id}, {'name': 1})
         
         if not doctor:
             flash("Doctor record not found.", "danger")
@@ -875,6 +878,7 @@ def doctor_dashboard(appointment_type=None):
         
         # Default: Show all
         return render_template('doctor_dashboard.html', doctor=doctor,
+                               name=doctor_name.get('name', ''),
                                upcoming_appointments=upcoming_appointments,
                                ongoing_appointments=ongoing_appointments,
                                completed_appointments=completed_appointments)
@@ -904,24 +908,44 @@ def cancel_appointment(appointment_id):
     return redirect(url_for('login'))
 
 
-@app.route('/profile')
+@app.route('/profile', methods=['GET', 'POST'])
 def profile():
-    # Assuming the user is logged in and their user_id is stored in session
-    user_id = session.get('user_id')  # Modify as per your session handling
-    
+    user_id = session.get('user_id')
+
     if not user_id:
-        return redirect(url_for('login'))  # Redirect to login page if not logged in
-    
+        return redirect(url_for('login'))
+
     try:
-        # Fetch the user details using ObjectId
-        user = mongo.db.users.find_one({"_id": ObjectId(user_id)})  # 'users' is the collection name
-        
-        if user:
-            return render_template('profile.html', user=user)
-        else:
+        user = mongo.db.users.find_one({"_id": ObjectId(user_id)})
+
+        if not user:
             return "User not found", 404
+
+        if request.method == 'POST':
+            name = request.form.get('name')
+            phone = request.form.get('phone')
+            age = request.form.get('age')
+            gender = request.form.get('gender')
+            address = request.form.get('address')
+
+            # Update user details except email
+            mongo.db.users.update_one(
+                {"_id": ObjectId(user_id)},
+                {"$set": {
+                    "name": name,
+                    "phone": phone,
+                    "age": age,
+                    "gender": gender,
+                    "address": address
+                }}
+            )
+            flash("Profile updated successfully", "success")
+            return redirect(url_for('profile'))
+
+        return render_template('profile.html', user=user)
+
     except Exception as e:
-        return f"Error fetching user details: {str(e)}", 500
+        return f"Error fetching/updating user details: {str(e)}", 500
 
 @app.route('/give_feedback/<appointment_id>', methods=['POST'])
 def give_feedback(appointment_id):
