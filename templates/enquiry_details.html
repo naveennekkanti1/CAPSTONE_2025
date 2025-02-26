@@ -3,113 +3,223 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Enquiry Details</title>
+    <title>Enquiry Dashboard</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
     <style>
+        :root {
+            --primary-bg: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            --glass-bg: rgba(255, 255, 255, 0.15);
+            --card-bg: rgba(255, 255, 255, 0.9);
+            --text-dark: #2d3748;
+            --text-light: #f8f9fa;
+            --accent-color: #4f46e5;
+        }
+
         body {
             margin: 0;
             min-height: 100vh;
-            background: linear-gradient(120deg, #2b1055, #7597de);
-            font-family: 'Arial', sans-serif;
-            color: #fff;
+            background: var(--primary-bg);
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            color: var(--text-dark);
         }
 
         .navbar {
-            background: rgba(0, 0, 0, 0.7);
-            color: white;
-            z-index: 10;
+            background: var(--glass-bg) !important;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
         }
 
         .container {
-            padding: 100px 20px 20px;
+            padding: 100px 20px 40px;
+        }
+
+        .dashboard-header {
+            text-align: center;
+            margin-bottom: 2.5rem;
+            color: var(--text-light);
+        }
+
+        .search-container {
+            max-width: 600px;
+            margin: 0 auto 2rem;
+            position: relative;
+        }
+
+        .search-input {
+            width: 100%;
+            padding: 12px 20px 12px 45px;
+            border-radius: 50px;
+            border: 2px solid var(--glass-bg);
+            background: var(--glass-bg);
+            backdrop-filter: blur(5px);
+            color: var(--text-light);
+            transition: all 0.3s ease;
+        }
+
+        .search-input:focus {
+            outline: none;
+            border-color: var(--text-light);
+            background: rgba(255, 255, 255, 0.25);
+        }
+
+        .search-icon {
+            position: absolute;
+            left: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--text-light);
         }
 
         .card-container {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 20px;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 1.5rem;
+            padding: 1rem;
         }
 
-        .card {
-            background: white;
-            border-radius: 10px;
-            padding: 15px;
-            text-align: center;
-            color: #333;
-            position: relative;
+        .enquiry-card {
+            background: var(--card-bg);
+            border-radius: 15px;
+            padding: 1.5rem;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
             transition: transform 0.3s ease, box-shadow 0.3s ease;
+            border: 1px solid rgba(255, 255, 255, 0.3);
         }
 
-        .card:hover {
+        .enquiry-card:hover {
             transform: translateY(-5px);
-            box-shadow: 0 12px 24px rgba(0, 0, 0, 0.2);
+            box-shadow: 0 12px 24px rgba(0, 0, 0, 0.15);
         }
 
-        .done-btn {
-            background-color: #28a745;
-            border: none;
-            color: white;
-            padding: 8px 12px;
-            border-radius: 5px;
-            cursor: pointer;
+        .status-badge {
+            position: absolute;
+            top: -10px;
+            right: -10px;
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 600;
         }
 
-        .done-btn:hover {
-            background-color: #218838;
-        }
-
-        .search-bar {
-            width: 50%;
-            margin: 10px auto;
-            text-align: center;
-        }
-
-        .search-bar input {
+        .response-textarea {
             width: 100%;
-            padding: 10px;
-            border-radius: 5px;
+            padding: 12px;
+            border-radius: 8px;
+            border: 2px solid #e2e8f0;
+            transition: border-color 0.3s ease;
+            resize: vertical;
+        }
+
+        .response-textarea:focus {
+            border-color: var(--accent-color);
+            outline: none;
+        }
+
+        .action-btn {
+            background: var(--accent-color);
+            color: white;
+            padding: 10px 20px;
+            border-radius: 8px;
             border: none;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .action-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            background: #4338ca;
+        }
+
+        .date-badge {
+            background: #e0e7ff;
+            color: var(--accent-color);
+            padding: 4px 10px;
+            border-radius: 6px;
+            font-size: 0.85rem;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 80px 15px 30px;
+            }
+            
+            .card-container {
+                grid-template-columns: 1fr;
+            }
         }
     </style>
 </head>
 <body>
-    <nav class="navbar navbar-expand-lg">
+    <nav class="navbar navbar-expand-lg fixed-top">
         <div class="container-fluid">
-            <a class="navbar-brand" href="/admin_dashboard">
-                <span>RapiACT</span>
+            <a class="navbar-brand text-white fw-bold" href="/admin_dashboard">
+                <i class="bi bi-speedometer2 me-2"></i>RapiACT Dashboard
             </a>
         </div>
     </nav>
 
     <div class="container">
-        <h2 class="text-center">Enquiry Details</h2>
+        <div class="dashboard-header">
+            <h1 class="display-6 fw-bold mb-3">Enquiry Management</h1>
+            <p class="lead">Manage and respond to customer enquiries</p>
+        </div>
 
-        <div class="search-bar">
-            <input type="text" id="searchInput" placeholder="Search by name, email, or date..." onkeyup="searchEnquiries()">
+        <div class="search-container">
+            <i class="bi bi-search search-icon"></i>
+            <input type="text" id="searchInput" class="search-input" 
+                   placeholder="Search enquiries..." onkeyup="searchEnquiries()">
         </div>
 
         <div class="card-container" id="enquiryCards">
             {% for enquiry in enquiries %}
-                <div class="card" id="enquiry-{{ enquiry._id }}">
-                    <p><strong>Name:</strong> {{ enquiry.name }}</p>
-                    <p><strong>Email:</strong> {{ enquiry.email }}</p>
-                    <p><strong>Message:</strong> {{ enquiry.message }}</p>
-                    <p><strong>Date:</strong> 
-                        {% if enquiry.date %}
-                            {{ enquiry.date.strftime('%Y-%m-%d') }}
-                        {% else %}
-                            <span style="color: red;">No Date Available</span>
-                        {% endif %}
-                    </p>
-                    
+                <div class="enquiry-card position-relative" id="enquiry-{{ enquiry._id }}">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h5 class="fw-semibold mb-0">{{ enquiry.name }}</h5>
+                        <span class="date-badge">
+                            {% if enquiry.date %}
+                                {{ enquiry.date.strftime('%d %b %Y') }}
+                            {% else %}
+                                N/A
+                            {% endif %}
+                        </span>
+                    </div>
+
+                    <div class="mb-3">
+                        <div class="d-flex align-items-center gap-2 mb-2">
+                            <i class="bi bi-envelope"></i>
+                            <a href="mailto:{{ enquiry.email }}" class="text-decoration-none text-dark">
+                                {{ enquiry.email }}
+                            </a>
+                        </div>
+                        <p class="mb-0 text-muted">
+                            <i class="bi bi-chat-left-text me-2"></i>{{ enquiry.message }}
+                        </p>
+                    </div>
 
                     {% if enquiry.status == "done" %}
-                        <p class="text-success"><strong>Status:</strong> Done ✅</p>
-                        <p><strong>Response:</strong> {{ enquiry.response }}</p>
+                        <div class="alert alert-success mt-3 mb-0 py-2">
+                            <div class="d-flex align-items-center gap-2">
+                                <i class="bi bi-check-circle-fill"></i>
+                                <div>
+                                    <strong>Response:</strong> {{ enquiry.response }}
+                                </div>
+                            </div>
+                        </div>
                     {% else %}
-                        <textarea id="response-{{ enquiry._id }}" class="form-control mb-2" placeholder="Enter response"></textarea>
-                        <button class="done-btn" onclick="markAsDone('{{ enquiry._id|string }}')">Mark as Done</button>
+                        <textarea id="response-{{ enquiry._id }}" 
+                                  class="response-textarea mb-3" 
+                                  placeholder="Type your response here..."
+                                  rows="3"></textarea>
+                        <button class="action-btn w-100" 
+                                onclick="markAsDone('{{ enquiry._id|string }}')">
+                            <i class="bi bi-check2-circle"></i>
+                            Mark as Resolved
+                        </button>
                     {% endif %}
                 </div>
             {% endfor %}
@@ -118,40 +228,56 @@
 
     <script>
         function searchEnquiries() {
-            let input = document.getElementById("searchInput").value.toLowerCase();
-            let cards = document.getElementById("enquiryCards").getElementsByClassName("card");
+            const input = document.getElementById('searchInput').value.toLowerCase();
+            const cards = document.querySelectorAll('.enquiry-card');
 
-            for (let card of cards) {
-                let text = card.textContent.toLowerCase();
-                card.style.display = text.includes(input) ? "block" : "none";
-            }
+            cards.forEach(card => {
+                const text = card.textContent.toLowerCase();
+                card.style.display = text.includes(input) ? 'block' : 'none';
+            });
         }
 
         function markAsDone(enquiryId) {
-            let responseText = document.getElementById(`response-${enquiryId}`).value;
+            const responseText = document.getElementById(`response-${enquiryId}`).value.trim();
             if (!responseText) {
-                alert("Please enter a response before marking as done.");
+                alert('Please enter a response before submitting.');
                 return;
             }
 
-            fetch("/mark_done", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ enquiry_id: enquiryId, response: responseText })
+            fetch('/mark_done', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ 
+                    enquiry_id: enquiryId, 
+                    response: responseText 
+                })
             })
             .then(response => response.json())
             .then(data => {
                 if (data.success) {
-                    let card = document.getElementById(`enquiry-${enquiryId}`);
-                    card.innerHTML += `<p class="text-success"><strong>Status:</strong> Done ✅</p>
-                                       <p><strong>Response:</strong> ${responseText}</p>`;
-                    document.getElementById(`response-${enquiryId}`).remove();
-                    card.querySelector(".done-btn").remove();
+                    const card = document.getElementById(`enquiry-${enquiryId}`);
+                    card.innerHTML = `
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <h5 class="fw-semibold mb-0">${card.querySelector('h5').textContent}</h5>
+                            <span class="date-badge">${card.querySelector('.date-badge').innerHTML}</span>
+                        </div>
+                        <div class="mb-3">
+                            ${card.querySelector('.mb-3').innerHTML}
+                        </div>
+                        <div class="alert alert-success mt-3 mb-0 py-2">
+                            <div class="d-flex align-items-center gap-2">
+                                <i class="bi bi-check-circle-fill"></i>
+                                <div>
+                                    <strong>Response:</strong> ${responseText}
+                                </div>
+                            </div>
+                        </div>
+                    `;
                 } else {
-                    alert("Failed to mark as done. Try again!");
+                    alert('Error updating enquiry. Please try again.');
                 }
             })
-            .catch(error => console.error("Error:", error));
+            .catch(error => console.error('Error:', error));
         }
     </script>
 

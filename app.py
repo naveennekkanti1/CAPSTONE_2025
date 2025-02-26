@@ -1041,61 +1041,116 @@ def add_user():
         password = request.form.get('password')
         confirm_password = request.form.get('confirm_password')
         role = request.form.get('role')
-
+        
+        # Check if email already exists
+        existing_user = mongo.db.users.find_one({"email": email})
+        if existing_user:
+            return jsonify({"success": False, "message": "Email already registered. Please use a different email."})
+            
         if password != confirm_password:
             return jsonify({"success": False, "message": "Passwords do not match."})
-
+        
         # Handle file upload
         photo_id = None
         photo = request.files.get('photo')
         if photo and allowed_file(photo.filename):
-            photo_id = mongo.db.photos.insert_one({"data": base64.b64encode(photo.read()).decode('utf-8')}).inserted_id
+            photo_id = fs.put(photo, filename=photo.filename)
         elif photo and photo.filename != '':
             return jsonify({"success": False, "message": "Invalid file type. Only PDF, JPG, JPEG, or PNG files are allowed."})
-
+        
         hashed_password = generate_password_hash(password)
-
+        
         # Common user data
         user_data = {
-            "name": name,
+            "_id": ObjectId(),
             "email": email,
             "password": hashed_password,
+            "name": name,
             "role": role,
+            "phone": request.form.get('phone'),
+            "age": request.form.get('age'),
+            "gender": request.form.get('gender'),
+            "address": request.form.get('address'),
             "photo": photo_id,
-            "created_at": request.form.get("created_at", None)
+            "created_at": datetime.utcnow()
         }
-
-        if role == 'patient':
+        
+        if role == 'doctor':
             user_data.update({
-                "phone": request.form.get('phone'),
-                "age": request.form.get('age'),
-                "gender": request.form.get('gender'),
-                "address": request.form.get('address')
-            })
-
-        elif role == 'doctor':
-            user_data.update({
-                "phone": request.form.get('phone'),
-                "age": request.form.get('age'),
-                "gender": request.form.get('gender'),
                 "specialization": request.form.get('specialization'),
-                "years_experience": request.form.get('experience_years'),
-                "professional_experience": request.form.get('brief_experience'),
-                "address": request.form.get('address'),
+                "years_experience": request.form.get('years_experience'),
+                "professional_experience": request.form.get('professional_experience'),
                 "account_status": "pending"
             })
-
+        
         # Insert into MongoDB
         mongo.db.users.insert_one(user_data)
-
+        
+        # Send welcome email
+        send_welcome_email(name, email, password, role)
+        
         return jsonify({"success": True, "message": f"User {name} registered successfully!"})
-
     except Exception as e:
         return jsonify({"success": False, "message": str(e)})
+
+# Email sending function
+def send_welcome_email(name, email, password, role):
+    try:
+        # Configure email settings
+        msg = Message(
+            subject="Welcome to RapiACT!❤️ Healthcare System - Account Created",
+            sender=app.config['MAIL_DEFAULT_SENDER'],
+            recipients=[email]
+        )
+        
+        # Customize message based on role
+        role_specific_message = "book appointments and manage your healthcare needs" if role == "patient" else "manage patients and handle appointments"
+        approval_message = "" if role == "patient" else "\n\nYour doctor account is pending approval. An administrator will review your information and approve your account soon."
+        
+        # Construct email body
+        msg.body = f"""Dear {name},
+
+Welcome to the RapiACT! HealthCare System! Your account has been successfully created.
+
+Here are your login credentials:
+Email: {email}
+Password: {password}
+
+You can now log in to your account and {role_specific_message}.{approval_message}
+
+For security reasons, we recommend changing your password after your first login.
+
+If you did not create this account, please contact our support team immediately.
+
+Best regards,
+RapiACT! Team❤️
+"""
+        
+        # Send email
+        mail.send(msg)
+        return True
+    except Exception as e:
+        print(f"Error sending email: {str(e)}")
+        # Continue with registration even if email fails
+        return False
+
 
 @app.route('/add_user', methods=['GET'])
 def add_user_page():
     return render_template('add_user.html')
+
+@app.route('/delete_user/<user_id>', methods=['POST'])
+def delete_user(user_id):
+    try:
+        user = mongo.db.users.find_one({"_id": ObjectId(user_id)})
+        if not user:
+            return jsonify({"success": False, "message": "User not found."})
+        
+        mongo.db.users.delete_one({"_id": ObjectId(user_id)})
+        return jsonify({"success": True, "message": "User deleted successfully!"})
+    except Exception as e:
+        return jsonify({"success": False, "message": str(e)})
+
 
 def get_user_by_id(user_id):
     return users_collection.find_one({"_id": user_id})
@@ -1105,41 +1160,48 @@ def update_user(user_id, updated_data):
 
 @app.route('/edit_user/<user_id>', methods=['GET', 'POST'])
 def edit_user(user_id):
-    # Fetch user from database using the user_id (converted to ObjectId)
     user = mongo.db.users.find_one({"_id": ObjectId(user_id)})
     
     if not user:
         flash("User not found.", "danger")
-        return redirect(url_for('users'))  # Redirect if user is not found
-
+        return redirect(url_for('users'))
+    
     if request.method == 'POST':
-        # Extracting updated data from the form
+        data = request.form
+        phone = data.get("phone")
+        age = data.get("age")
+        gender = data.get("gender")
+        address = data.get("address")
+        
         updated_data = {
-            'name': request.form['name'],
-            'email': request.form['email'],
-            'role': request.form['role'],
+            "name": data.get("name"),
+            "phone": phone,
+            "age": age,
+            "gender": gender,
+            "address": address,
+            "updated_at": datetime.utcnow()
         }
         
-        # Update role-specific fields
-        if updated_data['role'] == 'patient':
+        if user["role"] == "doctor":
             updated_data.update({
-                'house_no': request.form.get('house_no'),
-                'village_city': request.form.get('village_city'),
-                'district': request.form.get('district'),
-                'state': request.form.get('state'),
+                "specialization": data.get("specialization"),
+                "years_experience": data.get("years_experience"),
+                "professional_experience": data.get("professional_experience", "")
             })
-        elif updated_data['role'] == 'doctor':
-            updated_data.update({
-                'specialization': request.form.get('specialization'),
-                'experience_years': request.form.get('experience_years'),
-            })
-
-        # Update the database
+        
+        if 'photo' in request.files:
+            photo = request.files['photo']
+            if photo.filename:
+                photo_id = fs.put(photo, filename=photo.filename)
+                updated_data["photo"] = photo_id
+        
         mongo.db.users.update_one({"_id": ObjectId(user_id)}, {"$set": updated_data})
         flash("User updated successfully!", "success")
         return redirect(url_for('users'))
-
+    
     return render_template('edit_user.html', user=user)
+
+
 
 
 from bson.json_util import dumps
