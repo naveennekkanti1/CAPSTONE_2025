@@ -1,0 +1,326 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kidney Disease Predictor - RapiACT</title>
+    <link rel="icon" type="image/jpg" href="{{ url_for('static', filename='images/logo.jpg') }}" />
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: "Poppins", sans-serif;
+            background-color: #011d1b;
+            color: white;
+            line-height: 1.6;
+        }
+
+        .navbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px 30px;
+            background-color: #014340;
+        }
+
+        .navbar .logo img {
+            height: 50px;
+        }
+
+        .navbar .links a {
+            color: white;
+            text-decoration: none;
+            margin: 0 15px;
+            transition: color 0.3s ease;
+        }
+
+        .navbar .links a:hover {
+            color: #00d9a6;
+        }
+
+        .prediction-container {
+            text-align: center;
+            padding: 60px 30px;
+        }
+
+        .prediction-container h1 {
+            font-size: 2.5rem;
+            color: #00a6ff;
+            margin-bottom: 20px;
+        }
+
+        .form-container {
+            max-width: 800px;
+            margin: 0 auto;
+            background-color: #014340;
+            border-radius: 10px;
+            padding: 30px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+
+        .file-upload {
+            margin-bottom: 30px;
+            text-align: center;
+        }
+
+        .file-upload label {
+            display: block;
+            margin-bottom: 10px;
+            font-size: 1.1rem;
+            color: #00d9a6;
+        }
+
+        .file-upload input[type="file"] {
+            background-color: #f4f4f4;
+            color: #333;
+            padding: 10px;
+            border-radius: 10px;
+            width: 100%;
+            margin-bottom: 15px;
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .form-item {
+            text-align: left;
+        }
+
+        .form-item label {
+            display: block;
+            margin-bottom: 8px;
+            color: #00d9a6;
+        }
+
+        .form-item input, .form-item select {
+            width: 100%;
+            padding: 12px;
+            border-radius: 10px;
+            border: none;
+            font-size: 1rem;
+            background-color: #f4f4f4;
+            color: #333;
+        }
+
+        button {
+            background-color: #00a6ff;
+            color: white;
+            padding: 15px 30px;
+            border-radius: 50px;
+            border: none;
+            font-size: 16px;
+            transition: background-color 0.3s ease;
+            cursor: pointer;
+            margin: 10px;
+        }
+
+        button:hover {
+            background-color: #0080c4;
+        }
+
+        .result {
+            margin-top: 30px;
+            padding: 20px;
+            border-radius: 10px;
+            text-align: left;
+        }
+
+        .high-risk {
+            background-color: rgba(255, 77, 77, 0.2);
+            border: 2px solid #ff4d4d;
+        }
+
+        .low-risk {
+            background-color: rgba(0, 217, 166, 0.2);
+            border: 2px solid #00d9a6;
+        }
+
+        .result h2 {
+            margin-bottom: 15px;
+            color: white;
+        }
+
+        .precautions {
+            margin-top: 15px;
+        }
+
+        .precautions h3 {
+            color: #00a6ff;
+            margin-bottom: 10px;
+        }
+
+        .precautions ul {
+            padding-left: 20px;
+        }
+
+        .precautions li {
+            margin-bottom: 8px;
+        }
+
+        footer {
+            background-color: #014340;
+            color: white;
+            text-align: center;
+            padding: 20px 0;
+            margin-top: 40px;
+        }
+
+        /* Tab styling based on original kidney page */
+        .tab-container {
+            margin-bottom: 20px;
+        }
+
+        .tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            justify-content: center;
+        }
+
+        .tab {
+            padding: 10px 20px;
+            background-color: #014340;
+            border: 1px solid #00a6ff;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        .tab.active {
+            background-color: #00a6ff;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+    </style>
+</head>
+<body>
+    <div class="navbar">
+        <div class="logo">
+            <img src="{{ url_for('static', filename='images/logo.jpg') }}" alt="Logo" />
+        </div>
+        <div class="links">
+            <a href="/">Home</a>
+            <a href="/about">About</a>
+            <a href="/services">Services</a>
+            <a href="/all_doctors">Doctors</a>
+            <a href="/contact">Contact</a>
+        </div>
+    </div>
+
+    <div class="prediction-container">
+        <h1>Kidney Disease Prediction</h1>
+        <div class="form-container">
+            <div class="tab-container">
+                <div class="tabs">
+                    <div class="tab active" onclick="openTab('upload-tab')">Upload Reports</div>
+                    <div class="tab" onclick="openTab('manual-tab')">Manual Entry</div>
+                </div>
+                
+                <div id="upload-tab" class="tab-content active">
+                    <!-- PDF Upload Form -->
+                    <form action="/extract/kidney" method="POST" enctype="multipart/form-data" class="file-upload">
+                        <label for="file">Upload Medical Report (PDF/DOCX):</label>
+                        <input type="file" name="file" id="file" required>
+                        <button type="submit">Extract & Autofill</button>
+                    </form>
+                </div>
+                
+                <div id="manual-tab" class="tab-content">
+                    <!-- Input Form -->
+                    <form action="/predict/kidney" method="POST">
+                        <div class="form-grid">
+                            {% for feature in features %}
+                            <div class="form-item">
+                                <label for="{{ feature }}">{{ feature }}</label>
+                                {% if feature in ['rbc', 'pc'] %}
+                                <select name="{{ feature }}" id="{{ feature }}">
+                                    <option value="normal" {% if extracted_data.get(feature) == 'normal' %}selected{% endif %}>Normal</option>
+                                    <option value="abnormal" {% if extracted_data.get(feature) == 'abnormal' %}selected{% endif %}>Abnormal</option>
+                                </select>
+                                {% elif feature in ['pcc', 'ba', 'htn', 'dm', 'cad', 'pe', 'ane'] %}
+                                <select name="{{ feature }}" id="{{ feature }}">
+                                    <option value="yes" {% if extracted_data.get(feature) == 'yes' %}selected{% endif %}>Yes</option>
+                                    <option value="no" {% if extracted_data.get(feature) == 'no' %}selected{% endif %}>No</option>
+                                </select>
+                                {% elif feature == 'appet' %}
+                                <select name="{{ feature }}" id="{{ feature }}">
+                                    <option value="good" {% if extracted_data.get(feature) == 'good' %}selected{% endif %}>Good</option>
+                                    <option value="poor" {% if extracted_data.get(feature) == 'poor' %}selected{% endif %}>Poor</option>
+                                </select>
+                                {% else %}
+                                <input
+                                    type="text"
+                                    name="{{ feature }}"
+                                    id="{{ feature }}"
+                                    value="{{ extracted_data.get(feature, '') }}"
+                                    placeholder="Enter {{ feature }}"
+                                    required
+                                >
+                                {% endif %}
+                            </div>
+                            {% endfor %}
+                        </div>
+                        <button type="submit">Predict Risk</button>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Prediction Result -->
+            {% if prediction_text %}
+            <div class="result {{ 'high-risk' if 'high risk' in prediction_text.lower() or 'positive' in prediction_text.lower() else 'low-risk' }}">
+                <h2>{{ prediction_text }}</h2>
+                {% if precautions %}
+                <div class="precautions">
+                    <h3>Recommended Precautions:</h3>
+                    <ul>
+                        {% for item in precautions %}
+                        <li>{{ item }}</li>
+                        {% endfor %}
+                    </ul>
+                </div>
+                {% endif %}
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <footer>
+        <p>© 2025 RapiACT. All Rights Reserved.</p>
+    </footer>
+
+    <script>
+        function openTab(tabId) {
+            // Hide all tab contents
+            const tabContents = document.getElementsByClassName("tab-content");
+            for (let i = 0; i < tabContents.length; i++) {
+                tabContents[i].classList.remove("active");
+            }
+            
+            // Deactivate all tabs
+            const tabs = document.getElementsByClassName("tab");
+            for (let i = 0; i < tabs.length; i++) {
+                tabs[i].classList.remove("active");
+            }
+            
+            // Activate the selected tab and content
+            document.getElementById(tabId).classList.add("active");
+            const activeTab = document.querySelector(`[onclick="openTab('${tabId}')"]`);
+            activeTab.classList.add("active");
+        }
+    </script>
+</body>
+</html>

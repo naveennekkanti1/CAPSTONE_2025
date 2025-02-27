@@ -5,7 +5,7 @@ from bson import ObjectId,errors
 from werkzeug.utils import secure_filename
 from datetime import datetime,timedelta
 from pymongo import MongoClient,DESCENDING
-import os,uuid,smtplib,threading,gridfs,logging,io,random,base64
+import os,uuid,smtplib,threading,gridfs,logging,io,random,docx
 from google.oauth2.credentials import Credentials
 from google_auth_oauthlib.flow import InstalledAppFlow
 from googleapiclient.discovery import build
@@ -1414,6 +1414,119 @@ def predict_heart():
     ] if prediction == 1 else []
 
     return render_template('heart_home.html', features=features_heart, extracted_data=None, prediction_text=prediction_text, precautions=precautions)
+
+# Load the trained model (Ensure the model file is in the same directory)
+model3 = joblib.load('templates/kidney.pkl')
+
+# List of features expected from the form
+features_kidney = [
+    'age', 'blood_pressure', 'specific_gravity', 'albumin', 'sugar',
+    'red_blood_cells', 'pus_cell', 'pus_cell_clumps', 'bacteria',
+    'blood_glucose_random', 'blood_urea', 'serum_creatinine', 'sodium',
+    'potassium', 'haemoglobin', 'packed_cell_volume', 'white_blood_cell_count',
+    'red_blood_cell_count', 'hypertension', 'diabetes_mellitus',
+    'coronary_artery_disease', 'appetite', 'peda_edema', 'aanemia'
+]
+def extract_text_from_pdf_kidney(file):
+    reader = PyPDF2.PdfReader(file)
+    text = ''
+    for page in reader.pages:
+        text += page.extract_text() + ' '
+    return text
+# Function to extract text from DOCX
+def extract_text_from_docx(file):
+    doc = docx.Document(file)
+    text = ''
+    for paragraph in doc.paragraphs:
+        text += paragraph.text + ' '
+    return text
+
+# Function to extract data from text using regex
+def extract_data_from_kidney(text):
+    extracted_data = {}
+    patterns_kidney = {
+        'age': r'Age:\s*(\d+)',
+        'blood_pressure': r'Blood Pressure:\s*(\d+)',
+        'specific_gravity': r'Specific Gravity:\s*([\d.]+)',
+        'albumin': r'Albumin:\s*(\d+)',
+        'sugar': r'Sugar:\s*(\d+)',
+        'red_blood_cells': r'Red Blood Cells:\s*(abnormal|normal)',
+        'pus_cell': r'Pus Cell:\s*(abnormal|normal)',
+        'pus_cell_clumps': r'Pus Cell Clumps:\s*(present|not present|absent)',
+        'bacteria': r'Bacteria:\s*(present|not present|absent)',
+        'blood_glucose_random': r'Blood Glucose Random:\s*(\d+)',
+        'blood_urea': r'Blood Urea:\s*(\d+)',
+        'serum_creatinine': r'Serum Creatinine:\s*([\d.]+)',
+        'sodium': r'Sodium:\s*(\d+)',
+        'potassium': r'Potassium:\s*([\d.]+)',
+        'haemoglobin': r'Haemoglobin:\s*([\d.]+)',
+        'packed_cell_volume': r'Packed Cell Volume:\s*(\d+)',
+        'white_blood_cell_count': r'White Blood Cell Count:\s*(\d+)',
+        'red_blood_cell_count': r'Red Blood Cell Count:\s*([\d.]+)',
+        'hypertension': r'Hypertension:\s*(yes|no)',
+        'diabetes_mellitus': r'Diabetes Mellitus:\s*(yes|no)',
+        'coronary_artery_disease': r'Coronary Artery Disease:\s*(yes|no)',
+        'appetite': r'Appetite:\s*(good|poor)',
+        'peda_edema': r'Peda Edema:\s*(yes|no)',
+        'aanemia': r'Aanemia:\s*(yes|no)'
+    }
+
+    for feature, pattern in patterns_kidney.items():
+        match = re.search(pattern, text, re.IGNORECASE)
+        extracted_data[feature] = match.group(1) if match else None
+
+    return extracted_data
+
+# Home Route
+@app.route('/model3', methods=['GET'])
+def kidney_model():
+    return render_template('kidney_home.html', features=features_kidney, extracted_data={}, prediction_text=None, precautions=None)
+
+# File Upload Route
+@app.route('/extract/kidney', methods=['POST'])
+def extract_kidney():
+    file = request.files['file']
+    if file.filename.endswith('.pdf'):
+        text = extract_text_from_pdf_kidney(file)
+    elif file.filename.endswith('.docx'):
+        text = extract_text_from_docx(file)
+    else:
+        return "Unsupported file format. Please upload a PDF or DOCX."
+
+    extracted_data = extract_data_from_kidney(text)
+    return render_template('kidney_home.html', features=features_kidney, extracted_data=extracted_data, prediction_text=None, precautions=None)
+
+# Prediction Route (Using Trained Model)
+@app.route('/predict/kidney', methods=['POST'])
+def predict_kidney():
+    input_data = {feature: request.form.get(feature) for feature in features_kidney}
+
+    # Convert input data for the model
+    processed_data = []
+    for feature in features_kidney:
+        value = input_data.get(feature)
+        if value.lower() in ['abnormal', 'present', 'yes', 'poor']:
+            processed_data.append(1)
+        elif value.lower() in ['normal', 'not present', 'no', 'good', 'absent']:
+            processed_data.append(0)
+        else:
+            try:
+                processed_data.append(float(value))
+            except (TypeError, ValueError):
+                processed_data.append(0.0)
+
+    # Model prediction
+    prediction = model3.predict([processed_data])[0]
+
+    # Prediction result and precautions
+    prediction_text = "Positive (Kidney Disease Detected)" if prediction == 0 else "Negative (No Kidney Disease)"
+    precautions = [
+        "Maintain a healthy diet low in sodium.",
+        "Monitor blood pressure regularly.",
+        "Stay hydrated and avoid smoking."
+    ] if prediction == 0 else ["No immediate precautions needed. Continue regular health check-ups."]
+
+    return render_template('kidney_home.html', features=features_kidney, extracted_data=input_data, prediction_text=prediction_text, precautions=precautions)
 
 
 if __name__ == '__main__':
