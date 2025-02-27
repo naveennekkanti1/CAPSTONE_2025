@@ -13,3 +13,4 @@ PyPDF2
 joblib
 scikit-learn
 docx
+exceptions
