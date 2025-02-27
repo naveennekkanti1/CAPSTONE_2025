@@ -11,4 +11,4 @@ google-api-python-client
 flask-mail
 joblib
 PyPDF2
-sklearn
+scikit-learn
