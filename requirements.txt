@@ -12,5 +12,4 @@ flask-mail
 PyPDF2
 joblib
 scikit-learn
-docx
-better-exceptions
+python-docx
