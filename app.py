@@ -5,17 +5,12 @@ from bson import ObjectId,errors
 from werkzeug.utils import secure_filename
 from datetime import datetime,timedelta
 from pymongo import MongoClient,DESCENDING
-import base64
-import io,random
-import os
+import os,uuid,smtplib,threading,gridfs,logging,io,random,base64
 from google.oauth2.credentials import Credentials
 from google_auth_oauthlib.flow import InstalledAppFlow
 from googleapiclient.discovery import build
 from flask_mail import Mail, Message
-import gridfs,logging
-import threading
 from google.oauth2.service_account import Credentials as ServiceAccountCredentials
-import uuid,smtplib
 
 
 
@@ -58,10 +53,13 @@ def home():
     user_logged_in = 'user_id' in session
     return render_template('index.html', user_logged_in=user_logged_in)
 
-
 @app.route('/services')
 def services():
     return render_template('services.html')
+
+@app.route('/predictions')
+def predictions():
+    return render_template('report_prediction.html')
 
 
 @app.route('/submit_enquiry', methods=['POST'])
@@ -101,9 +99,6 @@ def get_enquiry_details():
                 enquiry['date'] = None
 
     return render_template("enquiry_details.html", enquiries=enquiries)
-
-
-
 
 @app.route("/mark_done", methods=["POST"])
 def mark_done():
@@ -236,9 +231,6 @@ def create_google_meet(patient_email, doctor_email, meeting_datetime):
         print(f"Error creating Google Meet: {e}")
         return None
 
-
-from datetime import datetime
-
 @app.route('/schedule_meeting', methods=['GET', 'POST'])
 def schedule_meeting():
     if 'user_id' in session and session['role'] in ['doctor', 'admin']:  
@@ -338,8 +330,6 @@ def schedule_meeting():
     flash("Unauthorized access.", "danger")
     return redirect(url_for('login'))
 
-
-
 def get_scheduled_meetings():
     meetings = db.meetings.find().sort("meeting_datetime", DESCENDING)
     
@@ -363,8 +353,6 @@ def join_meeting(meeting_id):
         return redirect(url_for('patient_dashboard'))
     flash("Unauthorized access.", "danger")
     return redirect(url_for('login'))
-
-
 
 @app.route('/register', methods=['GET', 'POST'])
 def register():
@@ -461,7 +449,6 @@ def verify_otp():
         return jsonify({"message": "OTP verified successfully!", "redirect_url": url_for('register')})
 
     return jsonify({"error": "Invalid OTP. Please try again!"}), 400
-
 
 @app.route('/patient_register', methods=['GET', 'POST'])
 def patient_register():
@@ -577,7 +564,6 @@ def doctor_register():
 
         return jsonify({"message": "Registration successful! Await admin approval.", "redirect_url": url_for('login')})
 
-
 # ---- Login ----
 @app.route('/login', methods=['GET', 'POST'])
 def login():
@@ -662,7 +648,6 @@ def approve_doctor(doctor_id):
 
     return jsonify({"message": "Doctor approved successfully"})
 
-
 @app.route('/reject_doctor/<doctor_id>', methods=['POST'])
 def reject_doctor(doctor_id):
     if 'user_id' not in session or session.get('role') != 'admin':
@@ -687,7 +672,6 @@ def reject_doctor(doctor_id):
 
     return jsonify({"message": "Doctor rejected and removed successfully"})
 
-
 @app.route('/user_photo/<user_id>')
 def user_photo(user_id):
     try:
@@ -707,7 +691,6 @@ def user_photo(user_id):
     
     return send_file("static/images/logo.jpg", mimetype="image/png")  # Default image if error
 
-
 # Dashboard route
 @app.route('/dashboard')
 def dashboard():
@@ -723,7 +706,6 @@ def dashboard():
     return redirect(url_for('login'))
 # admin dashboard
 
-
 @app.route('/users')
 def users():
     role = request.args.get('role')
@@ -736,7 +718,6 @@ def users():
         user['_id'] = str(user['_id']) 
 
     return render_template('users.html', users=users)
-
 
 @app.route('/appointments')
 def appointments():
@@ -754,7 +735,6 @@ def appointments():
             appointment["doctor_specialization"] = "Unknown"
     
     return render_template('appointments.html', appointments=appointments)
-
 
 @app.route('/patient_dashboard')
 @app.route('/patient_dashboard/<appointment_type>')
@@ -822,8 +802,6 @@ def patient_dashboard(appointment_type=None):
         meetings=meetings
     )
 
-
-
 def get_doctor_info():
     if 'user_id' in session and session['role'] == 'doctor':
         doctor_id = ObjectId(session['user_id'])
@@ -883,9 +861,6 @@ def doctor_dashboard(appointment_type=None):
                                ongoing_appointments=ongoing_appointments,
                                completed_appointments=completed_appointments)
     return redirect(url_for('login'))
-
-
-
 # Route to cancel an appointment
 @app.route('/cancel_appointment/<appointment_id>', methods=['POST'])
 def cancel_appointment(appointment_id):
@@ -906,7 +881,6 @@ def cancel_appointment(appointment_id):
 
         return redirect(url_for('patient_dashboard'))
     return redirect(url_for('login'))
-
 
 @app.route('/profile', methods=['GET', 'POST'])
 def profile():
@@ -965,7 +939,6 @@ def give_feedback(appointment_id):
     flash("Feedback submitted successfully!", "success")
     return redirect(url_for('doctor_dashboard'))
 
-
 @app.route('/mark_as_done/<appointment_id>', methods=['POST'])
 def mark_as_done(appointment_id):
     try:
@@ -979,8 +952,6 @@ def mark_as_done(appointment_id):
 
     flash("Appointment marked as done!", "success")
     return redirect(url_for('doctor_dashboard'))
-
-
 
 @app.route('/get_report/<file_id>')
 def get_report(file_id):
@@ -1055,7 +1026,6 @@ def create_appointment():
 
     flash("Unauthorized access.", "danger")
     return redirect(url_for('login'))
-
 
 @app.route('/add_user', methods=['POST'])
 def add_user():
@@ -1149,7 +1119,6 @@ If you did not create this account, please contact our support team immediately.
 Best regards,
 RapiACT! Team❤️
 """
-        
         # Send email
         mail.send(msg)
         return True
@@ -1157,7 +1126,6 @@ RapiACT! Team❤️
         print(f"Error sending email: {str(e)}")
         # Continue with registration even if email fails
         return False
-
 
 @app.route('/add_user', methods=['GET'])
 def add_user_page():
@@ -1225,9 +1193,6 @@ def edit_user(user_id):
     
     return render_template('edit_user.html', user=user)
 
-
-
-
 from bson.json_util import dumps
 
 @app.route('/get_doctors', methods=['GET'])
@@ -1262,5 +1227,196 @@ def logout():
     return redirect(url_for('home'))
 
 
+import joblib
+import os
+import re
+import PyPDF2
+model = joblib.load('templates/diabetes_model.sav')
+# Features for diabetes prediction
+features = [
+    'Pregnancies', 'Glucose', 'Blood Pressure', 'Skin Thickness', 'Insulin',
+    'BMI', 'Diabetes Pedigree Function', 'Age'
+]
+def extract_text_from_pdf(filepath):
+    text = ""
+    with open(filepath, 'rb') as file:
+        reader = PyPDF2.PdfReader(file)
+        for page in reader.pages:
+            try:
+                page_text = page.extract_text()
+                if page_text:
+                    text += page_text + " "
+            except UnicodeDecodeError:
+                continue
+    return text
+def extract_data(text):
+    extracted_data = {feature: None for feature in features}
+
+    # Updated regex patterns with flexible spacing and colon handling
+    patterns = {
+        'Pregnancies': r'Pregnancies[:\s]*([\d\.]+)',
+        'Glucose': r'Glucose[:\s]*([\d\.]+)',
+        'Blood Pressure': r'Blood[\s]*Pressure[:\s]*([\d\.]+)',
+        'Skin Thickness': r'Skin[\s]*Thickness[:\s]*([\d\.]+)',
+        'Insulin': r'Insulin[:\s]*([\d\.]+)',
+        'BMI': r'BMI[:\s]*([\d\.]+)',
+        'Diabetes Pedigree Function': r'Diabetes[\s]*Pedigree[\s]*Function[:\s]*([\d\.]+)',
+        'Age': r'Age[:\s]*([\d\.]+)'
+    }
+
+    # Extract values using regex
+    for key, pattern in patterns.items():
+        match = re.search(pattern, text, re.IGNORECASE)
+        if match:
+            value = match.group(1)
+            extracted_data[key] = float(value) if '.' in value else int(value)
+        else:
+            extracted_data[key] = 0  # Default to 0 if value isn't found
+
+    print("✅ Extracted Data:", extracted_data)
+    return extracted_data
+
+
+@app.route('/model1', methods=['GET', 'POST'])
+def diabetis_model1():
+    return render_template('diabetis_home.html', features=features, extracted_data=None)
+
+@app.route('/extract', methods=['POST'])
+def extract():
+    file = request.files['file']
+    if file:
+        filename = secure_filename(file.filename)
+        filepath = os.path.join('uploads', filename)
+        file.save(filepath)
+
+        if file.filename.endswith('.pdf'):
+            text = extract_text_from_pdf(filepath)
+        else:
+            return "❌ Unsupported file format. Please upload a PDF."
+        
+        extracted_data = extract_data(text)
+        return render_template('diabetis_home.html', features=features, extracted_data=extracted_data)
+    return redirect(url_for('model1'))
+
+@app.route('/predict', methods=['POST'])
+def predict():
+    input_data = []
+    for feature in features:
+        value = request.form.get(feature)
+        input_data.append(float(value) if value else 0)
+
+    # Predict using the loaded model
+    prediction = model.predict([input_data])[0]
+    prediction_text = '⚠️ High Risk of Diabetes' if prediction == 1 else '✅ Low Risk of Diabetes'
+
+    # Suggest precautions if high risk
+    precautions = [
+        '🟢 Follow a balanced diet low in sugar.',
+        '🏃 Exercise regularly.',
+        '💉 Monitor blood sugar levels frequently.',
+        '🩺 Regular check-ups with your doctor.'
+    ] if prediction == 1 else []
+
+    return render_template('diabetis_home.html', features=features, extracted_data=None, prediction_text=prediction_text, precautions=precautions)
+
+#Heart Disease
+model2 = joblib.load('templates/heart.pkl')
+
+# Descriptive features
+features_heart = [
+    'Age', 'Sex', 'Chest Pain Type', 'Resting Blood Pressure', 'Serum Cholesterol',
+    'Fasting Blood Sugar', 'Resting ECG', 'Max Heart Rate Achieved', 'Exercise Induced Angina',
+    'ST Depression', 'Slope of Peak Exercise', 'Number of Major Vessels Colored', 'Thalassemia'
+]
+
+# Categorical mappings
+mappings_heart = {
+    'Sex': {'Male': 0, 'Female': 1},
+    'Fasting Blood Sugar': {'Normal': 0, 'High': 1},
+    'Exercise Induced Angina': {'No': 0, 'Yes': 1}
+}
+
+
+def extract_data_heart(text):
+    extracted_data = {feature: None for feature in features_heart}
+
+    # Patterns to extract numerical and categorical data
+    patterns_heart = {
+        'Age': r'Age:\s*(\d+)',
+        'Sex': r'Sex:\s*(Male|Female)',
+        'Chest Pain Type': r'Chest Pain Type:\s*(\d+)',
+        'Resting Blood Pressure': r'Resting Blood Pressure:\s*(\d+)',
+        'Serum Cholesterol': r'Serum Cholesterol:\s*(\d+)',
+        'Fasting Blood Sugar': r'Fasting Blood Sugar:\s*(Normal|High)',
+        'Resting ECG': r'Resting ECG:\s*(\d+)',
+        'Max Heart Rate Achieved': r'Max Heart Rate Achieved:\s*(\d+)',
+        'Exercise Induced Angina': r'Exercise Induced Angina:\s*(Yes|No)',
+        'ST Depression': r'ST Depression:\s*([\d\.]+)',
+        'Slope of Peak Exercise': r'Slope of Peak Exercise:\s*(\d+)',
+        'Number of Major Vessels Colored': r'Number of Major Vessels Colored:\s*(\d+)',
+        'Thalassemia': r'Thalassemia:\s*(\d+)'  
+    }
+
+    # Extract values using regex patterns
+    for key, pattern in patterns_heart.items():
+        match = re.search(pattern, text, re.IGNORECASE)
+        if match:
+            value = match.group(1)
+            # Convert categorical values to numeric
+            if key in mappings_heart:
+                extracted_data[key] = mappings_heart[key].get(value, None)
+            else:
+                extracted_data[key] = float(value)
+    
+    print("✅ Extracted Data:", extracted_data)
+    return extracted_data
+
+@app.route('/model2', methods=['GET', 'POST'])
+def heart_model1():
+    return render_template('heart_home.html', features=features_heart, extracted_data=None)
+
+@app.route('/extract1', methods=['POST'])
+def extract_heart():
+    file = request.files['file']
+    if file:
+        filename = secure_filename(file.filename)
+        filepath = os.path.join('uploads', filename)
+        file.save(filepath)
+
+        if file.filename.endswith('.pdf'):
+            text = extract_text_from_pdf(filepath)
+        else:
+            return "❌ Unsupported file format. Please upload a PDF."
+        
+        extracted_data = extract_data_heart(text)
+        return render_template('heart_home.html', features=features_heart, extracted_data=extracted_data)
+    return redirect(url_for('model2'))
+
+@app.route('/predict/heart', methods=['POST'])
+def predict_heart():
+    input_data = []
+    for feature in features_heart:
+        value = request.form.get(feature)
+        if feature in ['Sex', 'Fasting Blood Sugar', 'Exercise Induced Angina']:
+            value = 1 if value and value.lower() in ['female', 'high', 'yes'] else 0
+        input_data.append(float(value) if value else 0)
+    
+    # Predict using the loaded model
+    prediction = model2.predict([input_data])[0]
+    prediction_text = '⚠️ High Risk of Heart Disease' if prediction == 1 else '✅ Low Risk of Heart Disease'
+
+    # Suggest precautions if high risk
+    precautions = [
+        '🟢 Maintain a healthy diet.',
+        '🏃 Exercise regularly.',
+        '🧂 Monitor cholesterol levels.',
+        '🩺 Regular heart check-ups.'
+    ] if prediction == 1 else []
+
+    return render_template('heart_home.html', features=features_heart, extracted_data=None, prediction_text=prediction_text, precautions=precautions)
+
+
 if __name__ == '__main__':
+    if not os.path.exists('uploads'):
+        os.makedirs('uploads')
     app.run(debug=True)

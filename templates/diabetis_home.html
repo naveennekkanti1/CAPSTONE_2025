@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Diabetes Risk Prediction</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/mini.css/3.0.1/mini-default.min.css">
+    <style>
+        body {
+            background-color: #f5f7fa;
+            padding: 20px;
+        }
+        .container {
+            max-width: 800px;
+            margin: auto;
+            padding: 20px;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+        h1, h2 {
+            text-align: center;
+        }
+        .file-upload {
+            margin-bottom: 20px;
+        }
+        .result {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 5px;
+        }
+        .high-risk {
+            background-color: #ffe6e6;
+            color: #b30000;
+        }
+        .low-risk {
+            background-color: #e6ffe6;
+            color: #007a33;
+        }
+        .precautions {
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Diabetes Risk Prediction</h1>
+
+        <!-- PDF Upload Form -->
+        <form action="/extract" method="POST" enctype="multipart/form-data" class="file-upload">
+            <label for="file">Upload Medical Report (PDF):</label>
+            <input type="file" name="file" required>
+            <button type="submit">Extract & Autofill</button>
+        </form>
+
+        <!-- Input Form -->
+        <form action="/predict" method="POST">
+            {% for feature in features %}
+                <label for="{{ feature }}">{{ feature }}</label>
+                <input 
+                    type="text" 
+                    name="{{ feature }}" 
+                    placeholder="Enter {{ feature }}" 
+                    value="{{ extracted_data[feature] if extracted_data else '' }}"
+                    required
+                >
+            {% endfor %}
+            <button type="submit">Predict</button>
+        </form>
+
+        <!-- Prediction Result -->
+        {% if prediction_text %}
+            <div class="result {{ 'high-risk' if 'High Risk' in prediction_text else 'low-risk' }}">
+                <h2>{{ prediction_text }}</h2>
+                {% if precautions %}
+                    <div class="precautions">
+                        <h3>Precautions:</h3>
+                        <ul>
+                            {% for item in precautions %}
+                                <li>{{ item }}</li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+                {% endif %}
+            </div>
+        {% endif %}
+    </div>
+</body>
+</html>

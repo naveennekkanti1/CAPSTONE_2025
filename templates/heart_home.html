@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Heart Disease Predictor</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" />
+    <style>
+        body {
+            padding: 20px;
+            background-color: #f0f2f5;
+        }
+        .form-section {
+            width: 70%;
+            margin: auto;
+            padding: 20px;
+            background-color: #fff;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+        h2 {
+            margin-bottom: 20px;
+        }
+        .precautions {
+            margin-top: 20px;
+            padding: 15px;
+            background-color: #e9ecef;
+            border-radius: 10px;
+        }
+        .prediction {
+            padding: 15px;
+            background-color: #d4edda;
+            border-radius: 10px;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+
+<h1 class="text-center">🩺 Heart Disease Prediction System</h1>
+
+<div class="form-section">
+    <!-- File Upload Section -->
+    <form action="/extract1" method="POST" enctype="multipart/form-data">
+        <h2>📤 Upload File for Data Extraction</h2>
+        <div class="form-group">
+            <label for="file">Upload PDF or DOCX:</label>
+            <input type="file" name="file" class="form-control" required />
+        </div>
+        <button type="submit" class="btn btn-primary btn-block">Extract Data</button>
+    </form>
+
+    <!-- Manual Input Section -->
+    <h2>✍️ Manually Edit Extracted Data</h2>
+    <form action="/predict/heart" method="POST">
+        {% for feature in features %}
+        <div class="form-group">
+            <label for="{{ feature }}">{{ feature }}</label>
+            <input
+                type="text"
+                name="{{ feature }}"
+                class="form-control"
+                value="{{ extracted_data.get(feature, '') if extracted_data else '' }}"
+                placeholder="Enter {{ feature }} value"
+            />
+        </div>
+        {% endfor %}
+        <button type="submit" class="btn btn-success btn-block">🔍 Predict Heart Disease</button>
+    </form>
+
+    <!-- Prediction Result -->
+    {% if prediction_text %}
+    <div class="prediction">
+        <h3>{{ prediction_text }}</h3>
+    </div>
+    {% endif %}
+
+    <!-- Precautionary Measures -->
+    {% if precautions %}
+    <div class="precautions">
+        <h3>🛡️ Recommended Precautions:</h3>
+        <ul>
+            {% for precaution in precautions %}
+            <li>{{ precaution }}</li>
+            {% endfor %}
+        </ul>
+    </div>
+    {% endif %}
+</div>
+
+</body>
+</html>
