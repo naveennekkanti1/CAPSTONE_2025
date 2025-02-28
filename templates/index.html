@@ -37,6 +37,11 @@
             height: 50px;
         }
 
+        .navbar .links {
+            display: flex;
+            align-items: center;
+        }
+
         .navbar .links a {
             color: white;
             text-decoration: none;
@@ -49,7 +54,130 @@
             color: #00d9a6;
         }
 
+        /* Language Dropdown Styles */
+        .language-container {
+            display: flex;
+            align-items: center;
+            margin-left: 15px;
+        }
         
+        .language-icon {
+            width: 24px;
+            height: 24px;
+            margin-right: 5px;
+        }
+        
+        #google_translate_element {
+            display: inline-block;
+        }
+        
+        /* Fix for Google Translate styling issues */
+        .goog-te-banner-frame {
+            display: none !important;
+        }
+        
+        body {
+            top: 0 !important;
+        }
+        
+        /* Hide Google Translate attribution and original elements */
+        .goog-te-gadget {
+            font-family: 'Poppins', sans-serif !important;
+            font-size: 14px !important;
+            color: #e0e0e0 !important;
+        }
+        
+        .goog-te-gadget-simple {
+            background-color: transparent !important;
+            border: none !important;
+            padding: 0 !important;
+        }
+        
+        .goog-te-gadget-simple .goog-te-menu-value span:first-child {
+            display: inline-block;
+            color: #e0e0e0 !important;
+        }
+        
+        .goog-te-gadget-simple .goog-te-menu-value span:not(:first-child),
+        .goog-te-gadget-icon,
+        .goog-te-banner-frame,
+        .goog-te-gadget span:not(.goog-te-menu-value span:first-child) {
+            display: none !important;
+        }
+        
+        .goog-te-menu-frame {
+            box-shadow: 0 0 8px rgba(0,0,0,0.3) !important;
+        }
+        
+        /* Language selection modal */
+        .language-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.8);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 10000;
+        }
+        
+        .language-selection {
+            background-color: #014340;
+            border-radius: 10px;
+            padding: 30px;
+            text-align: center;
+            max-width: 500px;
+            width: 90%;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+        }
+        
+        .language-selection h2 {
+            color: #00a6ff;
+            margin-bottom: 20px;
+        }
+        
+        .language-selection p {
+            color: white;
+            margin-bottom: 20px;
+        }
+        
+        .language-buttons {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 10px;
+        }
+        
+        .language-button {
+            background-color: #00a6ff;
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        
+        .language-button:hover {
+            background-color: #0080c4;
+        }
+        
+        .language-selector {
+            color: white;
+            background-color: transparent;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            padding: 5px 10px;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .language-selector:hover {
+            color: #00d9a6;
+            border-color: #00d9a6;
+        }
 
         /* Hero Section */
         .hero {
@@ -141,32 +269,32 @@
         }
 
         /* About Section */
-    #about {
-        background: linear-gradient(to bottom right, #014340, #011d1b);
-        color: white;
-        text-align: center;
-        padding: 50px 20px;
-        border-radius: 10px;
-        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-    }
-    #about h2 {
-        color: #00a6ff;
-        margin-bottom: 20px;
-    }
-    #about p {
-        font-size: 1.1rem;
-        color: #fff;
-        margin-bottom: 20px;
-    }
-    #about ul {
-        list-style: none;
-        padding: 0;
-    }
-    #about ul li {
-        font-size: 1.1rem;
-        color: #00a6ff;
-        margin: 10px 0;
-    }
+        #about {
+            background: linear-gradient(to bottom right, #014340, #011d1b);
+            color: white;
+            text-align: center;
+            padding: 50px 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+        }
+        #about h2 {
+            color: #00a6ff;
+            margin-bottom: 20px;
+        }
+        #about p {
+            font-size: 1.1rem;
+            color: #fff;
+            margin-bottom: 20px;
+        }
+        #about ul {
+            list-style: none;
+            padding: 0;
+        }
+        #about ul li {
+            font-size: 1.1rem;
+            color: #00a6ff;
+            margin: 10px 0;
+        }
 
         /* Services Section */
         #services ul {
@@ -257,58 +385,58 @@
             z-index: 9999;
         }
         .doctor-slider {
-    width: 60%;
-    margin: auto;
-    overflow: hidden;
-    position: relative;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
+            width: 60%;
+            margin: auto;
+            overflow: hidden;
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
 
-.slides {
-    display: flex;
-    transition: transform 0.5s linear;
-    animation: scroll 10s linear infinite; /* Continuous scrolling */
-}
+        .slides {
+            display: flex;
+            transition: transform 0.5s linear;
+            animation: scroll 10s linear infinite; /* Continuous scrolling */
+        }
 
-.doctor-card {
-    width: 100%;
-    max-width: 300px; /* Adjust to fit more cards */
-    padding: 20px;
-    background: #022f2c;
-    border-radius: 10px;
-    color: #00d9a6;
-    text-align: center;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-    margin: 10px;
-    flex-shrink: 0;
-}
+        .doctor-card {
+            width: 100%;
+            max-width: 300px; /* Adjust to fit more cards */
+            padding: 20px;
+            background: #022f2c;
+            border-radius: 10px;
+            color: #00d9a6;
+            text-align: center;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            margin: 10px;
+            flex-shrink: 0;
+        }
 
-.doctor-card img {
-    width: 120px;
-    height: 120px;
-    border-radius: 50%;
-    object-fit: cover;
-    margin-bottom: 10px;
-}
+        .doctor-card img {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            object-fit: cover;
+            margin-bottom: 10px;
+        }
 
-.doctor-card h3 {
-    margin: 10px 0 5px;
-    color: #00d9a6;
-}
+        .doctor-card h3 {
+            margin: 10px 0 5px;
+            color: #00d9a6;
+        }
 
-.doctor-card p {
-    margin: 5px 0;
-    font-size: 1rem;
-    color: #e0e0e0;
-}
+        .doctor-card p {
+            margin: 5px 0;
+            font-size: 1rem;
+            color: #e0e0e0;
+        }
 
-/* Keyframes for infinite sliding effect */
-@keyframes scroll {
-    0% { transform: translateX(0); }
-    100% { transform: translateX(-100%); } /* Moves continuously left */
-}
+        /* Keyframes for infinite sliding effect */
+        @keyframes scroll {
+            0% { transform: translateX(0); }
+            100% { transform: translateX(-100%); } /* Moves continuously left */
+        }
 
 
         /* See All Doctors Button */
@@ -330,64 +458,64 @@
         .see-all-btn a:hover {
             background-color: #0080c4;
         }
-/* Loading Screen */
-.loading-screen {
-        position: fixed;
-        width: 100%;
-        height: 100%;
-        background-color: black;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        z-index: 9999;
-    }
+        /* Loading Screen */
+        .loading-screen {
+            position: fixed;
+            width: 100%;
+            height: 100%;
+            background-color: black;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+        }
 
-    .loading-circle {
-        width: 80px;
-        height: 80px;
-        border-radius: 50%;
-        background-color: black;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        position: relative;
-        animation: growLogo 2s linear forwards;
-    }
+        .loading-circle {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            background-color: black;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+            animation: growLogo 2s linear forwards;
+        }
 
-    /* Rotating border animation */
-    .loading-circle::before {
-        content: "";
-        position: absolute;
-        width: 100%;
-        height: 100%;
-        border-radius: 50%;
-        border: 4px solid transparent;
-        border-top-color: #00a6ff;
-        animation: spin 1s linear infinite;
-    }
+        /* Rotating border animation */
+        .loading-circle::before {
+            content: "";
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            border: 4px solid transparent;
+            border-top-color: #00a6ff;
+            animation: spin 1s linear infinite;
+        }
 
-    .loading-logo {
-        width: 60px;
-        height: 60px;
-        border-radius: 50%;
-        object-fit: cover;
-    }
+        .loading-logo {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            object-fit: cover;
+        }
 
-    /* Keyframes for growing effect */
-    @keyframes growLogo {
-        0% { width: 80px; height: 80px; }
-        50% { width: 120px; height: 120px; }
-        100% { width: 160px; height: 160px; }
-    }
+        /* Keyframes for growing effect */
+        @keyframes growLogo {
+            0% { width: 80px; height: 80px; }
+            50% { width: 120px; height: 120px; }
+            100% { width: 160px; height: 160px; }
+        }
 
-    /* Keyframes for rotating effect */
-    @keyframes spin {
-        0% { transform: rotate(0deg); }
-        100% { transform: rotate(360deg); }
-    }
+        /* Keyframes for rotating effect */
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
 
-    /* Visitor Counter */
-    .visitor-counter {
+        /* Visitor Counter */
+        .visitor-counter {
             position: fixed;
             bottom: 20px;
             left: 20px;
@@ -429,24 +557,22 @@
             border-radius: 10px;
             box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
         }
-
     </style>
 </head>
 <body>
     <!-- Loading Screen -->
-<div class="loading-screen">
-    <div class="loading-circle">
-        <img src="static/images/logo.jpg" alt="Logo" class="loading-logo">
+    <div class="loading-screen">
+        <div class="loading-circle">
+            <img src="static/images/logo.jpg" alt="Logo" class="loading-logo">
+        </div>
     </div>
-</div>
-
 
     <!-- Scroll Indicator -->
     <div class="scroll-indicator"></div>
 
     <!-- Navbar -->
     <div class="navbar">
-        <div class="logo" >
+        <div class="logo">
             <img src="static/images/logo.jpg" alt="Logo">
         </div>
         <div class="links">
@@ -458,6 +584,12 @@
             <a href="/login">Login</a>
             <a href="/register">Signup</a>
             <a href="/all_doctors">Find Doctor</a>
+            <!-- Language Selector Button -->
+            <div class="language-container">
+                <img src="https://cdn-icons-png.flaticon.com/512/5754/5754941.png" alt="Language" class="language-icon">
+                <button id="language-selector" class="language-selector">Change Language</button>
+                <div id="google_translate_element" style="display: none;"></div>
+            </div>
         </div>
     </div>
 
@@ -471,23 +603,23 @@
     </div>
 
     <!-- About Section -->
-<section id="about" class="about-section">
-    <h2>About Us</h2>
-    <p><strong>RapiACT!</strong> is a cutting-edge healthcare platform that redefines the way you access medical services. From <strong>smart diagnosis</strong> and <strong>AI-powered report predictions</strong> to virtual consultations and seamless doctor appointments, we bring healthcare to your fingertips.</p>
-    
-    <h3>Why Choose RapiACT!?</h3>
-    <ul>
-        <li><strong>✅ Smart Diagnosis:</strong> Get instant health insights based on symptoms.</li>
-        <li><strong>✅ Online Consultation:</strong> Connect with expert doctors anytime, anywhere.</li>
-        <li><strong>✅ AI-Powered Report Analysis:</strong> Advanced technology predicts health risks early.</li>
-        <li><strong>✅ Seamless Appointments:</strong> Easily book, reschedule, or cancel consultations.</li>
-        <li><strong>✅ Secure & Reliable:</strong> Your health data is encrypted and protected.</li>
-    </ul>
-    
-    <p>We are committed to technology-driven, patient-focused healthcare, ensuring that expert medical guidance is always within your reach. With RapiACT!, managing your health is simpler, faster, and more reliable than ever before.</p>
-    
-    <p><strong>Join RapiACT! today and step into the future of smarter healthcare! 🚀</strong></p>
-</section>
+    <section id="about" class="about-section">
+        <h2>About Us</h2>
+        <p><strong>RapiACT!</strong> is a cutting-edge healthcare platform that redefines the way you access medical services. From <strong>smart diagnosis</strong> and <strong>AI-powered report predictions</strong> to virtual consultations and seamless doctor appointments, we bring healthcare to your fingertips.</p>
+        
+        <h3>Why Choose RapiACT!?</h3>
+        <ul>
+            <li><strong>✅ Smart Diagnosis:</strong> Get instant health insights based on symptoms.</li>
+            <li><strong>✅ Online Consultation:</strong> Connect with expert doctors anytime, anywhere.</li>
+            <li><strong>✅ AI-Powered Report Analysis:</strong> Advanced technology predicts health risks early.</li>
+            <li><strong>✅ Seamless Appointments:</strong> Easily book, reschedule, or cancel consultations.</li>
+            <li><strong>✅ Secure & Reliable:</strong> Your health data is encrypted and protected.</li>
+        </ul>
+        
+        <p>We are committed to technology-driven, patient-focused healthcare, ensuring that expert medical guidance is always within your reach. With RapiACT!, managing your health is simpler, faster, and more reliable than ever before.</p>
+        
+        <p><strong>Join RapiACT! today and step into the future of smarter healthcare! 🚀</strong></p>
+    </section>
 
     <!-- Services Section -->
     <section id="services">
@@ -500,31 +632,31 @@
         </ul>
     </section>
 
- <!-- Doctors Section -->
- <!-- Doctors Section -->
-<section id="doctors">
-    <h2>Meet Our Doctors</h2>
-    <div class="doctor-slider">
-        <div class="slides">
-            <!-- Doctors will be dynamically added here -->
+    <!-- Doctors Section -->
+    <section id="doctors">
+        <h2>Meet Our Doctors</h2>
+        <div class="doctor-slider">
+            <div class="slides">
+                <!-- Doctors will be dynamically added here -->
+            </div>
         </div>
-    </div>
-    <div class="see-all-btn">
-        <a href="/all_doctors">See All Doctors</a>
-    </div>
-</section>
+        <div class="see-all-btn">
+            <a href="/all_doctors">See All Doctors</a>
+        </div>
+    </section>
 
     <!-- Contact Section -->
     <section id="contact">
         <h2>Contact Us</h2>
         <form class="contact-form" action="/submit_enquiry" method="POST">
-          <input type="text" name="name" placeholder="Your Name" required />
-          <input type="email" name="email" placeholder="Your Email" required />
-          <textarea name="message" placeholder="Your Message" required></textarea>
-          <button type="submit">Send Message</button>
+            <input type="text" name="name" placeholder="Your Name" required />
+            <input type="email" name="email" placeholder="Your Email" required />
+            <textarea name="message" placeholder="Your Message" required></textarea>
+            <button type="submit">Send Message</button>
         </form>
-      </section>
-      <div class="visitor-counter">Visitors: <span id="visitor-count">0</span></div>
+    </section>
+    
+    <div class="visitor-counter">Visitors: <span id="visitor-count">0</span></div>
 
     <!-- Chatbot Button -->
     <div class="chatbot-container" onclick="toggleChatbot()">
@@ -539,56 +671,177 @@
         <p>© 2025 RapiACT. All Rights Reserved.</p>
     </footer>
 
-    <!-- Script for Scroll Indicator -->
-    <script>
-        window.addEventListener('scroll', () => {
-            const scrollTop = window.scrollY;
-            const windowHeight = document.documentElement.scrollHeight - window.innerHeight;
-            const scrollPercentage = (scrollTop / windowHeight) * 100;
-            document.querySelector('.scroll-indicator').style.height = scrollPercentage + '%';
-        });
+    <!-- Google Translate Script -->
+    <script type="text/javascript">
+        // Language codes and names
+        const languages = [
+            { code: 'en', name: 'English' },
+            { code: 'hi', name: 'हिन्दी (Hindi)' },
+            { code: 'te', name: 'తెలుగు (Telugu)' },
+            { code: 'kn', name: 'ಕನ್ನಡ (Kannada)' },
+            { code: 'ta', name: 'தமிழ் (Tamil)' }
+        ];
         
-        document.addEventListener("DOMContentLoaded", function () {
-    fetch("/get_doctors")
-        .then(response => response.json())
-        .then(doctors => {
-            const slidesContainer = document.querySelector(".slides");
-
-            doctors.forEach(doctor => {
-                let photoSrc = 'static/images/logo.jpg'; // Default image
-
-                // Ensure the doctor._id is a string
-                if (doctor._id && typeof doctor._id === "object" && "$oid" in doctor._id) {
-                    photoSrc = `/user_photo/${doctor._id.$oid}`;
-                } else if (doctor._id && typeof doctor._id === "string") {
-                    photoSrc = `/user_photo/${doctor._id}`;
+        // Function to initialize Google Translate
+        function googleTranslateElementInit() {
+            new google.translate.TranslateElement({
+                pageLanguage: 'en',
+                includedLanguages: 'en,hi,te,kn,ta',
+                autoDisplay: false,
+                layout: google.translate.TranslateElement.InlineLayout.HORIZONTAL
+            }, 'google_translate_element');
+            
+            // Hide Google Translate UI elements after initialization
+            setTimeout(() => {
+                const googleElements = document.querySelectorAll('.goog-te-gadget-icon, .goog-te-gadget span:not(.goog-te-menu-value span:first-child)');
+                googleElements.forEach(el => {
+                    el.style.display = 'none';
+                });
+            }, 1000);
+        }
+        
+        // Function to translate the page
+        function translatePage(langCode) {
+            // Save the language preference with a timestamp
+            const now = new Date().getTime();
+            localStorage.setItem('preferredLanguage', langCode);
+            localStorage.setItem('languageTimestamp', now);
+            
+            // If it's the default language, reload without translation
+            if (langCode === 'en') {
+                location.reload();
+                return;
+            }
+            
+            // Use Google's translation method
+            const iframe = document.querySelector('.goog-te-menu-frame');
+            if (iframe) {
+                const iframeDoc = iframe.contentDocument || iframe.contentWindow.document;
+                const elements = iframeDoc.querySelectorAll('a.goog-te-menu2-item');
+                
+                for (let i = 0; i < elements.length; i++) {
+                    const element = elements[i];
+                    if (element.textContent.includes(getLangName(langCode))) {
+                        element.click();
+                        break;
+                    }
                 }
-
-                const doctorCard = document.createElement("div");
-                doctorCard.classList.add("doctor-card");
-                doctorCard.innerHTML = `
-                    <img src="${photoSrc}" alt="Doctor">
-                    <h3>${doctor.name}</h3>
-                    <p>Specialization: ${doctor.specialization}</p>
-                    <p>Experience: ${doctor.years_experience} years</p>
-                `;
-                slidesContainer.appendChild(doctorCard);
+            } else {
+                // Fallback method if iframe not available
+                const select = document.querySelector('.goog-te-combo');
+                if (select) {
+                    select.value = langCode;
+                    select.dispatchEvent(new Event('change'));
+                }
+            }
+        }
+        
+        // Helper function to get language name from code
+        function getLangName(code) {
+            const lang = languages.find(l => l.code === code);
+            return lang ? lang.name : 'English';
+        }
+        
+        // Function to show the language selection modal
+        function showLanguageModal() {
+            // Create modal elements
+            const modal = document.createElement('div');
+            modal.className = 'language-modal';
+            
+            const modalContent = document.createElement('div');
+            modalContent.className = 'language-selection';
+            
+            const heading = document.createElement('h2');
+            heading.textContent = 'Choose Your Language';
+            
+            const description = document.createElement('p');
+            description.textContent = 'Please select your preferred language to continue:';
+            
+            const buttonsContainer = document.createElement('div');
+            buttonsContainer.className = 'language-buttons';
+            
+            // Add language buttons
+            languages.forEach(lang => {
+                const button = document.createElement('button');
+                button.className = 'language-button';
+                button.textContent = lang.name;
+                button.addEventListener('click', () => {
+                    translatePage(lang.code);
+                    modal.remove();
+                });
+                buttonsContainer.appendChild(button);
             });
-        })
-        .catch(error => console.error("Error fetching doctors:", error));
-});
+            
+            // Assemble and show the modal
+            modalContent.appendChild(heading);
+            modalContent.appendChild(description);
+            modalContent.appendChild(buttonsContainer);
+            modal.appendChild(modalContent);
+            document.body.appendChild(modal);
+        }
+        
+        // Function to check if we should show the language modal
+        function checkLanguagePreference() {
+            // Always show on first visit or when specifically requested
+            showLanguageModal();
+        }
+        
+        // Set up event listeners when document is loaded
+        document.addEventListener('DOMContentLoaded', function () {
+            // Handle language selector button click
+            const languageSelector = document.getElementById('language-selector');
+            if (languageSelector) {
+                languageSelector.addEventListener('click', showLanguageModal);
+            }
+            
+            // Check if we should ask for language preference
+            setTimeout(() => {
+                checkLanguagePreference();
+            }, 1000);
+            
+            // Original scroll indicator code
+            window.addEventListener('scroll', () => {
+                const scrollTop = window.scrollY;
+                const windowHeight = document.documentElement.scrollHeight - window.innerHeight;
+                const scrollPercentage = (scrollTop / windowHeight) * 100;
+                document.querySelector('.scroll-indicator').style.height = scrollPercentage + '%';
+            });
+            
+            // Original doctors loading code
+            fetch("/get_doctors")
+                .then(response => response.json())
+                .then(doctors => {
+                    const slidesContainer = document.querySelector(".slides");
 
+                    doctors.forEach(doctor => {
+                        let photoSrc = 'static/images/logo.jpg'; // Default image
 
+                        // Ensure the doctor._id is a string
+                        if (doctor._id && typeof doctor._id === "object" && "$oid" in doctor._id) {
+                            photoSrc = `/user_photo/${doctor._id.$oid}`;
+                        } else if (doctor._id && typeof doctor._id === "string") {
+                            photoSrc = `/user_photo/${doctor._id}`;
+                        }
 
-    document.addEventListener("DOMContentLoaded", function () {
-        setTimeout(() => {
-        document.querySelector('.loading-screen').style.display = 'none';
-    }, 2000);
-    });
-
-
-    // Visitor Counter
-    document.addEventListener("DOMContentLoaded", function () {
+                        const doctorCard = document.createElement("div");
+                        doctorCard.classList.add("doctor-card");
+                        doctorCard.innerHTML = `
+                            <img src="${photoSrc}" alt="Doctor">
+                            <h3>${doctor.name}</h3>
+                            <p>Specialization: ${doctor.specialization}</p>
+                            <p>Experience: ${doctor.years_experience} years</p>
+                        `;
+                        slidesContainer.appendChild(doctorCard);
+                    });
+                })
+                .catch(error => console.error("Error fetching doctors:", error));
+            
+            // Original loading screen code
+            setTimeout(() => {
+                document.querySelector('.loading-screen').style.display = 'none';
+            }, 2000);
+            
+            // Original visitor counter code
             let visitors = localStorage.getItem("visitors");
             if (!visitors) {
                 visitors = 1;
@@ -607,11 +860,12 @@
                 .catch(error => console.log("Backend visitor counter not available."));
         });
 
-        // Chatbot Toggle
+        // Original chatbot toggle function
         function toggleChatbot() {
             let chatbot = document.getElementById("chatbase-widget");
             chatbot.style.display = chatbot.style.display === "none" ? "block" : "none";
         }
     </script>
+    <script type="text/javascript" src="https://translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script>
 </body>
 </html>
