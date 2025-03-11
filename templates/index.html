@@ -68,7 +68,7 @@
         }
         
         #google_translate_element {
-            display: inline-block;
+            display: none;
         }
         
         /* Fix for Google Translate styling issues */
@@ -334,6 +334,76 @@
             margin-bottom: 10px;
         }
 
+        /* Pharmacy Section */
+        #pharmacy {
+            background: linear-gradient(to bottom right, #011d1b, #014340);
+            color: white;
+            padding: 60px 30px;
+        }
+
+        #pharmacy h2 {
+            color: #00a6ff;
+            margin-bottom: 30px;
+        }
+
+        .pharmacy-features {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 30px;
+            margin-bottom: 40px;
+        }
+
+        .pharmacy-feature {
+            background-color: rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            padding: 25px;
+            width: 280px;
+            text-align: center;
+            transition: transform 0.3s ease;
+        }
+
+        .pharmacy-feature:hover {
+            transform: translateY(-10px);
+            background-color: rgba(0, 166, 255, 0.1);
+        }
+
+        .pharmacy-feature img {
+            width: 60px;
+            height: 60px;
+            margin-bottom: 15px;
+        }
+
+        .pharmacy-feature h3 {
+            color: #00d9a6;
+            margin-bottom: 10px;
+        }
+
+        .pharmacy-feature p {
+            color: #e0e0e0;
+            font-size: 0.9rem;
+            margin-bottom: 0;
+        }
+
+        .pharmacy-cta {
+            margin-top: 40px;
+        }
+
+        .pharmacy-button {
+            display: inline-block;
+            padding: 15px 30px;
+            background-color: #00a6ff;
+            color: white;
+            text-decoration: none;
+            border-radius: 50px;
+            font-size: 16px;
+            transition: background-color 0.3s ease;
+        }
+
+        .pharmacy-button:hover {
+            background-color: #0080c4;
+        }
+
         /* Contact Section */
         #contact form {
             max-width: 600px;
@@ -579,6 +649,7 @@
             <a href="/">Home</a>
             <a href="#about">About</a>
             <a href="/services">Services</a>
+            <a href="#pharmacy">Pharmacy</a>
             <a href="#doctors">Doctors</a>
             <a href="#contact">Contact</a>
             <a href="/login">Login</a>
@@ -614,6 +685,7 @@
             <li><strong>✅ AI-Powered Report Analysis:</strong> Advanced technology predicts health risks early.</li>
             <li><strong>✅ Seamless Appointments:</strong> Easily book, reschedule, or cancel consultations.</li>
             <li><strong>✅ Secure & Reliable:</strong> Your health data is encrypted and protected.</li>
+            <li><strong>✅ Online Pharmacy:</strong> Order medications and healthcare products with doorstep delivery.</li>
         </ul>
         
         <p>We are committed to technology-driven, patient-focused healthcare, ensuring that expert medical guidance is always within your reach. With RapiACT!, managing your health is simpler, faster, and more reliable than ever before.</p>
@@ -629,7 +701,38 @@
             <li>Diagnostic Test Bookings</li>
             <li>Personalized Health Reports</li>
             <li>Emergency Assistance</li>
+            <li>Online Pharmacy & Medication Delivery</li>
         </ul>
+    </section>
+
+    <!-- Pharmacy Section -->
+    <section id="pharmacy">
+        <h2>Online Pharmacy</h2>
+        <p>Get your prescribed medications and healthcare essentials delivered to your doorstep with our secure and convenient online pharmacy service.</p>
+        
+        <div class="pharmacy-features">
+            <div class="pharmacy-feature">
+                <img src="https://cdn-icons-png.flaticon.com/512/3140/3140343.png" alt="Prescription">
+                <h3>Digital Prescriptions</h3>
+                <p>Upload prescriptions directly from your doctor consultations or scan and upload your physical prescriptions.</p>
+            </div>
+            
+            <div class="pharmacy-feature">
+                <img src="https://cdn-icons-png.flaticon.com/512/2982/2982226.png" alt="Medicine">
+                <h3>Wide Range of Products</h3>
+                <p>Access prescription medications, over-the-counter drugs, wellness products, and healthcare equipment.</p>
+            </div>
+            
+            <div class="pharmacy-feature">
+                <img src="https://cdn-icons-png.flaticon.com/512/2203/2203138.png" alt="Delivery">
+                <h3>Express Delivery</h3>
+                <p>Get essential medications delivered within hours and regular orders within 24-48 hours.</p>
+            </div>
+        </div>
+        
+        <div class="pharmacy-cta">
+            <a href="/pharmacy" class="pharmacy-button">Visit Pharmacy</a>
+        </div>
     </section>
 
     <!-- Doctors Section -->
@@ -780,12 +883,6 @@
             document.body.appendChild(modal);
         }
         
-        // Function to check if we should show the language modal
-        function checkLanguagePreference() {
-            // Always show on first visit or when specifically requested
-            showLanguageModal();
-        }
-        
         // Set up event listeners when document is loaded
         document.addEventListener('DOMContentLoaded', function () {
             // Handle language selector button click
@@ -793,11 +890,6 @@
             if (languageSelector) {
                 languageSelector.addEventListener('click', showLanguageModal);
             }
-            
-            // Check if we should ask for language preference
-            setTimeout(() => {
-                checkLanguagePreference();
-            }, 1000);
             
             // Original scroll indicator code
             window.addEventListener('scroll', () => {
@@ -839,33 +931,38 @@
             // Original loading screen code
             setTimeout(() => {
                 document.querySelector('.loading-screen').style.display = 'none';
-            }, 2000);
+            }, 2000); // 2 second delay before hiding the loading screen
             
-            // Original visitor counter code
-            let visitors = localStorage.getItem("visitors");
-            if (!visitors) {
-                visitors = 1;
-            } else {
-                visitors = parseInt(visitors) + 1;
+            // Visitor counter
+            let count = localStorage.getItem('visitorCount') || 0;
+            count = parseInt(count) + 1;
+            localStorage.setItem('visitorCount', count);
+            document.getElementById('visitor-count').textContent = count;
+            
+            // Check for saved language preference
+            const savedLanguage = localStorage.getItem('preferredLanguage');
+            const timestamp = localStorage.getItem('languageTimestamp');
+            const now = new Date().getTime();
+            const oneDay = 24 * 60 * 60 * 1000; // One day in milliseconds
+            
+            // Apply saved language if it's less than a day old
+            if (savedLanguage && timestamp && (now - timestamp < oneDay)) {
+                translatePage(savedLanguage);
             }
-            localStorage.setItem("visitors", visitors);
-            document.getElementById("visitor-count").textContent = visitors;
-
-            // Optional: Fetch persistent count from backend
-            fetch("/get_visitors")
-                .then(response => response.json())
-                .then(data => {
-                    document.getElementById("visitor-count").textContent = data.count;
-                })
-                .catch(error => console.log("Backend visitor counter not available."));
         });
-
-        // Original chatbot toggle function
+        
+        // Chatbot toggle function
         function toggleChatbot() {
-            let chatbot = document.getElementById("chatbase-widget");
-            chatbot.style.display = chatbot.style.display === "none" ? "block" : "none";
+            const chatbotWidget = document.getElementById('chatbase-widget');
+            if (chatbotWidget.style.display === 'none' || chatbotWidget.style.display === '') {
+                chatbotWidget.style.display = 'block';
+            } else {
+                chatbotWidget.style.display = 'none';
+            }
         }
     </script>
-    <script type="text/javascript" src="https://translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script>
+    
+    <!-- Google Translate API -->
+    <script type="text/javascript" src="//translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script>
 </body>
 </html>

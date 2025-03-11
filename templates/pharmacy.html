@@ -1,0 +1,1158 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RapiACT Pharmacy</title>
+    <link rel="icon" type="image/jpg" href="{{ url_for('static', filename='images/logo.jpg') }}">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: #f5f7fa;
+            color: #333;
+            line-height: 1.6;
+            overflow-x: hidden;
+        }
+
+        /* Navbar Styles */
+        .navbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px 30px;
+            background-color: #014340;
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+
+        .navbar .logo img {
+            height: 50px;
+        }
+
+        .navbar .links {
+            display: flex;
+            align-items: center;
+        }
+
+        .navbar .links a {
+            color: white;
+            text-decoration: none;
+            margin: 0 15px;
+            font-size: 14px;
+            transition: color 0.3s ease;
+        }
+
+        .navbar .links a:hover {
+            color: #00d9a6;
+        }
+
+        /* Banner */
+        .banner {
+            background: linear-gradient(to right, #014340, #036d66);
+            color: white;
+            padding: 60px 40px;
+            text-align: center;
+        }
+
+        .banner h1 {
+            font-size: 2.5rem;
+            margin-bottom: 20px;
+            color: #00d9a6;
+        }
+
+        .banner p {
+            font-size: 1.2rem;
+            max-width: 800px;
+            margin: 0 auto 20px;
+            color: #e0e0e0;
+        }
+
+        /* Search Bar */
+        .search-container {
+            max-width: 800px;
+            margin: 30px auto;
+            padding: 0 20px;
+        }
+
+        .search-bar {
+            display: flex;
+            background: white;
+            border-radius: 50px;
+            overflow: hidden;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+
+        .search-bar input {
+            flex: 1;
+            padding: 15px 25px;
+            border: none;
+            outline: none;
+            font-size: 1rem;
+        }
+
+        .search-bar button {
+            background: #00a6ff;
+            color: white;
+            border: none;
+            padding: 0 30px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: background 0.3s;
+        }
+
+        .search-bar button:hover {
+            background: #0080c4;
+        }
+
+        /* Categories Section */
+        .categories {
+            padding: 40px 20px;
+            text-align: center;
+        }
+
+        .categories h2 {
+            color: #014340;
+            margin-bottom: 30px;
+            font-size: 1.8rem;
+        }
+
+        .category-grid {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 20px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .category-card {
+            background: white;
+            border-radius: 15px;
+            width: 200px;
+            padding: 20px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+            transition: transform 0.3s, box-shadow 0.3s;
+            cursor: pointer;
+        }
+
+        .category-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+        }
+
+        .category-card img {
+            width: 80px;
+            height: 80px;
+            margin-bottom: 15px;
+        }
+
+        .category-card h3 {
+            color: #014340;
+            font-size: 1.1rem;
+            margin-bottom: 10px;
+        }
+
+        /* Products Section */
+        .products {
+            padding: 40px 20px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .products-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+        }
+
+        .products-header h2 {
+            color: #014340;
+            font-size: 1.8rem;
+        }
+
+        .products-header select {
+            padding: 10px;
+            border-radius: 5px;
+            border: 1px solid #ddd;
+            outline: none;
+            font-size: 0.9rem;
+        }
+
+        .products-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 30px;
+        }
+
+        .product-card {
+            background: white;
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+            transition: transform 0.3s;
+        }
+
+        .product-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .product-img {
+            height: 200px;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: #f9f9f9;
+        }
+
+        .product-img img {
+            max-width: 100%;
+            max-height: 180px;
+            object-fit: contain;
+        }
+
+        .product-info {
+            padding: 20px;
+        }
+
+        .product-category {
+            color: #0080c4;
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        .product-name {
+            color: #333;
+            font-size: 1.1rem;
+            margin-bottom: 10px;
+            height: 50px;
+            overflow: hidden;
+        }
+
+        .product-price {
+            color: #014340;
+            font-weight: bold;
+            font-size: 1.2rem;
+            margin-bottom: 15px;
+        }
+
+        .product-actions {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .quantity-controls {
+            display: flex;
+            align-items: center;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            overflow: hidden;
+        }
+
+        .quantity-controls button {
+            background: #f1f1f1;
+            border: none;
+            width: 30px;
+            height: 30px;
+            font-size: 1rem;
+            cursor: pointer;
+        }
+
+        .quantity-controls span {
+            width: 30px;
+            text-align: center;
+            font-size: 0.9rem;
+        }
+
+        .add-to-cart {
+            background: #00a6ff;
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 5px;
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+
+        .add-to-cart:hover {
+            background: #0080c4;
+        }
+
+        .prescription-req {
+            color: #ff3b30;
+            font-size: 0.8rem;
+            margin-top: 10px;
+            display: flex;
+            align-items: center;
+        }
+
+        .prescription-req img {
+            width: 15px;
+            margin-right: 5px;
+        }
+
+        /* Cart Section */
+        .cart-section {
+            position: fixed;
+            top: 0;
+            right: -400px;
+            width: 400px;
+            height: 100vh;
+            background: white;
+            box-shadow: -5px 0 15px rgba(0, 0, 0, 0.1);
+            z-index: 1001;
+            transition: right 0.3s ease;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .cart-section.active {
+            right: 0;
+        }
+
+        .cart-header {
+            background: #014340;
+            color: white;
+            padding: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .cart-header h3 {
+            font-size: 1.3rem;
+            color: #00d9a6;
+        }
+
+        .close-cart {
+            background: none;
+            border: none;
+            color: white;
+            font-size: 1.5rem;
+            cursor: pointer;
+        }
+
+        .cart-items {
+            flex: 1;
+            overflow-y: auto;
+            padding: 20px;
+        }
+
+        .cart-item {
+            display: flex;
+            margin-bottom: 20px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid #eee;
+        }
+
+        .cart-item-img {
+            width: 80px;
+            height: 80px;
+            border-radius: 10px;
+            overflow: hidden;
+            background: #f9f9f9;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 15px;
+        }
+
+        .cart-item-img img {
+            max-width: 100%;
+            max-height: 70px;
+            object-fit: contain;
+        }
+
+        .cart-item-details {
+            flex: 1;
+        }
+
+        .cart-item-name {
+            color: #333;
+            font-size: 1rem;
+            margin-bottom: 5px;
+        }
+
+        .cart-item-price {
+            color: #014340;
+            font-weight: bold;
+            font-size: 1.1rem;
+            margin-bottom: 10px;
+        }
+
+        .cart-item-actions {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .cart-quantity {
+            display: flex;
+            align-items: center;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            overflow: hidden;
+        }
+
+        .cart-quantity button {
+            background: #f1f1f1;
+            border: none;
+            width: 25px;
+            height: 25px;
+            font-size: 0.9rem;
+            cursor: pointer;
+        }
+
+        .cart-quantity span {
+            width: 25px;
+            text-align: center;
+            font-size: 0.8rem;
+        }
+
+        .remove-item {
+            color: #ff3b30;
+            background: none;
+            border: none;
+            font-size: 0.9rem;
+            cursor: pointer;
+        }
+
+        .cart-footer {
+            background: #f9f9f9;
+            padding: 20px;
+            border-top: 1px solid #eee;
+        }
+
+        .cart-total {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 20px;
+            color: #333;
+            font-weight: bold;
+        }
+
+        .checkout-btn {
+            width: 100%;
+            background: #00a6ff;
+            color: white;
+            border: none;
+            padding: 15px;
+            border-radius: 10px;
+            font-size: 1rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+
+        .checkout-btn:hover {
+            background: #0080c4;
+        }
+
+        .cart-icon {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            background: #00a6ff;
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+            cursor: pointer;
+            z-index: 1000;
+        }
+
+        .cart-icon img {
+            width: 30px;
+            height: 30px;
+        }
+
+        .cart-badge {
+            position: absolute;
+            top: -5px;
+            right: -5px;
+            background: #ff3b30;
+            color: white;
+            font-size: 0.8rem;
+            width: 22px;
+            height: 22px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* Modal Overlay for Cart */
+        .overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+            display: none;
+        }
+
+        .overlay.active {
+            display: block;
+        }
+
+        /* Checkout Modal */
+        .checkout-modal {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%) scale(0.9);
+            width: 90%;
+            max-width: 600px;
+            background: white;
+            border-radius: 15px;
+            z-index: 1002;
+            padding: 30px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s;
+        }
+
+        .checkout-modal.active {
+            opacity: 1;
+            visibility: visible;
+            transform: translate(-50%, -50%) scale(1);
+        }
+
+        .checkout-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .checkout-header h3 {
+            color: #014340;
+            font-size: 1.5rem;
+        }
+
+        .close-checkout {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: #333;
+        }
+
+        .checkout-form {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            color: #333;
+            font-weight: bold;
+        }
+
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            width: 100%;
+            padding: 12px 15px;
+            border: 1px solid #ddd;
+            border-radius: 10px;
+            font-size: 1rem;
+            outline: none;
+        }
+
+        .card-element {
+            border: 1px solid #ddd;
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 20px;
+        }
+
+        .submit-order {
+            background: #00a6ff;
+            color: white;
+            border: none;
+            padding: 15px;
+            border-radius: 10px;
+            font-size: 1rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+
+        .submit-order:hover {
+            background: #0080c4;
+        }
+
+        .prescription-upload {
+            border: 2px dashed #ddd;
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+            margin-bottom: 20px;
+            cursor: pointer;
+            transition: border-color 0.3s;
+        }
+
+        .prescription-upload:hover {
+            border-color: #00a6ff;
+        }
+
+        .prescription-upload img {
+            width: 40px;
+            margin-bottom: 10px;
+        }
+
+        .prescription-upload p {
+            color: #666;
+            font-size: 0.9rem;
+            margin-bottom: 10px;
+        }
+
+        .prescription-upload input {
+            display: none;
+        }
+
+        .prescription-upload button {
+            background: #f1f1f1;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 5px;
+            font-size: 0.9rem;
+            cursor: pointer;
+        }
+
+        /* Responsive styles */
+        @media (max-width: 768px) {
+            .navbar {
+                padding: 10px 15px;
+            }
+            
+            .navbar .links a {
+                margin: 0 8px;
+                font-size: 12px;
+            }
+            
+            .banner {
+                padding: 40px 20px;
+            }
+            
+            .banner h1 {
+                font-size: 2rem;
+            }
+            
+            .banner p {
+                font-size: 1rem;
+            }
+            
+            .cart-section {
+                width: 100%;
+                right: -100%;
+            }
+            
+            .checkout-modal {
+                width: 95%;
+                padding: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Navbar -->
+    <div class="navbar">
+        <div class="logo">
+            <img src="static/images/logo.jpg" alt="Logo">
+        </div>
+        <div class="links">
+            <a href="/">Home</a>
+            <a href="/#about">About</a>
+            <a href="/services">Services</a>
+            <a href="/pharmacy">Pharmacy</a>
+            <a href="/#doctors">Doctors</a>
+            <a href="/#contact">Contact</a>
+            <a href="/login">Login</a>
+            <a href="/register">Signup</a>
+        </div>
+    </div>
+
+    <!-- Banner -->
+    <div class="banner">
+        <h1>RapiACT Online Pharmacy</h1>
+        <p>Order your prescription medications and healthcare essentials with confidence. Fast delivery, secure payments, and expert advice.</p>
+    </div>
+
+    <!-- Search Bar -->
+    <div class="search-container">
+        <div class="search-bar">
+            <input type="text" placeholder="Search for medicines, healthcare products...">
+            <button>Search</button>
+        </div>
+    </div>
+
+    <!-- Categories -->
+    <div class="categories">
+        <h2>Shop by Category</h2>
+        <div class="category-grid">
+            <div class="category-card">
+                <img src="https://cdn-icons-png.flaticon.com/512/822/822092.png" alt="Prescription Medicines">
+                <h3>Prescription Medicines</h3>
+            </div>
+            <div class="category-card">
+                <img src="https://cdn-icons-png.flaticon.com/512/2966/2966327.png" alt="Over-the-Counter">
+                <h3>Over-the-Counter</h3>
+            </div>
+            <div class="category-card">
+                <img src="https://cdn-icons-png.flaticon.com/512/4320/4320367.png" alt="Vitamins & Supplements">
+                <h3>Vitamins & Supplements</h3>
+            </div>
+            <div class="category-card">
+                <img src="https://cdn-icons-png.flaticon.com/512/5719/5719669.png" alt="Healthcare Devices">
+                <h3>Healthcare Devices</h3>
+            </div>
+            <div class="category-card">
+                <img src="https://cdn-icons-png.flaticon.com/512/2447/2447325.png" alt="Personal Care">
+                <h3>Personal Care</h3>
+            </div>
+        </div>
+    </div>
+
+    <!-- Products -->
+    <div class="products">
+        <div class="products-header">
+            <h2>Popular Medicines</h2>
+            <select>
+                <option>Sort by: Popularity</option>
+                <option>Price: Low to High</option>
+                <option>Price: High to Low</option>
+                <option>Newest Arrivals</option>
+            </select>
+        </div>
+        <div class="products-grid">
+            <!-- Product 1 -->
+            <div class="product-card">
+                <div class="product-img">
+                    <img src="https://cdn-icons-png.flaticon.com/512/3140/3140343.png" alt="Medicine 1">
+                </div>
+                <div class="product-info">
+                    <div class="product-category">Antibiotics</div>
+                    <h3 class="product-name">Amoxicillin 500mg Capsules (10 caps)</h3>
+                    <div class="product-price">₹120.00</div>
+                    <div class="product-actions">
+                        <div class="quantity-controls">
+                            <button>-</button>
+                            <span>1</span>
+                            <button>+</button>
+                        </div>
+                        <button class="add-to-cart">Add</button>
+                    </div>
+                    <div class="prescription-req">
+                        <img src="https://cdn-icons-png.flaticon.com/512/1828/1828833.png" alt="Required">
+                        Prescription Required
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Product 2 -->
+            <div class="product-card">
+                <div class="product-img">
+                    <img src="https://cdn-icons-png.flaticon.com/512/3140/3140424.png" alt="Medicine 2">
+                </div>
+                <div class="product-info">
+                    <div class="product-category">Pain Relief</div>
+                    <h3 class="product-name">Paracetamol 500mg Tablets (20 tabs)</h3>
+                    <div class="product-price">₹35.00</div>
+                    <div class="product-actions">
+                        <div class="quantity-controls">
+                            <button>-</button>
+                            <span>1</span>
+                            <button>+</button>
+                        </div>
+                        <button class="add-to-cart">Add</button>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Product 3 -->
+            <div class="product-card">
+                <div class="product-img">
+                    <img src="https://cdn-icons-png.flaticon.com/512/4320/4320367.png" alt="Medicine 3">
+                </div>
+                <div class="product-info">
+                    <div class="product-category">Vitamins</div>
+                    <h3 class="product-name">Vitamin D3 1000IU Tablets (60 tabs)</h3>
+                    <div class="product-price">₹250.00</div>
+                    <div class="product-actions">
+                        <div class="quantity-controls">
+                            <button>-</button>
+                            <span>1</span>
+                            <button>+</button>
+                        </div>
+                        <button class="add-to-cart">Add</button>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Product 4 -->
+            <div class="product-card">
+                <div class="product-img">
+                    <img src="https://cdn-icons-png.flaticon.com/512/3140/3140363.png" alt="Medicine 4">
+                </div>
+                <div class="product-info">
+                    <div class="product-category">Cardiovascular</div>
+                    <h3 class="product-name">Amlodipine 5mg Tablets (30 tabs)</h3>
+                    <div class="product-price">₹85.00</div>
+                    <div class="product-actions">
+                        <div class="quantity-controls">
+                            <button>-</button>
+                            <span>1</span>
+                            <button>+</button>
+                        </div>
+                        <button class="add-to-cart">Add</button>
+                    </div>
+                    <div class="prescription-req">
+                        <img src="https://cdn-icons-png.flaticon.com/512/1828/1828833.png" alt="Required">
+                        Prescription Required
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Product 5 -->
+            <div class="product-card">
+                <div class="product-img">
+                    <img src="https://cdn-icons-png.flaticon.com/512/3004/3004458.png" alt="Medicine 5">
+                </div>
+                <div class="product-info">
+                    <div class="product-category">Respiratory</div>
+                    <h3 class="product-name">Salbutamol Inhaler (200 doses)</h3>
+                    <div class="product-price">₹320.00</div>
+                    <div class="product-actions">
+                        <div class="quantity-controls">
+                            <button>-</button>
+                            <span>1</span>
+                            <button>+</button>
+                        </div>
+                        <button class="add-to-cart">Add</button>
+                    </div>
+                    <div class="prescription-req">
+                        <img src="https://cdn-icons-png.flaticon.com/512/1828/1828833.png" alt="Required">
+                        Prescription Required
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Product 6 -->
+            <div class="product-card">
+                <div class="product-img">
+                    <img src="https://cdn-icons-png.flaticon.com/512/2447/2447325.png" alt="Medicine 6">
+                </div>
+                <div class="product-info">
+                    <div class="product-category">Skincare</div>
+                    <h3 class="product-name">Cetaphil Gentle Skin Cleanser (250ml)</h3>
+                    <div class="product-price">₹450.00</div>
+                    <div class="product-actions">
+                        <div class="quantity-controls">
+                            <button>-</button>
+                            <span>1</span>
+                            <button>+</button>
+                        </div>
+                        <button class="add-to-cart">Add</button>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Product 7 -->
+            <div class="product-card">
+                <div class="product-img">
+                    <img src="https://cdn-icons-png.flaticon.com/512/2982/2982226.png" alt="Medicine 7">
+                </div>
+                <div class="product-info">
+                    <div class="product-category">Gastrointestinal</div>
+                    <h3 class="product-name">Omeprazole 20mg Capsules (30 caps)</h3>
+                    <div class="product-price">₹180.00</div>
+                    <div class="product-actions">
+                        <div class="quantity-controls">
+                            <button>-</button>
+                            <span>1</span>
+                            <button>+</button>
+                        </div>
+                        <button class="add-to-cart">Add</button>
+                    </div>
+                    <div class="prescription-req">
+                        <img src="https://cdn-icons-png.flaticon.com/512/1828/1828833.png" alt="Required">
+                        Prescription Required
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Product 8 -->
+            <div class="product-card">
+                <div class="product-img">
+                    <img src="https://cdn-icons-png.flaticon.com/512/4320/4320455.png" alt="Medicine 8">
+                </div>
+                <div class="product-info">
+                    <div class="product-category">First Aid</div>
+                    <h3 class="product-name">Antiseptic Liquid Solution (100ml)</h3>
+                    <div class="product-price">₹75.00</div>
+                    <div class="product-actions">
+                        <div class="quantity-controls">
+                            <button>-</button>
+                            <span>1</span>
+                            <button>+</button>
+                        </div>
+                        <button class="add-to-cart">Add</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Cart Icon -->
+    <div class="cart-icon" onclick="toggleCart()">
+        <img src="https://cdn-icons-png.flaticon.com/512/2838/2838838.png" alt="Cart">
+        <span class="cart-badge">0</span>
+    </div>
+
+    <!-- Cart Section -->
+    <div class="cart-section">
+        <div class="cart-header">
+            <h3>Your Cart</h3>
+            <button class="close-cart" onclick="toggleCart()">&times;</button>
+        </div>
+        <div class="cart-items">
+            <!-- Cart items will be added dynamically -->
+        </div>
+        <div class="cart-footer">
+            <div class="cart-total">
+                <span>Total:</span>
+                <span>₹0.00</span>
+            </div>
+            <button class="checkout-btn" onclick="openCheckout()">Proceed to Checkout</button>
+        </div>
+    </div>
+
+    <!-- Modal Overlay -->
+    <div class="overlay" onclick="toggleCart()"></div>
+
+    <!-- Checkout Modal -->
+    <div class="checkout-modal">
+        <div class="checkout-header">
+            <h3>Checkout</h3>
+            <button class="close-checkout" onclick="closeCheckout()">&times;</button>
+        </div>
+        <form class="checkout-form">
+            <div class="form-group">
+                <label>Delivery Address</label>
+                <input type="text" placeholder="Enter your full address" required>
+            </div>
+            
+            <div class="form-group">
+                <label>Contact Number</label>
+                <input type="tel" placeholder="Enter your phone number" required>
+            </div>
+            
+            <div class="prescription-upload" onclick="document.getElementById('prescription-file').click()">
+                <img src="https://cdn-icons-png.flaticon.com/512/1828/1828833.png" alt="Prescription">
+                <p>Upload your prescription here (if required)</p>
+                <input type="file" id="prescription-file" accept="image/*,.pdf">
+                <button type="button">Browse Files</button>
+            </div>
+            
+            <div class="form-group">
+                <label>Payment Method</label>
+                <select required>
+                    <option value="">Select payment method</option>
+                    <option>Credit/Debit Card</option>
+                    <option>UPI</option>
+                    <option>Net Banking</option>
+                    <option>Cash on Delivery</option>
+                </select>
+            </div>
+            
+            <div class="card-element">
+                <!-- Payment card details will be added here -->
+                <div class="form-group">
+                    <label>Card Number</label>
+                    <input type="text" placeholder="1234 5678 9012 3456">
+                </div>
+                <div style="display: flex; gap: 10px;">
+                    <div class="form-group" style="flex: 1;">
+                        <label>Expiry Date</label>
+                        <input type="text" placeholder="MM/YY">
+                    </div>
+                    <div class="form-group" style="flex: 1;">
+                        <label>CVV</label>
+                        <input type="text" placeholder="123">
+                    </div>
+                </div>
+            </div>
+            
+            <button type="submit" class="submit-order">Place Order</button>
+        </form>
+    </div>
+
+    <script>
+        // Cart functionality
+        let cartCount = 0;
+        const cartItems = [];
+        
+        function toggleCart() {
+            document.querySelector('.cart-section').classList.toggle('active');
+            document.querySelector('.overlay').classList.toggle('active');
+        }
+        
+        function openCheckout() {
+            document.querySelector('.checkout-modal').classList.add('active');
+        }
+        
+        function closeCheckout() {
+            document.querySelector('.checkout-modal').classList.remove('active');
+        }
+        
+        // Add event listeners to all "Add to cart" buttons
+        document.querySelectorAll('.add-to-cart').forEach((button, index) => {
+            button.addEventListener('click', () => {
+                const productCard = button.closest('.product-card');
+                const productName = productCard.querySelector('.product-name').textContent;
+                const productPrice = productCard.querySelector('.product-price').textContent;
+                const productImg = productCard.querySelector('.product-img img').src;
+                const quantity = parseInt(productCard.querySelector('.quantity-controls span').textContent);
+                
+                // Check if product is already in cart
+                const existingItemIndex = cartItems.findIndex(item => item.name === productName);
+                
+                if (existingItemIndex > -1) {
+                    cartItems[existingItemIndex].quantity += quantity;
+                    updateCartUI();
+                } else {
+                    // Add to cart array
+                    cartItems.push({
+                        name: productName,
+                        price: productPrice,
+                        img: productImg,
+                        quantity: quantity
+                    });
+                    
+                    // Update cart count
+                    cartCount += quantity;
+                    document.querySelector('.cart-badge').textContent = cartCount;
+                    
+                    // Update cart UI
+                    updateCartUI();
+                    
+                    // Show notification
+                    alert(`Added ${productName} to cart!`);
+                }
+            });
+        });
+        
+        // Quantity controls in product cards
+        document.querySelectorAll('.quantity-controls').forEach(control => {
+            const minusBtn = control.querySelector('button:first-child');
+            const plusBtn = control.querySelector('button:last-child');
+            const quantitySpan = control.querySelector('span');
+            
+            minusBtn.addEventListener('click', () => {
+                let quantity = parseInt(quantitySpan.textContent);
+                if (quantity > 1) {
+                    quantity--;
+                    quantitySpan.textContent = quantity;
+                }
+            });
+            
+            plusBtn.addEventListener('click', () => {
+                let quantity = parseInt(quantitySpan.textContent);
+                quantity++;
+                quantitySpan.textContent = quantity;
+            });
+        });
+        
+        // Update cart UI
+        function updateCartUI() {
+            const cartItemsContainer = document.querySelector('.cart-items');
+            cartItemsContainer.innerHTML = '';
+            
+            let total = 0;
+            
+            cartItems.forEach((item, index) => {
+                // Calculate item total
+                const priceNum = parseFloat(item.price.replace('₹', ''));
+                const itemTotal = priceNum * item.quantity;
+                total += itemTotal;
+                
+                // Create cart item element
+                const cartItemElement = document.createElement('div');
+                cartItemElement.className = 'cart-item';
+                cartItemElement.innerHTML = `
+                    <div class="cart-item-img">
+                        <img src="${item.img}" alt="${item.name}">
+                    </div>
+                    <div class="cart-item-details">
+                        <h3 class="cart-item-name">${item.name}</h3>
+                        <div class="cart-item-price">${item.price} × ${item.quantity}</div>
+                        <div class="cart-item-actions">
+                            <div class="cart-quantity">
+                                <button onclick="decreaseQuantity(${index})">-</button>
+                                <span>${item.quantity}</span>
+                                <button onclick="increaseQuantity(${index})">+</button>
+                            </div>
+                            <button class="remove-item" onclick="removeItem(${index})">Remove</button>
+                        </div>
+                    </div>
+                `;
+                
+                cartItemsContainer.appendChild(cartItemElement);
+            });
+            
+            // Update total
+            document.querySelector('.cart-total span:last-child').textContent = `₹${total.toFixed(2)}`;
+        }
+        
+        // Cart quantity management
+        function increaseQuantity(index) {
+            cartItems[index].quantity++;
+            cartCount++;
+            document.querySelector('.cart-badge').textContent = cartCount;
+            updateCartUI();
+        }
+        
+        function decreaseQuantity(index) {
+            if (cartItems[index].quantity > 1) {
+                cartItems[index].quantity--;
+                cartCount--;
+                document.querySelector('.cart-badge').textContent = cartCount;
+                updateCartUI();
+            }
+        }
+        
+        function removeItem(index) {
+            cartCount -= cartItems[index].quantity;
+            cartItems.splice(index, 1);
+            document.querySelector('.cart-badge').textContent = cartCount;
+            updateCartUI();
+        }
+    </script>
+</body>
+</html>

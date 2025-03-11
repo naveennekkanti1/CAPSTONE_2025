@@ -840,16 +840,19 @@ def doctor_dashboard(appointment_type=None):
         # Filter based on appointment_type
         if appointment_type == "upcoming":
             return render_template('doctor_dashboard.html', doctor=doctor,
+                                   name=doctor_name.get('name', ''),
                                    upcoming_appointments=upcoming_appointments, 
                                    ongoing_appointments=[], 
                                    completed_appointments=[])
         elif appointment_type == "ongoing":
             return render_template('doctor_dashboard.html', doctor=doctor,
+                                   name=doctor_name.get('name', ''),
                                    upcoming_appointments=[], 
                                    ongoing_appointments=ongoing_appointments, 
                                    completed_appointments=[])
         elif appointment_type == "completed":
             return render_template('doctor_dashboard.html', doctor=doctor,
+                                   name=doctor_name.get('name', ''),
                                    upcoming_appointments=[], 
                                    ongoing_appointments=[], 
                                    completed_appointments=completed_appointments)
@@ -1225,6 +1228,30 @@ def logout():
     session.clear() 
     flash("You have been logged out.", "success")
     return redirect(url_for('home'))
+
+products = [
+    {
+        "id": 1,
+        "name": "Amoxicillin 500mg Capsules (10 caps)",
+        "category": "Antibiotics",
+        "price": 120.00,
+        "image": "https://cdn-icons-png.flaticon.com/512/3140/3140343.png",
+        "prescription_required": True
+    },
+    {
+        "id": 2,
+        "name": "Paracetamol 500mg Tablets (20 tabs)",
+        "category": "Pain Relief",
+        "price": 35.00,
+        "image": "https://cdn-icons-png.flaticon.com/512/3140/3140424.png",
+        "prescription_required": False
+    },
+    # More products would be defined here
+]
+
+@app.route('/pharmacy')
+def pharmacy():
+    return render_template('pharmacy.html', products=products)
 
 
 import joblib
