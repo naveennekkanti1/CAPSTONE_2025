@@ -1229,6 +1229,136 @@ def logout():
     flash("You have been logged out.", "success")
     return redirect(url_for('home'))
 
+import json
+@app.route('/email_dashboard')
+def email_dashboard():    
+    # Get all users for the individual email tab
+    users = list(mongo.db.users.find({}, {
+        'name': 1, 
+        'email': 1, 
+        'role': 1
+    }))
+    
+    return render_template('email_dashboard.html', users=users)
+
+# Send Bulk Email Route
+@app.route('/send_bulk_email', methods=['POST'])
+def send_bulk_email():
+    
+    recipient_group = request.form.get('recipient_group')
+    subject = request.form.get('subject')
+    message = request.form.get('message')
+    
+    # Query for recipient emails based on the selected group
+    if recipient_group == 'all':
+        recipients = list(mongo.db.users.find({}, {'email': 1, 'name': 1}))
+    elif recipient_group == 'doctors':
+        recipients = list(mongo.db.users.find({'role': 'doctor'}, {'email': 1, 'name': 1}))
+    elif recipient_group == 'patients':
+        recipients = list(mongo.db.users.find({'role': 'patient'}, {'email': 1, 'name': 1}))
+    else:
+        flash('Invalid recipient group', 'error')
+        return redirect(url_for('email_dashboard'))
+    
+    # Send emails using Flask-Mail
+    sent_count = send_emails_with_flask_mail(recipients, subject, message)
+    
+    # Log the email campaign
+    mongo.db.email_logs.insert_one({
+        'sent_by': session['user_id'],
+        'recipient_group': recipient_group,
+        'subject': subject,
+        'message': message,
+        'sent_count': sent_count,
+        'timestamp': datetime.now()
+    })
+    
+    flash(f'Successfully sent emails to {sent_count} recipients', 'success')
+    return redirect(url_for('email_dashboard'))
+
+# Send Individual Email Route
+@app.route('/send_individual_email', methods=['POST'])
+def send_individual_email():
+    
+    user_ids = json.loads(request.form.get('user_ids', '[]'))
+    subject = request.form.get('subject')
+    message = request.form.get('message')
+    
+    if not user_ids:
+        flash('No recipients selected', 'error')
+        return redirect(url_for('email_dashboard'))
+    
+    # Convert IDs to ObjectId
+    object_ids = [ObjectId(user_id) for user_id in user_ids]
+    
+    # Query for recipient emails
+    recipients = list(mongo.db.users.find(
+        {'_id': {'$in': object_ids}}, 
+        {'email': 1, 'name': 1}
+    ))
+    
+    # Send emails using Flask-Mail
+    sent_count = send_emails_with_flask_mail(recipients, subject, message)
+    
+    # Log the individual emails
+    mongo.db.email_logs.insert_one({
+        'sent_by': session['user_id'],
+        'recipient_ids': user_ids,
+        'subject': subject,
+        'message': message,
+        'sent_count': sent_count,
+        'timestamp': datetime.now()
+    })
+    
+    flash(f'Successfully sent emails to {sent_count} recipients', 'success')
+    return redirect(url_for('email_dashboard'))
+
+# Helper function to send emails using Flask-Mail
+def send_emails_with_flask_mail(recipients, subject, message):
+    sent_count = 0
+    
+    for recipient in recipients:
+        try:
+            # Personalize message with recipient's name if available
+            personalized_message = message
+            if 'name' in recipient:
+                personalized_message = f"Dear {recipient['name']},\n\n{message}"
+            
+            # Create a Flask-Mail message
+            msg = Message(
+                subject=subject,
+                recipients=[recipient['email']],
+                body=personalized_message,
+                sender=app.config['MAIL_DEFAULT_SENDER']
+            )
+            
+            # Send the email
+            mail.send(msg)
+            sent_count += 1
+            
+        except Exception as e:
+            print(f"Error sending to {recipient['email']}: {str(e)}")
+            continue
+    
+    return sent_count
+
+# API route to get email sending status
+@app.route('/email_status', methods=['GET'])
+def email_status():
+    
+    # Get the latest 5 email logs
+    logs = list(mongo.db.email_logs.find().sort('timestamp', -1).limit(5))
+    
+    # Convert ObjectId to string for JSON serialization
+    for log in logs:
+        log['_id'] = str(log['_id'])
+        log['sent_by'] = str(log['sent_by'])
+        log['timestamp'] = log['timestamp'].strftime('%Y-%m-%d %H:%M:%S')
+    
+    return jsonify({'logs': logs})
+
+# Other existing routes will remain unchanged
+
 products = [
     {
         "id": 1,
