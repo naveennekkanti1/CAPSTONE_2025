@@ -249,7 +249,7 @@ def schedule_meeting():
             patient_email = patient['email']
 
             # Validate if doctor exists
-            doctor = mongo.db.users.find_one({'_id': doctor_id}, {'name':1, 'email': 1})
+            doctor = mongo.db.users.find_one({'_id': doctor_id}, {'name': 1, 'email': 1})
             if not doctor or 'email' not in doctor:
                 flash("Doctor account issue: No email found.", "danger")
                 return redirect(url_for('schedule_meeting'))
@@ -263,9 +263,13 @@ def schedule_meeting():
                 flash(f"Error creating Google Meet: {str(e)}", "danger")
                 return redirect(url_for('schedule_meeting'))
 
-            # Store the meeting details
+            # Generate a unique appointment ID
+            appointment_id = str(ObjectId())
+
+            # Store the meeting details with appointment ID
             meeting_id = meeting_link.split('/')[-1]  # Extract Google Meet ID
             mongo.db.meetings.insert_one({
+                'appointment_id': appointment_id,  # Store unique appointment ID
                 'doctor_id': doctor_id,
                 'patient_id': patient_id,
                 'meeting_id': meeting_id,
@@ -282,6 +286,7 @@ def schedule_meeting():
 
         📅 Date & Time: {meeting_datetime}
         🔗 Join Here: {meeting_link}
+        🆔 Appointment ID: {appointment_id}
 
         Please ensure you join on time.
 
@@ -294,7 +299,7 @@ def schedule_meeting():
             return redirect(url_for('schedule_meeting'))
 
         # Fetch all patients for dropdown selection
-        patients = list(mongo.db.users.find({'role': 'patient'}, {'_id': 1,'name': 1}))
+        patients = list(mongo.db.users.find({'role': 'patient'}, {'_id': 1, 'name': 1}))
 
         # Fetch all scheduled meetings for the logged-in doctor
         meetings = list(mongo.db.meetings.find({'doctor_id': doctor_id}))
@@ -311,7 +316,7 @@ def schedule_meeting():
             meeting['patient_name'] = f"{patient['name']}" if patient else "Unknown"
 
             meeting_time = datetime.strptime(meeting['meeting_datetime'], "%Y-%m-%dT%H:%M")
-            
+
             # Check if meeting is ongoing (within a 1-hour window)
             if meeting_time <= current_time <= meeting_time.replace(hour=meeting_time.hour + 1):
                 ongoing_meetings.append(meeting)
@@ -321,7 +326,7 @@ def schedule_meeting():
                 past_meetings.append(meeting)
 
         return render_template('schedule_meeting.html', 
-                               name=doctor_name.get('name',''),
+                               name=doctor_name.get('name', ''),
                                patients=patients, 
                                ongoing_meetings=ongoing_meetings, 
                                upcoming_meetings=upcoming_meetings, 
@@ -329,6 +334,7 @@ def schedule_meeting():
 
     flash("Unauthorized access.", "danger")
     return redirect(url_for('login'))
+
 
 def get_scheduled_meetings():
     meetings = db.meetings.find().sort("meeting_datetime", DESCENDING)
