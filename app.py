@@ -5,7 +5,7 @@ from bson import ObjectId,errors
 from werkzeug.utils import secure_filename
 from datetime import datetime,timedelta
 from pymongo import MongoClient,DESCENDING
-import os,uuid,smtplib,threading,gridfs,logging,io,random,docx
+import os,uuid,smtplib,threading,gridfs,logging,io,random,docx,qrcode,base64
 from google.oauth2.credentials import Credentials
 from google_auth_oauthlib.flow import InstalledAppFlow
 from googleapiclient.discovery import build
@@ -1365,27 +1365,6 @@ def email_status():
     return jsonify({'logs': logs})
 
 # Other existing routes will remain unchanged
-
-products = [
-    {
-        "id": 1,
-        "name": "Amoxicillin 500mg Capsules (10 caps)",
-        "category": "Antibiotics",
-        "price": 120.00,
-        "image": "https://cdn-icons-png.flaticon.com/512/3140/3140343.png",
-        "prescription_required": True
-    },
-    {
-        "id": 2,
-        "name": "Paracetamol 500mg Tablets (20 tabs)",
-        "category": "Pain Relief",
-        "price": 35.00,
-        "image": "https://cdn-icons-png.flaticon.com/512/3140/3140424.png",
-        "prescription_required": False
-    },
-    # More products would be defined here
-]
-
 @app.route('/pharmacy')
 @app.route('/pharmacy/')
 def pharmacy():
@@ -1393,69 +1372,212 @@ def pharmacy():
         flash("Please login to access the pharmacy.", "danger")
         return redirect(url_for('login'))
     
-    # Fetch user information
-    user = None
-    if 'user_id' in session:
-        user = mongo.db.users.find_one({'_id': ObjectId(session['user_id'])})
-    
-    # Fetch all pharmacy products
+    user = mongo.db.users.find_one({'_id': ObjectId(session['user_id'])})
     products = list(mongo.db.pharmacy_products.find())
+
+    # Convert binary image data to base64 string for rendering in Jinja2
+    for product in products:
+        if product.get("image"):
+            product["image"] = base64.b64encode(product["image"]).decode("utf-8")  # Convert to base64 string
     
-    # If logged in as a patient, fetch their prescriptions
     patient_prescriptions = []
     if session.get('role') == 'patient':
         patient_id = ObjectId(session['user_id'])
-        patient_prescriptions = list(mongo.db.prescriptions.find({"patient_id": patient_id}))
+        patient_prescriptions = list(mongo.db.prescriptions.find({"patient_id": patient_id, "status": "recommended"}))
         
-        # Get product details for each prescription
         for prescription in patient_prescriptions:
             product = mongo.db.pharmacy_products.find_one({"_id": prescription.get("product_id")})
             if product:
-                prescription["product_name"] = product.get("name")
-                prescription["product_description"] = product.get("description")
-                prescription["product_image"] = product.get("image_url")
+                prescription.update({
+                    "product_name": product.get("name"),
+                    "product_description": product.get("description"),
+                    "product_image": base64.b64encode(product["image"]).decode("utf-8") if product.get("image") else ""
+                })
             else:
-                prescription["product_name"] = "Unknown Product"
-                prescription["product_description"] = "No description available"
-                prescription["product_image"] = ""
+                prescription.update({
+                    "product_name": "Unknown Product",
+                    "product_description": "No description available",
+                    "product_image": ""
+                })
     
-    return render_template(
-        'pharmacy.html',
-        products=products,
-        prescriptions=patient_prescriptions,
-        is_patient=(session.get('role') == 'patient'),
-        user=user  # Pass the user object to the template
-    )
+    return render_template('pharmacy.html', products=products, prescriptions=patient_prescriptions, is_patient=(session.get('role') == 'patient'), user=user)
 
 
-@app.route('/pharmacy/request_refill/<prescription_id>')
-def request_refill(prescription_id):
-    if 'user_id' not in session or session['role'] != 'patient':
+@app.route('/admin_dashboard/add_medicine', methods=['GET', 'POST'])
+def add_medicine():
+    if 'user_id' not in session or session.get('role') != 'admin':
         flash("Unauthorized access.", "danger")
         return redirect(url_for('login'))
     
-    # Get the prescription
-    try:
-        prescription = mongo.db.prescriptions.find_one({"_id": ObjectId(prescription_id)})
-        if not prescription or prescription.get("patient_id") != ObjectId(session['user_id']):
-            flash("Prescription not found or does not belong to you.", "danger")
-            return redirect(url_for('pharmacy'))
+    if request.method == 'POST':
+        if 'image' in request.files:
+            image_file = request.files['image']
+            image_data = image_file.read()
+        else:
+            image_data = None
         
-        # Create a refill request
-        refill_request = {
-            "prescription_id": ObjectId(prescription_id),
-            "patient_id": ObjectId(session['user_id']),
-            "doctor_id": prescription.get("doctor_id"),
-            "request_date": datetime.utcnow(),
-            "status": "pending"
+        medicine_data = {
+            "name": request.form['name'],
+            "description": request.form['description'],
+            "price": float(request.form['price']),
+            "stock": int(request.form['stock']),
+            "image": image_data
+        }
+        mongo.db.pharmacy_products.insert_one(medicine_data)
+        flash("Medicine added successfully!", "success")
+        return redirect(url_for('pharmacy'))
+    
+    return render_template('add_medicine.html')
+
+@app.route('/admin_dashboard/update_medicine/<medicine_id>', methods=['GET', 'POST'])
+def update_medicine(medicine_id):
+    if 'user_id' not in session or session.get('role') != 'admin':
+        flash("Unauthorized access.", "danger")
+        return redirect(url_for('login'))
+    
+    medicine = mongo.db.pharmacy_products.find_one({"_id": ObjectId(medicine_id)})
+    
+    if medicine and medicine.get("image"):
+        medicine["image"] = base64.b64encode(medicine["image"]).decode("utf-8")
+    
+    if request.method == 'POST':
+        update_data = {
+            "name": request.form['name'],
+            "description": request.form['description'],
+            "price": float(request.form['price']),
+            "stock": int(request.form['stock'])
         }
         
-        mongo.db.refill_requests.insert_one(refill_request)
-        flash("Refill request submitted successfully.", "success")
-    except Exception as e:
-        flash(f"Error processing refill request: {str(e)}", "danger")
+        if 'image' in request.files and request.files['image'].filename:
+            image_file = request.files['image']
+            update_data["image"] = image_file.read()
+        
+        mongo.db.pharmacy_products.update_one({"_id": ObjectId(medicine_id)}, {"$set": update_data})
+        flash("Medicine updated successfully!", "success")
+        return redirect(url_for('pharmacy'))
     
+    return render_template('update_medicine.html', medicine=medicine)
+
+@app.route('/doctor_dashboard/prescribe_medicine/<patient_id>', methods=['GET', 'POST'])
+def prescribe_medicine(patient_id):
+    if 'user_id' not in session or session.get('role') != 'doctor':
+        flash("Unauthorized access.", "danger")
+        return redirect(url_for('login'))
+    
+    if request.method == 'POST':
+        prescribed_medicine = {
+            "patient_id": ObjectId(patient_id),
+            "doctor_id": ObjectId(session['user_id']),
+            "product_id": ObjectId(request.form['product_id']),
+            "status": "recommended",
+            "date": datetime.utcnow()
+        }
+        mongo.db.prescriptions.insert_one(prescribed_medicine)
+        flash("Medicine prescribed successfully.", "success")
+        return redirect(url_for('doctor_dashboard'))
+    
+    medicines = list(mongo.db.pharmacy_products.find())  # Fetch available medicines
+    return render_template('prescribe_medicine.html', medicines=medicines, patient_id=patient_id)
+
+
+@app.route('/patient_dashboard/proceed_payment/<prescription_id>', methods=['GET'])
+def proceed_payment(prescription_id):
+    prescription = mongo.db.prescriptions.find_one({"_id": ObjectId(prescription_id)})
+    if not prescription or prescription.get("patient_id") != ObjectId(session['user_id']):
+        flash("Invalid request.", "danger")
+        return redirect(url_for('pharmacy'))
+    
+    qr_data = f"Payment for prescription {prescription_id}"
+    qr = qrcode.make(qr_data)
+    buffer = io.BytesIO()
+    qr.save(buffer, format="PNG")
+    qr_base64 = base64.b64encode(buffer.getvalue()).decode()
+    
+    return render_template('payment.html', prescription_id=prescription_id, qr_code=qr_base64)
+
+@app.route('/patient_dashboard/submit_payment', methods=['POST'])
+def submit_payment():
+    if 'user_id' not in session or session.get('role') != 'patient':
+        flash("Unauthorized access.", "danger")
+        return redirect(url_for('login'))
+    
+    prescription_id = request.form['prescription_id']
+    utr_id = request.form['utr_id']
+    mongo.db.prescriptions.update_one({"_id": ObjectId(prescription_id)}, {"$set": {"payment_status": "paid", "utr_id": utr_id}})
+    
+    flash("Payment submitted successfully!", "success")
     return redirect(url_for('pharmacy'))
+
+@app.route('/admin_dashboard/verify_payment')
+def verify_payment():
+    if 'user_id' not in session or session.get('role') != 'admin':
+        flash("Unauthorized access.", "danger")
+        return redirect(url_for('login'))
+    
+    payments = list(mongo.db.prescriptions.find({"payment_status": "paid"}))
+    return render_template('verify_payment.html', payments=payments)
+
+@app.route('/admin_dashboard/verify_payment_action/<payment_id>', methods=['POST'])
+def verify_payment_action(payment_id):
+    if 'user_id' not in session or session.get('role') != 'admin':
+        flash("Unauthorized access.", "danger")
+        return redirect(url_for('login'))
+
+    action = request.form.get('action')
+    payment = mongo.db.prescriptions.find_one({"_id": ObjectId(payment_id)})
+
+    if not payment:
+        flash("Payment record not found.", "danger")
+        return redirect(url_for('verify_payment'))
+    
+    # Get patient details
+    patient = mongo.db.users.find_one({"_id": ObjectId(payment.get("patient_id"))})
+    if not patient or "email" not in patient:
+        flash("User email not found, unable to send notification.", "warning")
+        return redirect(url_for('verify_payment'))
+
+    recipient_email = patient["email"]
+
+    if action == "verify":
+        mongo.db.prescriptions.update_one({"_id": ObjectId(payment_id)}, {"$set": {"payment_status": "verified"}})
+        flash("Payment verified successfully.", "success")
+
+        # Email content
+        subject = "Order Initiated - RapiACT"
+        body = f"""
+        Dear {patient.get('name', 'User')},
+
+        Your payment has been successfully verified, and your order has been initiated.
+        Soon, you will receive your tracking ID for shipment updates.
+
+        Thank you for choosing RapiACT!
+
+        Best Regards,
+        RapiACT Team
+        """
+
+    elif action == "reject":
+        mongo.db.prescriptions.update_one({"_id": ObjectId(payment_id)}, {"$set": {"payment_status": "rejected"}})
+        flash("Payment rejected.", "danger")
+
+        # Email content for rejection
+        subject = "Payment Rejected - RapiACT"
+        body = f"""
+        Dear {patient.get('name', 'User')},
+
+        Unfortunately, your payment has been rejected. Please contact support for more details.
+
+        Thank you for using RapiACT!
+
+        Best Regards,
+        RapiACT Team
+        """
+
+    # Send email
+    send_email(subject, [recipient_email], body)
+
+    return redirect(url_for('verify_payment'))
+
 
 
 import joblib
