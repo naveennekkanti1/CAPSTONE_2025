@@ -3,1155 +3,999 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>RapiACT Pharmacy</title>
-    <link rel="icon" type="image/jpg" href="{{ url_for('static', filename='images/logo.jpg') }}">
+    <title>Patient Pharmacy</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <style>
-        * {
+        :root {
+            --primary-dark: #1a237e;
+            --primary-light: #5c6bc0;
+            --accent-color: #7c4dff;
+            --sidebar-width: 250px;
+            --transition-speed: 0.3s;
+        }
+
+        @keyframes gradientBG {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        html, body {
+            height: 100%;
             margin: 0;
-            padding: 0;
-            box-sizing: border-box;
+            background: linear-gradient(-45deg, #1a237e, #3949ab, #5c6bc0, #7c4dff);
+            background-size: 400% 400%;
+            animation: gradientBG 15s ease infinite;
+            font-family: 'Arial', sans-serif;
+            color: white;
+            overflow-x: hidden;
+            width: 100%;
         }
 
         body {
-            font-family: 'Poppins', sans-serif;
-            background-color: #f5f7fa;
-            color: #333;
-            line-height: 1.6;
-            overflow-x: hidden;
-        }
-
-        /* Navbar Styles */
-        .navbar {
             display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 15px 30px;
-            background-color: #014340;
-            position: sticky;
-            top: 0;
-            z-index: 1000;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            position: relative;
         }
 
-        .navbar .logo img {
-            height: 50px;
-        }
-
-        .navbar .links {
-            display: flex;
-            align-items: center;
-        }
-
-        .navbar .links a {
+        .sidebar {
+            width: var(--sidebar-width);
+            background: rgba(26, 35, 126, 0.9);
             color: white;
-            text-decoration: none;
-            margin: 0 15px;
-            font-size: 14px;
-            transition: color 0.3s ease;
-        }
-
-        .navbar .links a:hover {
-            color: #00d9a6;
-        }
-
-        /* Banner */
-        .banner {
-            background: linear-gradient(to right, #014340, #036d66);
-            color: white;
-            padding: 60px 40px;
-            text-align: center;
-        }
-
-        .banner h1 {
-            font-size: 2.5rem;
-            margin-bottom: 20px;
-            color: #00d9a6;
-        }
-
-        .banner p {
-            font-size: 1.2rem;
-            max-width: 800px;
-            margin: 0 auto 20px;
-            color: #e0e0e0;
-        }
-
-        /* Search Bar */
-        .search-container {
-            max-width: 800px;
-            margin: 30px auto;
-            padding: 0 20px;
-        }
-
-        .search-bar {
-            display: flex;
-            background: white;
-            border-radius: 50px;
-            overflow: hidden;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-        }
-
-        .search-bar input {
-            flex: 1;
-            padding: 15px 25px;
-            border: none;
-            outline: none;
-            font-size: 1rem;
-        }
-
-        .search-bar button {
-            background: #00a6ff;
-            color: white;
-            border: none;
-            padding: 0 30px;
-            cursor: pointer;
-            font-weight: bold;
-            transition: background 0.3s;
-        }
-
-        .search-bar button:hover {
-            background: #0080c4;
-        }
-
-        /* Categories Section */
-        .categories {
-            padding: 40px 20px;
-            text-align: center;
-        }
-
-        .categories h2 {
-            color: #014340;
-            margin-bottom: 30px;
-            font-size: 1.8rem;
-        }
-
-        .category-grid {
-            display: flex;
-            flex-wrap: wrap;
-            justify-content: center;
-            gap: 20px;
-            max-width: 1200px;
-            margin: 0 auto;
-        }
-
-        .category-card {
-            background: white;
-            border-radius: 15px;
-            width: 200px;
             padding: 20px;
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
-            transition: transform 0.3s, box-shadow 0.3s;
-            cursor: pointer;
+            position: fixed;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            text-align: center;
+            backdrop-filter: blur(10px);
+            transition: transform var(--transition-speed) ease;
+            z-index: 1000;
+            left: 0;
+            top: 0;
         }
 
-        .category-card:hover {
-            transform: translateY(-10px);
-            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+        .logo-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px 0;
         }
 
-        .category-card img {
+        .logo {
             width: 80px;
             height: 80px;
-            margin-bottom: 15px;
+            border-radius: 50%;
+            object-fit: cover;
+            box-shadow: 0 0 20px rgba(255, 255, 255, 0.2);
+            transition: transform var(--transition-speed) ease;
         }
 
-        .category-card h3 {
-            color: #014340;
-            font-size: 1.1rem;
-            margin-bottom: 10px;
+        .logo:hover {
+            transform: scale(1.1);
         }
 
-        /* Products Section */
-        .products {
-            padding: 40px 20px;
-            max-width: 1200px;
-            margin: 0 auto;
-        }
-
-        .products-header {
+        .sidebar a {
             display: flex;
-            justify-content: space-between;
             align-items: center;
+            color: white;
+            text-decoration: none;
+            padding: 12px 20px;
+            font-weight: bold;
+            border-radius: 10px;
+            transition: all var(--transition-speed) ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .sidebar a i {
+            margin-right: 10px;
+            width: 20px;
+            text-align: center;
+        }
+
+        .sidebar a::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+            transition: left 0.5s ease;
+        }
+
+        .sidebar a:hover::before {
+            left: 100%;
+        }
+
+        .sidebar a:hover {
+            background: rgba(255, 255, 255, 0.1);
+            transform: translateX(5px);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        .main-content {
+            width: 100%;
+            min-height: 100vh;
+            padding: 40px;
+            margin-left: var(--sidebar-width);
+            transition: margin-left var(--transition-speed) ease;
+        }
+
+        .main-content-wrapper {
+            width: 100%;
+            max-width: 1800px;
+            margin: 0 auto;
+            animation: fadeInUp 0.6s ease-out;
+        }
+
+        .dashboard-header {
+            width: 100%;
             margin-bottom: 30px;
+            text-align: center;
+            padding: 20px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            backdrop-filter: blur(10px);
+            animation: fadeInUp 0.6s ease-out;
         }
 
-        .products-header h2 {
-            color: #014340;
-            font-size: 1.8rem;
+        .dashboard-header h2 {
+            margin: 0;
+            font-size: 2.5rem;
+            font-weight: 600;
+            color: white;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2);
         }
 
-        .products-header select {
-            padding: 10px;
-            border-radius: 5px;
-            border: 1px solid #ddd;
-            outline: none;
-            font-size: 0.9rem;
+        .section {
+            background-color: rgba(255, 255, 255, 0.95);
+            padding: 30px;
+            border-radius: 20px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+            color: #333;
+            margin-bottom: 30px;
+            width: 100%;
+            animation: fadeInUp 0.6s ease-out;
         }
 
-        .products-grid {
+        .section h3 {
+            color: var(--primary-dark);
+            margin-bottom: 20px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+        }
+
+        .section h3 i {
+            margin-right: 10px;
+            color: var(--accent-color);
+        }
+
+        .card-container {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
-            gap: 30px;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 25px;
+            padding: 15px;
+            width: 100%;
         }
 
-        .product-card {
+        .card {
             background: white;
             border-radius: 15px;
-            overflow: hidden;
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
-            transition: transform 0.3s;
-        }
-
-        .product-card:hover {
-            transform: translateY(-5px);
-        }
-
-        .product-img {
-            height: 200px;
-            overflow: hidden;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            background: #f9f9f9;
-        }
-
-        .product-img img {
-            max-width: 100%;
-            max-height: 180px;
-            object-fit: contain;
-        }
-
-        .product-info {
-            padding: 20px;
-        }
-
-        .product-category {
-            color: #0080c4;
-            font-size: 0.8rem;
-            text-transform: uppercase;
-            font-weight: bold;
-            margin-bottom: 5px;
-        }
-
-        .product-name {
+            padding: 25px;
             color: #333;
-            font-size: 1.1rem;
-            margin-bottom: 10px;
-            height: 50px;
-            overflow: hidden;
-        }
-
-        .product-price {
-            color: #014340;
-            font-weight: bold;
-            font-size: 1.2rem;
-            margin-bottom: 15px;
-        }
-
-        .product-actions {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .quantity-controls {
-            display: flex;
-            align-items: center;
-            border: 1px solid #ddd;
-            border-radius: 5px;
-            overflow: hidden;
-        }
-
-        .quantity-controls button {
-            background: #f1f1f1;
             border: none;
-            width: 30px;
-            height: 30px;
-            font-size: 1rem;
-            cursor: pointer;
-        }
-
-        .quantity-controls span {
-            width: 30px;
-            text-align: center;
-            font-size: 0.9rem;
-        }
-
-        .add-to-cart {
-            background: #00a6ff;
-            color: white;
-            border: none;
-            padding: 8px 15px;
-            border-radius: 5px;
-            font-size: 0.9rem;
-            cursor: pointer;
-            transition: background 0.3s;
-        }
-
-        .add-to-cart:hover {
-            background: #0080c4;
-        }
-
-        .prescription-req {
-            color: #ff3b30;
-            font-size: 0.8rem;
-            margin-top: 10px;
-            display: flex;
-            align-items: center;
-        }
-
-        .prescription-req img {
-            width: 15px;
-            margin-right: 5px;
-        }
-
-        /* Cart Section */
-        .cart-section {
-            position: fixed;
-            top: 0;
-            right: -400px;
-            width: 400px;
-            height: 100vh;
-            background: white;
-            box-shadow: -5px 0 15px rgba(0, 0, 0, 0.1);
-            z-index: 1001;
-            transition: right 0.3s ease;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
+            animation: fadeInUp 0.6s ease-out;
+            width: 100%;
+            height: 100%;
             display: flex;
             flex-direction: column;
         }
 
-        .cart-section.active {
-            right: 0;
+        .card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 5px;
+            background: linear-gradient(90deg, var(--primary-dark), var(--accent-color));
         }
 
-        .cart-header {
-            background: #014340;
-            color: white;
-            padding: 20px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
+        .card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.2);
         }
 
-        .cart-header h3 {
-            font-size: 1.3rem;
-            color: #00d9a6;
+        .card-title {
+            color: var(--primary-dark);
+            font-weight: bold;
+            font-size: 1.2rem;
+            margin-bottom: 15px;
         }
 
-        .close-cart {
-            background: none;
+        .card-text {
+            margin-bottom: 10px;
+        }
+
+        .card-text strong {
+            color: var(--primary-dark);
+        }
+
+        .btn-primary {
+            background: linear-gradient(90deg, #007bff, #0056b3);
+            border: none;
+            transition: all 0.3s ease;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 123, 255, 0.3);
+            background: linear-gradient(90deg, #0056b3, #007bff);
+        }
+
+        .btn-order {
+            background: linear-gradient(90deg, #17a2b8, #138496);
             border: none;
             color: white;
-            font-size: 1.5rem;
-            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-top: auto;
         }
 
-        .cart-items {
-            flex: 1;
-            overflow-y: auto;
-            padding: 20px;
+        .btn-order:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(23, 162, 184, 0.3);
+            background: linear-gradient(90deg, #138496, #17a2b8);
         }
 
-        .cart-item {
-            display: flex;
-            margin-bottom: 20px;
-            padding-bottom: 20px;
-            border-bottom: 1px solid #eee;
+        .btn-refill {
+            background: linear-gradient(90deg, #28a745, #218838);
+            border: none;
+            color: white;
+            transition: all 0.3s ease;
         }
 
-        .cart-item-img {
-            width: 80px;
-            height: 80px;
-            border-radius: 10px;
-            overflow: hidden;
-            background: #f9f9f9;
+        .btn-refill:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(40, 167, 69, 0.3);
+            background: linear-gradient(90deg, #218838, #28a745);
+        }
+
+        .medication-info {
             display: flex;
             align-items: center;
-            justify-content: center;
+            margin-bottom: 15px;
+        }
+
+        .medication-icon {
+            font-size: 1.5rem;
             margin-right: 15px;
+            color: var(--accent-color);
         }
 
-        .cart-item-img img {
-            max-width: 100%;
-            max-height: 70px;
-            object-fit: contain;
+        .prescription-details {
+            border-top: 1px dashed #ddd;
+            padding-top: 15px;
+            margin-top: 10px;
         }
 
-        .cart-item-details {
-            flex: 1;
+        .prescription-item {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+            padding: 5px 0;
         }
 
-        .cart-item-name {
-            color: #333;
-            font-size: 1rem;
+        .badge {
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 500;
             margin-bottom: 5px;
         }
 
-        .cart-item-price {
-            color: #014340;
+        .badge-primary {
+            background-color: var(--primary-light);
+            color: white;
+        }
+
+        .badge-success {
+            background-color: #28a745;
+            color: white;
+        }
+
+        .badge-warning {
+            background-color: #ffc107;
+            color: #212529;
+        }
+
+        .badge-danger {
+            background-color: #dc3545;
+            color: white;
+        }
+
+        .pharmacy-tabs {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 30px;
+            animation: fadeInUp 0.6s ease-out;
+        }
+
+        .pharmacy-tab {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 15px 30px;
+            border-radius: 15px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            flex: 1;
+            text-align: center;
+            backdrop-filter: blur(10px);
+            border: 2px solid transparent;
+        }
+
+        .pharmacy-tab.active {
+            background: rgba(255, 255, 255, 0.25);
+            border-color: rgba(255, 255, 255, 0.5);
             font-weight: bold;
-            font-size: 1.1rem;
-            margin-bottom: 10px;
+        }
+
+        .pharmacy-tab:hover {
+            background: rgba(255, 255, 255, 0.2);
+            transform: translateY(-5px);
+        }
+
+        .pharmacy-tab i {
+            margin-right: 10px;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        /* Cart styles */
+        .cart-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 15px;
+            border-bottom: 1px solid #eee;
+        }
+
+        .cart-item-info {
+            display: flex;
+            align-items: center;
+        }
+
+        .cart-item-icon {
+            font-size: 1.5rem;
+            margin-right: 15px;
+            color: var(--accent-color);
+        }
+
+        .cart-item-details {
+            flex-grow: 1;
         }
 
         .cart-item-actions {
             display: flex;
-            justify-content: space-between;
             align-items: center;
+            gap: 10px;
         }
 
-        .cart-quantity {
+        .quantity-control {
             display: flex;
             align-items: center;
-            border: 1px solid #ddd;
-            border-radius: 5px;
-            overflow: hidden;
+            gap: 10px;
         }
 
-        .cart-quantity button {
-            background: #f1f1f1;
-            border: none;
-            width: 25px;
-            height: 25px;
-            font-size: 0.9rem;
+        .quantity-btn {
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            background: #f0f0f0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
             cursor: pointer;
+            transition: all 0.2s ease;
         }
 
-        .cart-quantity span {
-            width: 25px;
-            text-align: center;
-            font-size: 0.8rem;
-        }
-
-        .remove-item {
-            color: #ff3b30;
-            background: none;
-            border: none;
-            font-size: 0.9rem;
-            cursor: pointer;
-        }
-
-        .cart-footer {
-            background: #f9f9f9;
-            padding: 20px;
-            border-top: 1px solid #eee;
+        .quantity-btn:hover {
+            background: #e0e0e0;
         }
 
         .cart-total {
             display: flex;
             justify-content: space-between;
-            margin-bottom: 20px;
-            color: #333;
+            padding: 20px 0;
+            border-top: 2px solid #eee;
+            margin-top: 20px;
             font-weight: bold;
+            font-size: 1.2rem;
         }
 
-        .checkout-btn {
-            width: 100%;
-            background: #00a6ff;
-            color: white;
+        .search-container {
+            display: flex;
+            margin-bottom: 30px;
+            animation: fadeInUp 0.6s ease-out;
+        }
+
+        .search-input {
+            flex-grow: 1;
+            padding: 15px 20px;
             border: none;
-            padding: 15px;
-            border-radius: 10px;
-            font-size: 1rem;
-            font-weight: bold;
-            cursor: pointer;
-            transition: background 0.3s;
-        }
-
-        .checkout-btn:hover {
-            background: #0080c4;
-        }
-
-        .cart-icon {
-            position: fixed;
-            bottom: 30px;
-            right: 30px;
-            background: #00a6ff;
-            width: 60px;
-            height: 60px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
-            cursor: pointer;
-            z-index: 1000;
-        }
-
-        .cart-icon img {
-            width: 30px;
-            height: 30px;
-        }
-
-        .cart-badge {
-            position: absolute;
-            top: -5px;
-            right: -5px;
-            background: #ff3b30;
-            color: white;
-            font-size: 0.8rem;
-            width: 22px;
-            height: 22px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        /* Modal Overlay for Cart */
-        .overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0, 0, 0, 0.5);
-            z-index: 1000;
-            display: none;
-        }
-
-        .overlay.active {
-            display: block;
-        }
-
-        /* Checkout Modal */
-        .checkout-modal {
-            position: fixed;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%) scale(0.9);
-            width: 90%;
-            max-width: 600px;
-            background: white;
-            border-radius: 15px;
-            z-index: 1002;
-            padding: 30px;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
-            opacity: 0;
-            visibility: hidden;
-            transition: all 0.3s;
-        }
-
-        .checkout-modal.active {
-            opacity: 1;
-            visibility: visible;
-            transform: translate(-50%, -50%) scale(1);
-        }
-
-        .checkout-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 20px;
-        }
-
-        .checkout-header h3 {
-            color: #014340;
-            font-size: 1.5rem;
-        }
-
-        .close-checkout {
-            background: none;
-            border: none;
-            font-size: 1.5rem;
-            cursor: pointer;
-            color: #333;
-        }
-
-        .checkout-form {
-            display: flex;
-            flex-direction: column;
-        }
-
-        .form-group {
-            margin-bottom: 20px;
-        }
-
-        .form-group label {
-            display: block;
-            margin-bottom: 5px;
-            color: #333;
-            font-weight: bold;
-        }
-
-        .form-group input,
-        .form-group select,
-        .form-group textarea {
-            width: 100%;
-            padding: 12px 15px;
-            border: 1px solid #ddd;
-            border-radius: 10px;
+            border-radius: 10px 0 0 10px;
             font-size: 1rem;
             outline: none;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
         }
 
-        .card-element {
-            border: 1px solid #ddd;
-            border-radius: 10px;
-            padding: 15px;
-            margin-bottom: 20px;
-        }
-
-        .submit-order {
-            background: #00a6ff;
+        .search-btn {
+            padding: 15px 30px;
+            background: var(--primary-dark);
             color: white;
             border: none;
-            padding: 15px;
-            border-radius: 10px;
-            font-size: 1rem;
-            font-weight: bold;
+            border-radius: 0 10px 10px 0;
             cursor: pointer;
-            transition: background 0.3s;
+            transition: all 0.3s ease;
         }
 
-        .submit-order:hover {
-            background: #0080c4;
+        .search-btn:hover {
+            background: var(--primary-light);
         }
 
-        .prescription-upload {
-            border: 2px dashed #ddd;
-            padding: 20px;
-            border-radius: 10px;
-            text-align: center;
-            margin-bottom: 20px;
-            cursor: pointer;
-            transition: border-color 0.3s;
-        }
-
-        .prescription-upload:hover {
-            border-color: #00a6ff;
-        }
-
-        .prescription-upload img {
-            width: 40px;
-            margin-bottom: 10px;
-        }
-
-        .prescription-upload p {
-            color: #666;
-            font-size: 0.9rem;
-            margin-bottom: 10px;
-        }
-
-        .prescription-upload input {
+        .menu-toggle {
             display: none;
-        }
-
-        .prescription-upload button {
-            background: #f1f1f1;
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            z-index: 1001;
+            background: rgba(255, 255, 255, 0.2);
             border: none;
-            padding: 8px 15px;
+            padding: 10px;
             border-radius: 5px;
-            font-size: 0.9rem;
             cursor: pointer;
+            backdrop-filter: blur(10px);
         }
 
-        /* Responsive styles */
+        @media (min-width: 1600px) {
+            .card-container {
+                grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+            }
+        }
+
+        @media (max-width: 1200px) {
+            .card-container {
+                grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            }
+        }
+
         @media (max-width: 768px) {
-            .navbar {
-                padding: 10px 15px;
+            .menu-toggle {
+                display: block;
+            }
+
+            .sidebar {
+                transform: translateX(-100%);
+            }
+
+            .sidebar.active {
+                transform: translateX(0);
+            }
+
+            .main-content {
+                margin-left: 0 !important; /* Force override */
+                width: 100% !important; /* Force override */
+                padding: 20px;
             }
             
-            .navbar .links a {
-                margin: 0 8px;
-                font-size: 12px;
+            .main-content-wrapper {
+                padding: 0 10px;
             }
-            
-            .banner {
-                padding: 40px 20px;
+
+            .card-container {
+                grid-template-columns: 1fr;
             }
-            
-            .banner h1 {
+
+            .dashboard-header h2 {
                 font-size: 2rem;
             }
-            
-            .banner p {
-                font-size: 1rem;
+
+            .pharmacy-tabs {
+                flex-direction: column;
+                gap: 10px;
             }
-            
-            .cart-section {
-                width: 100%;
-                right: -100%;
-            }
-            
-            .checkout-modal {
-                width: 95%;
-                padding: 20px;
+
+            .pharmacy-tab {
+                padding: 10px;
             }
         }
     </style>
 </head>
 <body>
-    <!-- Navbar -->
-    <div class="navbar">
-        <div class="logo">
-            <img src="static/images/logo.jpg" alt="Logo">
+    <button class="menu-toggle" onclick="toggleSidebar()">
+        <i class="fas fa-bars" style="color: white; font-size: 24px;"></i>
+    </button>
+
+    <div class="sidebar">
+        <div class="logo-container">
+            <img src="/user_photo/{{ user._id }}" alt="Profile Picture" style="width: 100px; height: 100px; border-radius: 50%; margin-bottom: 1rem;">
+            <h3>RapiACT!</h3>
+            <p>{{ name }}</p>
         </div>
-        <div class="links">
-            <a href="/">Home</a>
-            <a href="/#about">About</a>
-            <a href="/services">Services</a>
-            <a href="/pharmacy">Pharmacy</a>
-            <a href="/#doctors">Doctors</a>
-            <a href="/#contact">Contact</a>
-            <a href="/login">Login</a>
-            <a href="/register">Signup</a>
-        </div>
+        <hr>
+        <a href="/dashboard"><i class="fas fa-th-large"></i>Dashboard</a>
+        <a href="/profile"><i class="fas fa-user"></i>Profile</a>
+        <a href="/create_appointment"><i class="fas fa-calendar-plus"></i>Appointment</a>
+        <a href="/pharmacy" class="active"><i class="fas fa-pills"></i>Pharmacy</a>
+        <hr>
+        <a href="/logout"><i class="fas fa-sign-out-alt"></i>Logout</a>
     </div>
 
-    <!-- Banner -->
-    <div class="banner">
-        <h1>RapiACT Online Pharmacy</h1>
-        <p>Order your prescription medications and healthcare essentials with confidence. Fast delivery, secure payments, and expert advice.</p>
-    </div>
+    <div class="main-content">
+        <div class="main-content-wrapper">
+            <div class="dashboard-header">
+                <h2>Patient Pharmacy</h2>
+            </div>
 
-    <!-- Search Bar -->
-    <div class="search-container">
-        <div class="search-bar">
-            <input type="text" placeholder="Search for medicines, healthcare products...">
-            <button>Search</button>
-        </div>
-    </div>
+            <div class="pharmacy-tabs">
+                <div class="pharmacy-tab active" onclick="showTab('prescriptions')">
+                    <i class="fas fa-prescription"></i> My Prescriptions
+                </div>
+                <div class="pharmacy-tab" onclick="showTab('medications')">
+                    <i class="fas fa-pills"></i> Order Medications
+                </div>
+                <div class="pharmacy-tab" onclick="showTab('cart')">
+                    <i class="fas fa-shopping-cart"></i> Cart <span id="cart-badge" class="badge badge-primary">2</span>
+                </div>
+            </div>
 
-    <!-- Categories -->
-    <div class="categories">
-        <h2>Shop by Category</h2>
-        <div class="category-grid">
-            <div class="category-card">
-                <img src="https://cdn-icons-png.flaticon.com/512/822/822092.png" alt="Prescription Medicines">
-                <h3>Prescription Medicines</h3>
+            <div id="prescriptions" class="tab-content active">
+                <div class="section">
+                    <h3><i class="fas fa-prescription-bottle-alt"></i> Current Prescriptions</h3>
+                    <div class="card-container">
+                        <div class="card">
+                            <div class="d-flex justify-content-between align-items-center mb-3">
+                                <h5 class="card-title">
+                                    <i class="fas fa-prescription-bottle-alt"></i> 
+                                    Active Prescription
+                                </h5>
+                                <span class="badge badge-success">Active</span>
+                            </div>
+                            <div class="medication-info">
+                                <i class="fas fa-capsules medication-icon"></i>
+                                <div>
+                                    <p class="card-text"><strong>Doctor:</strong> Dr. Sarah Johnson</p>
+                                    <p class="card-text"><strong>Prescribed:</strong> March 12, 2025</p>
+                                    <p class="card-text"><strong>Refills:</strong> 2 remaining</p>
+                                </div>
+                            </div>
+                            <div class="prescription-details">
+                                <div class="prescription-item">
+                                    <span><i class="fas fa-pills"></i> Amoxicillin 500mg</span>
+                                    <span>3x daily</span>
+                                </div>
+                                <div class="prescription-item">
+                                    <span><i class="fas fa-tablets"></i> Ibuprofen 400mg</span>
+                                    <span>As needed</span>
+                                </div>
+                            </div>
+                            <div class="d-flex gap-2 mt-3">
+                                <button class="btn btn-order flex-grow-1">
+                                    <i class="fas fa-shopping-cart"></i> Order Refill
+                                </button>
+                                <button class="btn btn-primary flex-grow-1">
+                                    <i class="fas fa-file-medical"></i> View Details
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <div class="card">
+                            <div class="d-flex justify-content-between align-items-center mb-3">
+                                <h5 class="card-title">
+                                    <i class="fas fa-prescription"></i> 
+                                    Maintenance Medication
+                                </h5>
+                                <span class="badge badge-warning">Refill Soon</span>
+                            </div>
+                            <div class="medication-info">
+                                <i class="fas fa-heartbeat medication-icon"></i>
+                                <div>
+                                    <p class="card-text"><strong>Doctor:</strong> Dr. Michael Chen</p>
+                                    <p class="card-text"><strong>Prescribed:</strong> January 5, 2025</p>
+                                    <p class="card-text"><strong>Refills:</strong> 1 remaining</p>
+                                </div>
+                            </div>
+                            <div class="prescription-details">
+                                <div class="prescription-item">
+                                    <span><i class="fas fa-tablets"></i> Atorvastatin 20mg</span>
+                                    <span>1x daily</span>
+                                </div>
+                                <div class="prescription-item">
+                                    <span><i class="fas fa-pills"></i> Metformin 500mg</span>
+                                    <span>2x daily</span>
+                                </div>
+                            </div>
+                            <div class="d-flex gap-2 mt-3">
+                                <button class="btn btn-order flex-grow-1">
+                                    <i class="fas fa-sync-alt"></i> Refill Prescription
+                                </button>
+                                <button class="btn btn-primary flex-grow-1">
+                                    <i class="fas fa-file-medical"></i> View Details
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <div class="card">
+                            <div class="d-flex justify-content-between align-items-center mb-3">
+                                <h5 class="card-title">
+                                    <i class="fas fa-prescription-bottle"></i> 
+                                    Seasonal Allergy Medication
+                                </h5>
+                                <span class="badge badge-danger">Expired</span>
+                            </div>
+                            <div class="medication-info">
+                                <i class="fas fa-lungs medication-icon"></i>
+                                <div>
+                                    <p class="card-text"><strong>Doctor:</strong> Dr. Emily Wilson</p>
+                                    <p class="card-text"><strong>Prescribed:</strong> October 15, 2024</p>
+                                    <p class="card-text"><strong>Expired:</strong> January 15, 2025</p>
+                                </div>
+                            </div>
+                            <div class="prescription-details">
+                                <div class="prescription-item">
+                                    <span><i class="fas fa-pills"></i> Loratadine 10mg</span>
+                                    <span>1x daily</span>
+                                </div>
+                                <div class="prescription-item">
+                                    <span><i class="fas fa-spray-can"></i> Fluticasone Nasal Spray</span>
+                                    <span>2 sprays daily</span>
+                                </div>
+                            </div>
+                            <div class="d-flex gap-2 mt-3">
+                                <button class="btn btn-primary w-100">
+                                    <i class="fas fa-calendar-plus"></i> Schedule Appointment for Renewal
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="section">
+                    <h3><i class="fas fa-history"></i> Prescription History</h3>
+                    <div class="card-container">
+                        <div class="card">
+                            <div class="d-flex justify-content-between align-items-center mb-3">
+                                <h5 class="card-title">
+                                    <i class="fas fa-capsules"></i> 
+                                    Antibiotic Treatment
+                                </h5>
+                                <span class="badge badge-danger">Completed</span>
+                            </div>
+                            <div class="medication-info">
+                                <i class="fas fa-file-medical medication-icon"></i>
+                                <div>
+                                    <p class="card-text"><strong>Doctor:</strong> Dr. Robert Brown</p>
+                                    <p class="card-text"><strong>Prescribed:</strong> December 2, 2024</p>
+                                    <p class="card-text"><strong>Completed:</strong> December 16, 2024</p>
+                                </div>
+                            </div>
+                            <div class="prescription-details">
+                                <div class="prescription-item">
+                                    <span><i class="fas fa-capsules"></i> Azithromycin 250mg</span>
+                                    <span>1x daily, 10 days</span>
+                                </div>
+                            </div>
+                            <button class="btn btn-primary w-100 mt-3">
+                                <i class="fas fa-file-medical"></i> View Medical Record
+                            </button>
+                        </div>
+                        
+                        <div class="card">
+                            <div class="d-flex justify-content-between align-items-center mb-3">
+                                <h5 class="card-title">
+                                    <i class="fas fa-pills"></i> 
+                                    Pain Management
+                                </h5>
+                                <span class="badge badge-danger">Completed</span>
+                            </div>
+                            <div class="medication-info">
+                                <i class="fas fa-file-medical medication-icon"></i>
+                                <div>
+                                    <p class="card-text"><strong>Doctor:</strong> Dr. Lisa Martinez</p>
+                                    <p class="card-text"><strong>Prescribed:</strong> November 15, 2024</p>
+                                    <p class="card-text"><strong>Completed:</strong> December 1, 2024</p>
+                                </div>
+                            </div>
+                            <div class="prescription-details">
+                                <div class="prescription-item">
+                                    <span><i class="fas fa-pills"></i> Naproxen 500mg</span>
+                                    <span>2x daily, 14 days</span>
+                                </div>
+                            </div>
+                            <button class="btn btn-primary w-100 mt-3">
+                                <i class="fas fa-file-medical"></i> View Medical Record
+                            </button>
+                        </div>
+                    </div>
+                </div>
             </div>
-            <div class="category-card">
-                <img src="https://cdn-icons-png.flaticon.com/512/2966/2966327.png" alt="Over-the-Counter">
-                <h3>Over-the-Counter</h3>
-            </div>
-            <div class="category-card">
-                <img src="https://cdn-icons-png.flaticon.com/512/4320/4320367.png" alt="Vitamins & Supplements">
-                <h3>Vitamins & Supplements</h3>
-            </div>
-            <div class="category-card">
-                <img src="https://cdn-icons-png.flaticon.com/512/5719/5719669.png" alt="Healthcare Devices">
-                <h3>Healthcare Devices</h3>
-            </div>
-            <div class="category-card">
-                <img src="https://cdn-icons-png.flaticon.com/512/2447/2447325.png" alt="Personal Care">
-                <h3>Personal Care</h3>
-            </div>
-        </div>
-    </div>
 
-    <!-- Products -->
-    <div class="products">
-        <div class="products-header">
-            <h2>Popular Medicines</h2>
-            <select>
-                <option>Sort by: Popularity</option>
-                <option>Price: Low to High</option>
-                <option>Price: High to Low</option>
-                <option>Newest Arrivals</option>
-            </select>
-        </div>
-        <div class="products-grid">
-            <!-- Product 1 -->
-            <div class="product-card">
-                <div class="product-img">
-                    <img src="https://cdn-icons-png.flaticon.com/512/3140/3140343.png" alt="Medicine 1">
+            <div id="medications" class="tab-content">
+                <div class="search-container">
+                    <input type="text" class="search-input" placeholder="Search medications...">
+                    <button class="search-btn">
+                        <i class="fas fa-search"></i> Search
+                    </button>
                 </div>
-                <div class="product-info">
-                    <div class="product-category">Antibiotics</div>
-                    <h3 class="product-name">Amoxicillin 500mg Capsules (10 caps)</h3>
-                    <div class="product-price">₹120.00</div>
-                    <div class="product-actions">
-                        <div class="quantity-controls">
-                            <button>-</button>
-                            <span>1</span>
-                            <button>+</button>
+                
+                <div class="section">
+                    <h3><i class="fas fa-pills"></i> Prescribed Medications</h3>
+                    <div class="card-container">
+                        <div class="card">
+                            <div class="d-flex justify-content-between align-items-center mb-3">
+                                <h5 class="card-title">
+                                    <i class="fas fa-tablets"></i> Atorvastatin 20mg
+                                </h5>
+                                <span class="badge badge-primary">Prescription</span>
+                            </div>
+                            <p class="card-text">
+                                <strong>Type:</strong> Cholesterol Medication
+                            </p>
+                            <p class="card-text">
+                                <strong>Dosage:</strong> 20mg tablet, taken once daily
+                            </p>
+                            <p class="card-text">
+                                <strong>Refills:</strong> 1 remaining
+                            </p>
+                            <p class="card-text">
+                                <strong>Price:</strong> $15.99 (30 tablets)
+                            </p>
+                            <button class="btn btn-order w-100 mt-3" onclick="addToCart('Atorvastatin 20mg', 15.99)">
+                                <i class="fas fa-cart-plus"></i> Add to Cart
+                            </button>
                         </div>
-                        <button class="add-to-cart">Add</button>
+                        
+                        <div class="card">
+                            <div class="d-flex justify-content-between align-items-center mb-3">
+                                <h5 class="card-title">
+                                    <i class="fas fa-pills"></i> Metformin 500mg
+                                </h5>
+                                <span class="badge badge-primary">Prescription</span>
+                            </div>
+                            <p class="card-text">
+                                <strong>Type:</strong> Diabetes Medication
+                            </p>
+                            <p class="card-text">
+                                <strong>Dosage:</strong> 500mg tablet, taken twice daily
+                            </p>
+                            <p class="card-text">
+                                <strong>Refills:</strong> 1 remaining
+                            </p>
+                            <p class="card-text">
+                                <strong>Price:</strong> $12.99 (60 tablets)
+                            </p>
+                            <button class="btn btn-order w-100 mt-3" onclick="addToCart('Metformin 500mg', 12.99)">
+                                <i class="fas fa-cart-plus"></i> Add to Cart
+                            </button>
+                        </div>
+                        
+                        <div class="card">
+                            <div class="d-flex justify-content-between align-items-center mb-3">
+                                <h5 class="card-title">
+                                    <i class="fas fa-capsules"></i> Amoxicillin 500mg
+                                </h5>
+                                <span class="badge badge-primary">Prescription</span>
+                            </div>
+                            <p class="card-text">
+                                <strong>Type:</strong> Antibiotic
+                            </p>
+                            <p class="card-text">
+                                <strong>Dosage:</strong> 500mg capsule, taken three times daily
+                            </p>
+                            <p class="card-text">
+                                <strong>Refills:</strong> 2 remaining
+                            </p>
+                            <p class="card-text">
+                                <strong>Price:</strong> $18.99 (30 capsules)
+                            </p>
+                            <button class="btn btn-order w-100 mt-3" onclick="addToCart('Amoxicillin 500mg', 18.99)">
+                                <i class="fas fa-cart-plus"></i> Add to Cart
+                            </button>
+                        </div>
                     </div>
-                    <div class="prescription-req">
-                        <img src="https://cdn-icons-png.flaticon.com/512/1828/1828833.png" alt="Required">
-                        Prescription Required
+                </div>
+                
+                <div class="section">
+                    <h3><i class="fas fa-tachometer-alt"></i> Over-the-Counter Products</h3>
+                    <div class="card-container">
+                        <div class="card">
+                            <div class="d-flex justify-content-between align-items-center mb-3">
+                                <h5 class="card-title">
+                                    <i class="fas fa-tablets"></i> Ibuprofen 200mg
+                                </h5>
+                                <span class="badge badge-success">OTC</span>
+                            </div>
+                            <p class="card-text">
+                                <strong>Type:</strong> Pain Reliever
+                            </p>
+                            <p class="card-text">
+                                <strong>Dosage:</strong> 200mg tablet, taken as needed
+                            </p>
+                            <p class="card-text">
+                                <strong>Price:</strong> $8.99 (100 tablets)
+                            </p>
+                            <button class="btn btn-order w-100 mt-3" onclick="addToCart('Ibuprofen 200mg', 8.99)">
+                                <i class="fas fa-cart-plus"></i> Add to Cart
+                            </button>
+                        </div>
+                        
+                        <div class="card">
+                            <div class="d-flex justify-content-between align-items-center mb-3">
+                                <h5 class="card-title">
+                                    <i class="fas fa-tablets"></i> Acetaminophen 500mg
+                                </h5>
+                                <span class="badge badge-success">OTC</span>
+                            </div>
+                            <p class="card-text">
+                                <strong>Type:</strong> Pain Reliever & Fever Reducer
+                            </p>
+                            <p class="card-text">
+                                <strong>Dosage:</strong> 500mg tablet, taken as needed
+                            </p>
+                            <p class="card-text">
+                                <strong>Price:</strong> $7.99 (100 tablets)
+                            </p>
+                            <button class="btn btn-order w-100 mt-3" onclick="addToCart('Acetaminophen 500mg', 7.99)">
+                                <i class="fas fa-cart-plus"></i> Add to Cart
+                            </button>
+                        </div>
+                        
+                        <div class="card">
+                            <div class="d-flex justify-content-between align-items-center mb-3">
+                                <h5 class="card-title">
+                                    <i class="fas fa-pills"></i> Loratadine 10mg
+                                </h5>
+                                <span class="badge badge-success">OTC</span>
+                            </div>
+                            <p class="card-text">
+                                <strong>Type:</strong> Antihistamine
+                            </p>
+                            <p class="card-text">
+                                <strong>Dosage:</strong> 10mg tablet, taken once daily
+                            </p>
+                            <p class="card-text">
+                                <strong>Price:</strong> $12.99 (30 tablets)
+                            </p>
+                            <button class="btn btn-order w-100 mt-3" onclick="addToCart('Loratadine 10mg', 12.99)">
+                                <i class="fas fa-cart-plus"></i> Add to Cart
+                            </button>
+                        </div>
                     </div>
                 </div>
             </div>
-            
-            <!-- Product 2 -->
-            <div class="product-card">
-                <div class="product-img">
-                    <img src="https://cdn-icons-png.flaticon.com/512/3140/3140424.png" alt="Medicine 2">
-                </div>
-                <div class="product-info">
-                    <div class="product-category">Pain Relief</div>
-                    <h3 class="product-name">Paracetamol 500mg Tablets (20 tabs)</h3>
-                    <div class="product-price">₹35.00</div>
-                    <div class="product-actions">
-                        <div class="quantity-controls">
-                            <button>-</button>
-                            <span>1</span>
-                            <button>+</button>
-                        </div>
-                        <button class="add-to-cart">Add</button>
-                    </div>
-                </div>
-            </div>
-            
-            <!-- Product 3 -->
-            <div class="product-card">
-                <div class="product-img">
-                    <img src="https://cdn-icons-png.flaticon.com/512/4320/4320367.png" alt="Medicine 3">
-                </div>
-                <div class="product-info">
-                    <div class="product-category">Vitamins</div>
-                    <h3 class="product-name">Vitamin D3 1000IU Tablets (60 tabs)</h3>
-                    <div class="product-price">₹250.00</div>
-                    <div class="product-actions">
-                        <div class="quantity-controls">
-                            <button>-</button>
-                            <span>1</span>
-                            <button>+</button>
-                        </div>
-                        <button class="add-to-cart">Add</button>
-                    </div>
-                </div>
-            </div>
-            
-            <!-- Product 4 -->
-            <div class="product-card">
-                <div class="product-img">
-                    <img src="https://cdn-icons-png.flaticon.com/512/3140/3140363.png" alt="Medicine 4">
-                </div>
-                <div class="product-info">
-                    <div class="product-category">Cardiovascular</div>
-                    <h3 class="product-name">Amlodipine 5mg Tablets (30 tabs)</h3>
-                    <div class="product-price">₹85.00</div>
-                    <div class="product-actions">
-                        <div class="quantity-controls">
-                            <button>-</button>
-                            <span>1</span>
-                            <button>+</button>
-                        </div>
-                        <button class="add-to-cart">Add</button>
-                    </div>
-                    <div class="prescription-req">
-                        <img src="https://cdn-icons-png.flaticon.com/512/1828/1828833.png" alt="Required">
-                        Prescription Required
-                    </div>
-                </div>
-            </div>
-            
-            <!-- Product 5 -->
-            <div class="product-card">
-                <div class="product-img">
-                    <img src="https://cdn-icons-png.flaticon.com/512/3004/3004458.png" alt="Medicine 5">
-                </div>
-                <div class="product-info">
-                    <div class="product-category">Respiratory</div>
-                    <h3 class="product-name">Salbutamol Inhaler (200 doses)</h3>
-                    <div class="product-price">₹320.00</div>
-                    <div class="product-actions">
-                        <div class="quantity-controls">
-                            <button>-</button>
-                            <span>1</span>
-                            <button>+</button>
-                        </div>
-                        <button class="add-to-cart">Add</button>
-                    </div>
-                    <div class="prescription-req">
-                        <img src="https://cdn-icons-png.flaticon.com/512/1828/1828833.png" alt="Required">
-                        Prescription Required
-                    </div>
-                </div>
-            </div>
-            
-            <!-- Product 6 -->
-            <div class="product-card">
-                <div class="product-img">
-                    <img src="https://cdn-icons-png.flaticon.com/512/2447/2447325.png" alt="Medicine 6">
-                </div>
-                <div class="product-info">
-                    <div class="product-category">Skincare</div>
-                    <h3 class="product-name">Cetaphil Gentle Skin Cleanser (250ml)</h3>
-                    <div class="product-price">₹450.00</div>
-                    <div class="product-actions">
-                        <div class="quantity-controls">
-                            <button>-</button>
-                            <span>1</span>
-                            <button>+</button>
-                        </div>
-                        <button class="add-to-cart">Add</button>
-                    </div>
-                </div>
-            </div>
-            
-            <!-- Product 7 -->
-            <div class="product-card">
-                <div class="product-img">
-                    <img src="https://cdn-icons-png.flaticon.com/512/2982/2982226.png" alt="Medicine 7">
-                </div>
-                <div class="product-info">
-                    <div class="product-category">Gastrointestinal</div>
-                    <h3 class="product-name">Omeprazole 20mg Capsules (30 caps)</h3>
-                    <div class="product-price">₹180.00</div>
-                    <div class="product-actions">
-                        <div class="quantity-controls">
-                            <button>-</button>
-                            <span>1</span>
-                            <button>+</button>
-                        </div>
-                        <button class="add-to-cart">Add</button>
-                    </div>
-                    <div class="prescription-req">
-                        <img src="https://cdn-icons-png.flaticon.com/512/1828/1828833.png" alt="Required">
-                        Prescription Required
-                    </div>
-                </div>
-            </div>
-            
-            <!-- Product 8 -->
-            <div class="product-card">
-                <div class="product-img">
-                    <img src="https://cdn-icons-png.flaticon.com/512/4320/4320455.png" alt="Medicine 8">
-                </div>
-                <div class="product-info">
-                    <div class="product-category">First Aid</div>
-                    <h3 class="product-name">Antiseptic Liquid Solution (100ml)</h3>
-                    <div class="product-price">₹75.00</div>
-                    <div class="product-actions">
-                        <div class="quantity-controls">
-                            <button>-</button>
-                            <span>1</span>
-                            <button>+</button>
-                        </div>
-                        <button class="add-to-cart">Add</button>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
 
-    <!-- Cart Icon -->
-    <div class="cart-icon" onclick="toggleCart()">
-        <img src="https://cdn-icons-png.flaticon.com/512/2838/2838838.png" alt="Cart">
-        <span class="cart-badge">0</span>
-    </div>
-
-    <!-- Cart Section -->
-    <div class="cart-section">
-        <div class="cart-header">
-            <h3>Your Cart</h3>
-            <button class="close-cart" onclick="toggleCart()">&times;</button>
-        </div>
-        <div class="cart-items">
-            <!-- Cart items will be added dynamically -->
-        </div>
-        <div class="cart-footer">
-            <div class="cart-total">
-                <span>Total:</span>
-                <span>₹0.00</span>
-            </div>
-            <button class="checkout-btn" onclick="openCheckout()">Proceed to Checkout</button>
-        </div>
-    </div>
-
-    <!-- Modal Overlay -->
-    <div class="overlay" onclick="toggleCart()"></div>
-
-    <!-- Checkout Modal -->
-    <div class="checkout-modal">
-        <div class="checkout-header">
-            <h3>Checkout</h3>
-            <button class="close-checkout" onclick="closeCheckout()">&times;</button>
-        </div>
-        <form class="checkout-form">
-            <div class="form-group">
-                <label>Delivery Address</label>
-                <input type="text" placeholder="Enter your full address" required>
-            </div>
-            
-            <div class="form-group">
-                <label>Contact Number</label>
-                <input type="tel" placeholder="Enter your phone number" required>
-            </div>
-            
-            <div class="prescription-upload" onclick="document.getElementById('prescription-file').click()">
-                <img src="https://cdn-icons-png.flaticon.com/512/1828/1828833.png" alt="Prescription">
-                <p>Upload your prescription here (if required)</p>
-                <input type="file" id="prescription-file" accept="image/*,.pdf">
-                <button type="button">Browse Files</button>
-            </div>
-            
-            <div class="form-group">
-                <label>Payment Method</label>
-                <select required>
-                    <option value="">Select payment method</option>
-                    <option>Credit/Debit Card</option>
-                    <option>UPI</option>
-                    <option>Net Banking</option>
-                    <option>Cash on Delivery</option>
-                </select>
-            </div>
-            
-            <div class="card-element">
-                <!-- Payment card details will be added here -->
-                <div class="form-group">
-                    <label>Card Number</label>
-                    <input type="text" placeholder="1234 5678 9012 3456">
-                </div>
-                <div style="display: flex; gap: 10px;">
-                    <div class="form-group" style="flex: 1;">
-                        <label>Expiry Date</label>
-                        <input type="text" placeholder="MM/YY">
+            <div id="cart" class="tab-content">
+                <div class="section">
+                    <h3><i class="fas fa-shopping-cart"></i> Shopping Cart</h3>
+                    <div id="cart-items">
+                        <div class="cart-item">
+                            <div class="cart-item-info">
+                                <i class="fas fa-pills cart-item-icon"></i>
+                                <div class="cart-item-details">
+                                    <h5>Metformin 500mg</h5>
+                                    <p>60 tablets</p>
+                                </div>
+                            </div>
+                            <div class="cart-item-actions">
+                                <div class="quantity-control">
+                                    <div class="quantity-btn" onclick="updateQuantity('Metformin 500mg', -1)">-</div>
+                                    <span>1</span>
+                                    <div class="quantity-btn" onclick="updateQuantity('Metformin 500mg', 1)">+</div>
+                                </div>
+                                <p>$12.99</p>
+                                <button class="btn btn-sm btn-danger" onclick="removeFromCart('Metformin 500mg')">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="cart-item">
+                            <div class="cart-item-info">
+                                <i class="fas fa-tablets cart-item-icon"></i>
+                                <div class="cart-item-details">
+                                    <h5>Ibuprofen 200mg</h5>
+                                    <p>100 tablets</p>
+                                </div>
+                            </div>
+                            <div class="cart-item-actions">
+                                <div class="quantity-control">
+                                    <div class="quantity-btn" onclick="updateQuantity('Ibuprofen 200mg', -1)">-</div>
+                                    <span>1</span>
+                                    <div class="quantity-btn" onclick="updateQuantity('Ibuprofen 200mg', 1)">+</div>
+                                </div>
+                                <p>$8.99</p>
+                                <button class="btn btn-sm btn-danger" onclick="removeFromCart('Ibuprofen 200mg')">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </div>
+                        </div>
                     </div>
-                    <div class="form-group" style="flex: 1;">
-                        <label>CVV</label>
-                        <input type="text" placeholder="123">
+                    <div class="cart-total">
+                        <span>Total:</span>
+                        <span>$21.98</span>
+                    </div>
+                    <div class="d-flex gap-3">
+                        <button class="btn btn-primary flex-grow-1">
+                            <i class="fas fa-save"></i> Save for Later
+                        </button>
+                        <button class="btn btn-order flex-grow-1">
+                            <i class="fas fa-credit-card"></i> Proceed to Checkout
+                        </button>
                     </div>
                 </div>
             </div>
-            
-            <button type="submit" class="submit-order">Place Order</button>
-        </form>
+        </div>
     </div>
 
     <script>
-        // Cart functionality
-        let cartCount = 0;
-        const cartItems = [];
-        
-        function toggleCart() {
-            document.querySelector('.cart-section').classList.toggle('active');
-            document.querySelector('.overlay').classList.toggle('active');
+        function toggleSidebar() {
+            document.querySelector('.sidebar').classList.toggle('active');
         }
         
-        function openCheckout() {
-            document.querySelector('.checkout-modal').classList.add('active');
-        }
-        
-        function closeCheckout() {
-            document.querySelector('.checkout-modal').classList.remove('active');
-        }
-        
-        // Add event listeners to all "Add to cart" buttons
-        document.querySelectorAll('.add-to-cart').forEach((button, index) => {
-            button.addEventListener('click', () => {
-                const productCard = button.closest('.product-card');
-                const productName = productCard.querySelector('.product-name').textContent;
-                const productPrice = productCard.querySelector('.product-price').textContent;
-                const productImg = productCard.querySelector('.product-img img').src;
-                const quantity = parseInt(productCard.querySelector('.quantity-controls span').textContent);
-                
-                // Check if product is already in cart
-                const existingItemIndex = cartItems.findIndex(item => item.name === productName);
-                
-                if (existingItemIndex > -1) {
-                    cartItems[existingItemIndex].quantity += quantity;
-                    updateCartUI();
-                } else {
-                    // Add to cart array
-                    cartItems.push({
-                        name: productName,
-                        price: productPrice,
-                        img: productImg,
-                        quantity: quantity
-                    });
-                    
-                    // Update cart count
-                    cartCount += quantity;
-                    document.querySelector('.cart-badge').textContent = cartCount;
-                    
-                    // Update cart UI
-                    updateCartUI();
-                    
-                    // Show notification
-                    alert(`Added ${productName} to cart!`);
-                }
-            });
-        });
-        
-        // Quantity controls in product cards
-        document.querySelectorAll('.quantity-controls').forEach(control => {
-            const minusBtn = control.querySelector('button:first-child');
-            const plusBtn = control.querySelector('button:last-child');
-            const quantitySpan = control.querySelector('span');
-            
-            minusBtn.addEventListener('click', () => {
-                let quantity = parseInt(quantitySpan.textContent);
-                if (quantity > 1) {
-                    quantity--;
-                    quantitySpan.textContent = quantity;
-                }
+        function showTab(tabId) {
+            // Hide all tabs
+            document.querySelectorAll('.tab-content').forEach(tab => {
+                tab.classList.remove('active');
             });
             
-            plusBtn.addEventListener('click', () => {
-                let quantity = parseInt(quantitySpan.textContent);
-                quantity++;
-                quantitySpan.textContent = quantity;
-            });
-        });
-        
-        // Update cart UI
-        function updateCartUI() {
-            const cartItemsContainer = document.querySelector('.cart-items');
-            cartItemsContainer.innerHTML = '';
-            
-            let total = 0;
-            
-            cartItems.forEach((item, index) => {
-                // Calculate item total
-                const priceNum = parseFloat(item.price.replace('₹', ''));
-                const itemTotal = priceNum * item.quantity;
-                total += itemTotal;
-                
-                // Create cart item element
-                const cartItemElement = document.createElement('div');
-                cartItemElement.className = 'cart-item';
-                cartItemElement.innerHTML = `
-                    <div class="cart-item-img">
-                        <img src="${item.img}" alt="${item.name}">
-                    </div>
-                    <div class="cart-item-details">
-                        <h3 class="cart-item-name">${item.name}</h3>
-                        <div class="cart-item-price">${item.price} × ${item.quantity}</div>
-                        <div class="cart-item-actions">
-                            <div class="cart-quantity">
-                                <button onclick="decreaseQuantity(${index})">-</button>
-                                <span>${item.quantity}</span>
-                                <button onclick="increaseQuantity(${index})">+</button>
-                            </div>
-                            <button class="remove-item" onclick="removeItem(${index})">Remove</button>
-                        </div>
-                    </div>
-                `;
-                
-                cartItemsContainer.appendChild(cartItemElement);
+            // Remove active class from all tab buttons
+            document.querySelectorAll('.pharmacy-tab').forEach(tab => {
+                tab.classList.remove('active');
             });
             
-            // Update total
-            document.querySelector('.cart-total span:last-child').textContent = `₹${total.toFixed(2)}`;
+            // Show selected tab
+            document.getElementById(tabId).classList.add('active');
+            
+            // Add active class to clicked tab button
+            event.currentTarget.classList.add('active');
         }
         
-        // Cart quantity management
-        function increaseQuantity(index) {
-            cartItems[index].quantity++;
-            cartCount++;
-            document.querySelector('.cart-badge').textContent = cartCount;
-            updateCartUI();
+        function addToCart(itemName, price) {
+            alert(`Added ${itemName} to cart! Price: $${price}`);
+            // Here you would actually update the cart contents
         }
         
-        function decreaseQuantity(index) {
-            if (cartItems[index].quantity > 1) {
-                cartItems[index].quantity--;
-                cartCount--;
-                document.querySelector('.cart-badge').textContent = cartCount;
-                updateCartUI();
-            }
+        function updateQuantity(itemName, change) {
+            alert(`Updated quantity for ${itemName} by ${change}`);
+            // Here you would actually update the quantity
         }
         
-        function removeItem(index) {
-            cartCount -= cartItems[index].quantity;
-            cartItems.splice(index, 1);
-            document.querySelector('.cart-badge').textContent = cartCount;
-            updateCartUI();
+        function removeFromCart(itemName) {
+            alert(`Removed ${itemName} from cart!`);
+            // Here you would actually remove the item
         }
     </script>
 </body>

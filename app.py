@@ -335,7 +335,6 @@ def schedule_meeting():
     flash("Unauthorized access.", "danger")
     return redirect(url_for('login'))
 
-
 def get_scheduled_meetings():
     meetings = db.meetings.find().sort("meeting_datetime", DESCENDING)
     
@@ -800,13 +799,15 @@ def patient_dashboard(appointment_type=None):
         (upcoming_appointments, ongoing_appointments, completed_appointments))
 
     return render_template(
-        'patient_dashboard.html',
-        name=patient.get('name', ''),
-        upcoming_appointments=filtered_appointments[0],
-        ongoing_appointments=filtered_appointments[1],
-        completed_appointments=filtered_appointments[2],
-        meetings=meetings
-    )
+    'patient_dashboard.html',
+    name=patient.get('name', ''),
+    user=patient,  # Pass the entire patient object instead of just 'name'
+    upcoming_appointments=filtered_appointments[0],
+    ongoing_appointments=filtered_appointments[1],
+    completed_appointments=filtered_appointments[2],
+    meetings=meetings
+)
+
 
 def get_doctor_info():
     if 'user_id' in session and session['role'] == 'doctor':
@@ -1386,8 +1387,75 @@ products = [
 ]
 
 @app.route('/pharmacy')
+@app.route('/pharmacy/')
 def pharmacy():
-    return render_template('pharmacy.html', products=products)
+    if 'user_id' not in session:
+        flash("Please login to access the pharmacy.", "danger")
+        return redirect(url_for('login'))
+    
+    # Fetch user information
+    user = None
+    if 'user_id' in session:
+        user = mongo.db.users.find_one({'_id': ObjectId(session['user_id'])})
+    
+    # Fetch all pharmacy products
+    products = list(mongo.db.pharmacy_products.find())
+    
+    # If logged in as a patient, fetch their prescriptions
+    patient_prescriptions = []
+    if session.get('role') == 'patient':
+        patient_id = ObjectId(session['user_id'])
+        patient_prescriptions = list(mongo.db.prescriptions.find({"patient_id": patient_id}))
+        
+        # Get product details for each prescription
+        for prescription in patient_prescriptions:
+            product = mongo.db.pharmacy_products.find_one({"_id": prescription.get("product_id")})
+            if product:
+                prescription["product_name"] = product.get("name")
+                prescription["product_description"] = product.get("description")
+                prescription["product_image"] = product.get("image_url")
+            else:
+                prescription["product_name"] = "Unknown Product"
+                prescription["product_description"] = "No description available"
+                prescription["product_image"] = ""
+    
+    return render_template(
+        'pharmacy.html',
+        products=products,
+        prescriptions=patient_prescriptions,
+        is_patient=(session.get('role') == 'patient'),
+        user=user  # Pass the user object to the template
+    )
+
+
+@app.route('/pharmacy/request_refill/<prescription_id>')
+def request_refill(prescription_id):
+    if 'user_id' not in session or session['role'] != 'patient':
+        flash("Unauthorized access.", "danger")
+        return redirect(url_for('login'))
+    
+    # Get the prescription
+    try:
+        prescription = mongo.db.prescriptions.find_one({"_id": ObjectId(prescription_id)})
+        if not prescription or prescription.get("patient_id") != ObjectId(session['user_id']):
+            flash("Prescription not found or does not belong to you.", "danger")
+            return redirect(url_for('pharmacy'))
+        
+        # Create a refill request
+        refill_request = {
+            "prescription_id": ObjectId(prescription_id),
+            "patient_id": ObjectId(session['user_id']),
+            "doctor_id": prescription.get("doctor_id"),
+            "request_date": datetime.utcnow(),
+            "status": "pending"
+        }
+        
+        mongo.db.refill_requests.insert_one(refill_request)
+        flash("Refill request submitted successfully.", "success")
+    except Exception as e:
+        flash(f"Error processing refill request: {str(e)}", "danger")
+    
+    return redirect(url_for('pharmacy'))
 
 
 import joblib

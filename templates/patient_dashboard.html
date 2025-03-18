@@ -280,6 +280,20 @@
             background: linear-gradient(90deg, #20c997, #28a745);
         }
 
+        .btn-order {
+            background: linear-gradient(90deg, #17a2b8, #138496);
+            border: none;
+            color: white;
+            transition: all 0.3s ease;
+            margin-top: auto;
+        }
+
+        .btn-order:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(23, 162, 184, 0.3);
+            background: linear-gradient(90deg, #138496, #17a2b8);
+        }
+
         .btn-disabled {
             background: linear-gradient(90deg, #6c757d, #5a6268) !important;
             cursor: not-allowed;
@@ -303,6 +317,31 @@
             border-radius: 5px;
             cursor: pointer;
             backdrop-filter: blur(10px);
+        }
+
+        .medication-info {
+            display: flex;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .medication-icon {
+            font-size: 1.5rem;
+            margin-right: 15px;
+            color: var(--accent-color);
+        }
+
+        .prescription-details {
+            border-top: 1px dashed #ddd;
+            padding-top: 15px;
+            margin-top: 10px;
+        }
+
+        .prescription-item {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+            padding: 5px 0;
         }
 
         /* Added for larger screens */
@@ -358,14 +397,14 @@
 
     <div class="sidebar">
         <div class="logo-container">
-            <img src="/user_photo/{{ user._id if user else '' }}" alt="Profile Picture" class="logo" onerror="this.src='/static/images/logo.jpg';">
+            <img src="/user_photo/{{ user._id }}" alt="Profile Picture" style="width: 100px; height: 100px; border-radius: 50%; margin-bottom: 1rem;">
             <h3>RapiACT!</h3>
             <p>{{ name }}</p>
         </div>
         <hr>
         <a href="/profile"><i class="fas fa-user"></i>Profile</a>
         <a href="/create_appointment"><i class="fas fa-calendar-plus"></i>Appointment</a>
-        <a href="/my_meetings"><i class="fas fa-video"></i>My Meetings</a>
+        <a href="/pharmacy"><i class="fas fa-pills"></i>Pharmacy</a>
         <hr>
         <a href="/logout"><i class="fas fa-sign-out-alt"></i>Logout</a>
     </div>
@@ -374,6 +413,90 @@
         <div class="main-content-wrapper">
             <div class="dashboard-header">
                 <h2>Patient Dashboard</h2>
+            </div>
+
+            <div id="pharmacy" class="section">
+                <h3><i class="fas fa-pills"></i> My Medications</h3>
+                <div class="card-container" id="pharmacy-medications">
+                    <!-- Sample medication cards -->
+                    <div class="card">
+                        <h5 class="card-title">
+                            <i class="fas fa-prescription-bottle-alt"></i> 
+                            Current Prescription
+                        </h5>
+                        <div class="medication-info">
+                            <i class="fas fa-capsules medication-icon"></i>
+                            <div>
+                                <p class="card-text"><strong>Doctor:</strong> Dr. Sarah Johnson</p>
+                                <p class="card-text"><strong>Prescribed:</strong> March 12, 2025</p>
+                            </div>
+                        </div>
+                        <div class="prescription-details">
+                            <div class="prescription-item">
+                                <span><i class="fas fa-pills"></i> Amoxicillin 500mg</span>
+                                <span>3x daily</span>
+                            </div>
+                            <div class="prescription-item">
+                                <span><i class="fas fa-tablets"></i> Ibuprofen 400mg</span>
+                                <span>As needed</span>
+                            </div>
+                        </div>
+                        <button class="btn btn-order w-100 mt-3">
+                            <i class="fas fa-shopping-cart"></i> Reorder Medication
+                        </button>
+                    </div>
+                    
+                    <div class="card">
+                        <h5 class="card-title">
+                            <i class="fas fa-prescription"></i> 
+                            Maintenance Medication
+                        </h5>
+                        <div class="medication-info">
+                            <i class="fas fa-heartbeat medication-icon"></i>
+                            <div>
+                                <p class="card-text"><strong>Doctor:</strong> Dr. Michael Chen</p>
+                                <p class="card-text"><strong>Prescribed:</strong> January 5, 2025</p>
+                            </div>
+                        </div>
+                        <div class="prescription-details">
+                            <div class="prescription-item">
+                                <span><i class="fas fa-tablets"></i> Atorvastatin 20mg</span>
+                                <span>1x daily</span>
+                            </div>
+                            <div class="prescription-item">
+                                <span><i class="fas fa-pills"></i> Metformin 500mg</span>
+                                <span>2x daily</span>
+                            </div>
+                        </div>
+                        <p class="card-text mt-2">
+                            <i class="fas fa-exclamation-circle" style="color: orange;"></i>
+                            <strong>Refill Available:</strong> 5 remaining
+                        </p>
+                        <button class="btn btn-order w-100 mt-3">
+                            <i class="fas fa-sync-alt"></i> Refill Prescription
+                        </button>
+                    </div>
+                    
+                    <div class="card">
+                        <h5 class="card-title">
+                            <i class="fas fa-store-alt"></i> 
+                            Pharmacy Services
+                        </h5>
+                        <p class="card-text">
+                            <i class="fas fa-info-circle"></i>
+                            <strong>Our pharmacy offers:</strong>
+                        </p>
+                        <ul style="list-style-type: none; padding-left: 0;">
+                            <li><i class="fas fa-check text-success"></i> Free delivery for orders above $50</li>
+                            <li><i class="fas fa-check text-success"></i> 24/7 pharmacist consultation</li>
+                            <li><i class="fas fa-check text-success"></i> Auto-refill program</li>
+                            <li><i class="fas fa-check text-success"></i> Medication reminders</li>
+                        </ul>
+                        <button class="btn btn-primary w-100 mt-auto">
+                            <i class="fas fa-headset"></i> Contact Pharmacy
+                        </button>
+                    </div>
+                </div>
             </div>
 
             {% for section, title, appointments, icon in [
@@ -387,8 +510,7 @@
                         {% if appointments %}
                             {% for appointment in appointments %}
                                 <div class="card" id="appointment-{{ appointment._id }}" 
-                                     data-time="{{ appointment.appointment_datetime }}" 
-                                     data-meeting-link="{{ appointment.meeting_link }}">
+                                     data-time="{{ appointment.appointment_datetime }}" >
                                     <h5 class="card-title">
                                         <i class="fas fa-user-md"></i> 
                                         Doctor: {{ appointment.doctor_name }}
@@ -405,6 +527,9 @@
                                         <i class="fas fa-notes-medical"></i>
                                         <strong>Cause:</strong> {{ appointment.cause }}
                                     </p>
+                                    <p class="card-text">
+                                        <strong>The Link has shared to respective mail id check and join in the meeting</strong>
+                                    </p>
                                     
                                     {% if section == 'upcoming' %}
                                         <form action="/cancel_appointment/{{ appointment._id }}" method="post" class="mt-auto">
@@ -412,18 +537,6 @@
                                                 <i class="fas fa-times-circle"></i> Cancel Appointment
                                             </button>
                                         </form>
-                                    {% elif section == 'ongoing' %}
-                                        {% if appointment_id.meeting_link %}
-                                            <a href="{{ appointment_id.meeting_link }}" target="_blank" 
-                                               class="btn btn-join w-100" 
-                                               id="join-btn-{{ appointment._id }}">
-                                                <i class="fas fa-video"></i> Join Meeting
-                                            </a>
-                                        {% else %}
-                                            <a href="#" class="btn btn-join btn-disabled w-100">
-                                                <i class="fas fa-video"></i> Meeting Not Available Yet
-                                            </a>
-                                        {% endif %}
                                     {% elif section == 'completed' %}
                                         <div class="card-text mt-3">
                                             <i class="fas fa-comment-medical"></i>
@@ -521,19 +634,6 @@
                             const btnContainer = document.createElement('div');
                             btnContainer.className = 'mt-auto';
                             
-                            if (meetingLink) {
-                                btnContainer.innerHTML = `
-                                    <a href="${meetingLink}" target="_blank" class="btn btn-join w-100" id="join-btn-${appointmentId}">
-                                        <i class="fas fa-video"></i> Join Meeting
-                                    </a>
-                                `;
-                            } else {
-                                btnContainer.innerHTML = `
-                                    <a href="#" class="btn btn-join btn-disabled w-100">
-                                        <i class="fas fa-video"></i> Meeting Not Available Yet
-                                    </a>
-                                `;
-                            }
                             
                             card.appendChild(btnContainer);
                         }
@@ -553,31 +653,6 @@
             });
         }
 
-        // Check for meeting links periodically
-        function checkForMeetingLinks() {
-            document.querySelectorAll('#ongoing-appointments .card').forEach(card => {
-                const appointmentId = card.id.split('-')[1];
-                
-                // Make an AJAX request to check if meeting link is available
-                fetch(`/check_meeting_link/${appointmentId}`)
-                    .then(response => response.json())
-                    .then(data => {
-                        if (data.meeting_link) {
-                            // Update the card's data attribute
-                            card.setAttribute('data-meeting-link', data.meeting_link);
-                            
-                            // Update the join button if it exists
-                            const joinBtn = document.getElementById(`join-btn-${appointmentId}`);
-                            if (joinBtn) {
-                                joinBtn.href = data.meeting_link;
-                                joinBtn.classList.remove('btn-disabled');
-                            }
-                        }
-                    })
-                    .catch(error => console.error('Error checking meeting link:', error));
-            });
-        }
-
         // Initialize correct layout on page load
         document.addEventListener('DOMContentLoaded', () => {
             if (window.innerWidth <= 768) {
@@ -587,9 +662,6 @@
             // Run appointment update immediately and refresh every minute
             updateAppointments();
             setInterval(updateAppointments, 60000);
-            
-            // Check for meeting links every 30 seconds
-            setInterval(checkForMeetingLinks, 30000);
         });
     </script>
 </body>
