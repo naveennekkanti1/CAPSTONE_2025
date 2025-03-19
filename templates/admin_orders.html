@@ -215,10 +215,10 @@
 
         .order-actions {
             width: 100%;
-            margin-top: 10px;
-            display: flex;
-            justify-content: flex-end;
-            gap: 10px;
+            margin-top: 15px;
+            padding: 15px;
+            background-color: #f9f9f9;
+            border-radius: 8px;
         }
 
         .btn-action {
@@ -240,12 +240,12 @@
             transform: translateY(-2px);
         }
 
-        .tracking-input {
+        .status-select {
             width: 100%;
-            padding: 8px 12px;
+            padding: 10px;
             border: 1px solid #ddd;
             border-radius: 5px;
-            margin-top: 10px;
+            margin-bottom: 10px;
         }
 
         .badge {
@@ -273,6 +273,21 @@
             color: #2e7d32;
         }
 
+        .status-processing {
+            background-color: #e3f2fd;
+            color: #1565c0;
+        }
+
+        .status-shipped {
+            background-color: #fff8e1;
+            color: #ff8f00;
+        }
+
+        .status-delivered {
+            background-color: #e8f5e9;
+            color: #2e7d32;
+        }
+
         .menu-toggle {
             display: none;
             position: fixed;
@@ -285,6 +300,22 @@
             border-radius: 5px;
             cursor: pointer;
             backdrop-filter: blur(10px);
+        }
+
+        .products-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+        }
+
+        .products-table th, .products-table td {
+            padding: 8px;
+            border-bottom: 1px solid #ddd;
+        }
+
+        .products-table th {
+            background-color: #f2f2f2;
+            text-align: left;
         }
 
         @media (max-width: 768px) {
@@ -324,10 +355,16 @@
         </div>
         <hr>
         {% if session.get('role') == 'admin' %}
-            <a href="/admin_dashboard"><i class="fas fa-home"></i>Dashboard</a>
-            <a href="/admin_dashboard/add_medicine"><i class="fas fa-plus-circle"></i>Add Medicine</a>
-            <a href="/admin/verify_payment"><i class="fas fa-check-circle"></i>Verify Payment</a>
-            <a href="/admin/orders" class="active"><i class="fas fa-box"></i>Orders</a>
+        <a href="/admin_dashboard"><i class="fas fa-home"></i>Dashboard</a>
+        <a href="/add_user"><i class="fas fa-user-plus"></i>Add User</a>
+        <a href="/users"><i class="fas fa-users"></i>Users</a>
+        <a href="/appointments"><i class="fas fa-calendar-check"></i>Appointments</a>
+        <a href="/admin_dashboard/add_medicine"><i class="fas fa-plus-circle"></i>Add Medicine</a>
+        <a href="/pharmacy"><i class="fas fa-pills"></i>Pharmacy</a>
+        <a href="/email_dashboard"><i class="fas fa-calendar-check"></i>Email Sending</a>
+        <a href="/enquiry_details"><i class="fas fa-question-circle"></i>Contact Queries</a>
+        <a href="/admin_dashboard/verify_payment"><i class="fas fa-check-circle"></i>Verify Payment</a>
+        <a href="/admin_dashboard/orders" class="active"><i class="fas fa-box"></i>Orders</a>
         {% endif %}
         <a href="/pharmacy"><i class="fas fa-pills"></i>Pharmacy</a>
         <hr>
@@ -379,7 +416,7 @@
                                     </tr>
                                     <tr>
                                         <th>Order Date:</th>
-                                        <td>{{ order.date.strftime('%d-%m-%Y %H:%M') }}</td>
+                                        <td>{{ order.date.strftime('%d-%m-%Y %H:%M') if order.date else 'N/A' }}</td>
                                     </tr>
                                     <tr>
                                         <th>UTR ID:</th>
@@ -388,8 +425,8 @@
                                     <tr>
                                         <th>Status:</th>
                                         <td>
-                                            <span class="status-label status-verified">
-                                                Payment Verified
+                                            <span class="status-label status-{{ order.status|lower if order.status else 'verified' }}">
+                                                {{ order.status if order.status else 'Payment Verified' }}
                                             </span>
                                         </td>
                                     </tr>
@@ -397,20 +434,55 @@
                             </div>
                             <div class="order-product">
                                 <h4>Product Details</h4>
-                                <table class="table table-borderless">
-                                    <tr>
-                                        <th>Product:</th>
-                                        <td>{{ order.product.name }}</td>
-                                    </tr>
-                                    <tr>
-                                        <th>Description:</th>
-                                        <td>{{ order.product.description }}</td>
-                                    </tr>
-                                    <tr>
-                                        <th>Price:</th>
-                                        <td>₹{{ order.product.price }}</td>
-                                    </tr>
+                                <table class="products-table">
+                                    <thead>
+                                        <tr>
+                                            <th>Product</th>
+                                            <th>Description</th>
+                                            <th>Price</th>
+                                            <th>Quantity</th>
+                                            <th>Subtotal</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% set total = namespace(value=0) %}
+                                        {% for product in order.products %}
+<tr>
+    <td>{{ product.name }}</td>
+    <td>{{ product.description }}</td>
+    <td>₹{{ product.price }}</td>
+    {% set quantity = 1 %}
+    {% for med in order.medicines %}
+        {% if med.id|string == product._id|string %}
+            {% set quantity = med['quantity']|int if 'quantity' in med else 1 %}
+        {% endif %}
+    {% endfor %}
+    <td>{{ quantity }}</td>
+    <td>₹{{ product.price * quantity }}</td>
+    {% set total.value = total.value + (product.price * quantity) %}
+</tr>
+{% endfor %}
+                                    </tbody>
+                                    <tfoot>
+                                        <tr>
+                                            <th colspan="4" style="text-align: right;">Total:</th>
+                                            <td><strong>₹{{ total.value }}</strong></td>
+                                        </tr>
+                                    </tfoot>
                                 </table>
+                            </div>
+                            <div class="order-actions">
+                                <h4>Update Order Status</h4>
+                                <form action="{{ url_for('update_order_status', order_id=order._id) }}" method="POST">
+                                    <select name="status" class="status-select">
+                                        <option value="Processing" {% if order.status == 'Processing' %}selected{% endif %}>Processing</option>
+                                        <option value="Packed" {% if order.status == 'Packed' %}selected{% endif %}>Packed</option>
+                                        <option value="Shipped" {% if order.status == 'Shipped' %}selected{% endif %}>Shipped</option>
+                                        <option value="Out for Delivery" {% if order.status == 'Out for Delivery' %}selected{% endif %}>Out for Delivery</option>
+                                        <option value="Delivered" {% if order.status == 'Delivered' %}selected{% endif %}>Delivered</option>
+                                    </select>
+                                    <button type="submit" class="btn btn-action btn-update">Update Status & Notify Customer</button>
+                                </form>
                             </div>
                         </div>
                     </div>

@@ -1620,7 +1620,7 @@ def proceed_payment(prescription_id):
             product["image"] = base64.b64encode(product["image"]).decode("utf-8")
         
         # Path to the stored QR code in the static folder
-        qr_code_path = url_for('static', filename='images/payment_qr.png')
+        qr_code_path = url_for('static', filename='images/payement.jpg')
 
         return render_template('payment.html', 
                               prescription_id=prescription_id, 
@@ -1695,7 +1695,7 @@ def verify_payment_action(payment_id):
 
     action = request.form.get('action')
 
-    # Fetch payment details
+    # Fetch payment details with correct $lookup
     pipeline = [
         {"$match": {"_id": ObjectId(payment_id)}},
         {"$lookup": {
@@ -1704,13 +1704,26 @@ def verify_payment_action(payment_id):
             "foreignField": "_id",
             "as": "patient"
         }},
+        {"$unwind": {"path": "$patient", "preserveNullAndEmptyArrays": True}},
+        
+        # Extract medicine "id" values from the medicines list
+        {"$addFields": {
+            "medicine_ids": {
+                "$map": {
+                    "input": "$medicines",
+                    "as": "med",
+                    "in": {"$toObjectId": "$$med.id"}  # Convert string ID to ObjectId
+                }
+            }
+        }},
+        
+        # Perform lookup on pharmacy_products using extracted medicine_ids
         {"$lookup": {
             "from": "pharmacy_products",
-            "localField": "medicines",
+            "localField": "medicine_ids",
             "foreignField": "_id",
             "as": "products"
-        }},
-        {"$unwind": {"path": "$patient", "preserveNullAndEmptyArrays": True}} 
+        }}
     ]
 
     payment_details = list(mongo.db.prescriptions.aggregate(pipeline))
@@ -1727,8 +1740,8 @@ def verify_payment_action(payment_id):
     if not isinstance(medicines, list):
         medicines = []
 
-    # Ensure each medicine is a dictionary
-    medicines = [med if isinstance(med, dict) else {} for med in medicines]
+    # Debugging: Print fetched medicine list
+    print(f"DEBUG: Fetched Medicines: {medicines}")
 
     recipient_email = patient.get("email")
     if not recipient_email:
@@ -1743,8 +1756,15 @@ def verify_payment_action(payment_id):
         subject = "Order Initiated - RapiACT"
         medicine_rows = "".join(
             f"<tr><td>{med.get('name', 'Unknown')}</td><td>{med.get('description', 'No description')}</td><td>₹{med.get('price', 0)}</td></tr>"
-            for med in medicines
+            for med in medicines if med
         )
+
+        # Debugging: Print generated email table
+        print(f"DEBUG: Email Medicine Rows:\n{medicine_rows}")
+
+        # Ensure the table isn't empty
+        if not medicine_rows:
+            medicine_rows = "<tr><td colspan='3'>No medicines available</td></tr>"
 
         body = f"""
         <html>
@@ -1805,6 +1825,7 @@ def verify_payment_action(payment_id):
         send_html_email(subject, [recipient_email], body)
 
     return redirect(url_for('verify_payment'))
+
 
 
 def send_html_email(subject, recipients, html_body):
@@ -1898,28 +1919,124 @@ def admin_orders():
         flash("Unauthorized access.", "danger")
         return redirect(url_for('login'))
     
-    # Get all verified orders with patient and product details
+    # Fetch all verified orders with patient and product details
     pipeline = [
         {"$match": {"payment_status": "verified"}},
+
+        # Join with patient details
         {"$lookup": {
             "from": "users",
             "localField": "patient_id",
             "foreignField": "_id",
             "as": "patient"
         }},
+        {"$unwind": {"path": "$patient", "preserveNullAndEmptyArrays": True}},
+
+        # Extract medicine IDs from the `medicines` array
+        {"$addFields": {
+            "medicine_ids": {
+                "$map": {
+                    "input": "$medicines",
+                    "as": "med",
+                    "in": {"$toObjectId": "$$med.id"}  # Convert medicine "id" string to ObjectId
+                }
+            }
+        }},
+
+        # Lookup pharmacy products using extracted medicine_ids
         {"$lookup": {
             "from": "pharmacy_products",
-            "localField": "product_id",
+            "localField": "medicine_ids",
             "foreignField": "_id",
-            "as": "product"
-        }},
-        {"$unwind": "$patient"},
-        {"$unwind": "$product"}
+            "as": "products"
+        }}
     ]
-    
+
     orders = list(mongo.db.prescriptions.aggregate(pipeline))
-    
+
     return render_template('admin_orders.html', orders=orders)
+
+@app.route('/admin_dashboard/update_order_status/<order_id>', methods=['POST'])
+def update_order_status(order_id):
+    if 'user_id' not in session or session.get('role') != 'admin':
+        flash("Unauthorized access.", "danger")
+        return redirect(url_for('login'))
+
+    new_status = request.form.get('status')
+
+    # Fetch the order
+    order = mongo.db.prescriptions.find_one({"_id": ObjectId(order_id)})
+    if not order:
+        flash("Order not found.", "danger")
+        return redirect(url_for('admin_orders'))
+
+    patient = mongo.db.users.find_one({"_id": order.get("patient_id")})
+    if not patient:
+        flash("Patient details not found.", "danger")
+        return redirect(url_for('admin_orders'))
+
+    # Update order status
+    mongo.db.prescriptions.update_one({"_id": ObjectId(order_id)}, {"$set": {"status": new_status}})
+
+    # Send email notification based on new status
+    subject, email_body = generate_status_email(patient, order, new_status)
+    send_html_email(subject, [patient.get("email")], email_body)
+
+    flash(f"Order status updated to '{new_status}' and email sent to patient.", "success")
+    return redirect(url_for('admin_orders'))
+
+def generate_status_email(patient, order, status):
+    # Extract medicine details correctly from 'medicines' array
+    order_items = "".join(
+        f"<tr><td>{med.get('name', 'Unknown')}</td><td>{med.get('description', 'No description')}</td><td>₹{med.get('price', 0)}</td></tr>"
+        for med in order.get("medicines", [])
+    )
+
+    # Calculate total price
+    total_price = sum(med.get('price', 0) for med in order.get("medicines", []))
+
+    subject = f"Order Update - RapiACT [{status}]"
+
+    body = f"""
+    <html>
+    <head>
+        <style>
+            table {{
+                border-collapse: collapse;
+                width: 100%;
+                margin-bottom: 20px;
+            }}
+            th, td {{
+                border: 1px solid #ddd;
+                padding: 8px;
+                text-align: left;
+            }}
+            th {{
+                background-color: #f2f2f2;
+            }}
+        </style>
+    </head>
+    <body>
+        <h2>Order Update</h2>
+        <p>Dear {patient.get('name', 'User')},</p>
+        <p>Your order status has been updated to: <b>{status}</b></p>
+        
+        <h3>Order Details:</h3>
+        <table>
+            <tr><th>Product</th><th>Description</th><th>Price</th></tr>
+            {order_items}
+            <tr><th colspan="2" style="text-align: right;">Total:</th><td>₹{total_price}</td></tr>
+        </table>
+
+        <p>Thank you for choosing RapiACT!</p>
+        <p>Best Regards,<br>RapiACT Team</p>
+    </body>
+    </html>
+    """
+
+    return subject, body
+
+
 
 
 @app.route('/patient/orders')
