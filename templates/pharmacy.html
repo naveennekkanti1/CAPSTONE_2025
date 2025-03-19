@@ -264,36 +264,6 @@
             box-shadow: 0 5px 15px rgba(124, 77, 255, 0.4);
         }
 
-        .prescription-container {
-            margin-bottom: 30px;
-        }
-
-        .prescription-card {
-            background-color: #f8f9fa;
-            border-radius: 10px;
-            padding: 20px;
-            margin-bottom: 20px;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-            display: flex;
-            align-items: center;
-        }
-
-        .prescription-image {
-            width: 100px;
-            height: 100px;
-            object-fit: cover;
-            border-radius: 8px;
-            margin-right: 20px;
-        }
-
-        .prescription-details {
-            flex-grow: 1;
-        }
-
-        .prescription-actions {
-            margin-left: 20px;
-        }
-
         .menu-toggle {
             display: none;
             position: fixed;
@@ -306,6 +276,212 @@
             border-radius: 5px;
             cursor: pointer;
             backdrop-filter: blur(10px);
+        }
+
+        .search-container {
+            margin-bottom: 20px;
+            width: 100%;
+            display: flex;
+            gap: 10px;
+        }
+
+        .search-container form {
+            display: flex;
+            gap: 10px;
+            flex-grow: 1;
+        }
+
+        .search-container input {
+            flex-grow: 1;
+            padding: 10px 15px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            font-size: 16px;
+        }
+
+        .search-container button {
+            background: linear-gradient(90deg, var(--primary-dark), var(--accent-color));
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        .cart-button {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            background: linear-gradient(90deg, #ff6d00, #ff9800);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            font-weight: bold;
+            cursor: pointer;
+            text-decoration: none;
+            position: relative;
+        }
+
+        .cart-button:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(255, 152, 0, 0.4);
+            color: white;
+        }
+
+        .cart-count {
+            position: absolute;
+            top: -10px;
+            right: -10px;
+            background-color: #ff3d00;
+            color: black;
+            border-radius: 50%;
+            width: 24px;
+            height: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            font-weight: bold;
+        }
+
+        .btn-add-to-cart {
+            background: linear-gradient(90deg, #ff6d00, #ff9800);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-align: center;
+            display: block;
+            width: 100%;
+            text-decoration: none;
+            margin-bottom: 10px;
+        }
+
+        .btn-add-to-cart:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(255, 152, 0, 0.4);
+        }
+
+        .checkout-popup {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.7);
+            z-index: 1002;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .checkout-content {
+    background-color: white;
+    padding: 30px;
+    border-radius: 15px;
+    width: 90%;
+    max-width: 600px;
+    max-height: 80vh;
+    overflow-y: auto;
+    box-shadow: 0 5px 30px rgba(0, 0, 0, 0.3);
+    color: black; /* Add this line to set text color to black */
+}
+
+        .checkout-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .close-checkout {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+        }
+
+        .cart-item {
+            display: flex;
+            align-items: center;
+            padding: 15px 0;
+            border-bottom: 1px solid #eee;
+        }
+
+        .cart-item-image {
+            width: 80px;
+            height: 80px;
+            object-fit: cover;
+            border-radius: 8px;
+            margin-right: 15px;
+        }
+
+        .cart-item-details {
+            flex-grow: 1;
+        }
+
+        .cart-item-quantity {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .quantity-btn {
+            width: 30px;
+            height: 30px;
+            border: 1px solid #ddd;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: none;
+            cursor: pointer;
+        }
+
+        .remove-item {
+            color: #f44336;
+            background: none;
+            border: none;
+            cursor: pointer;
+        }
+
+        .checkout-total {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 1.2rem;
+            font-weight: bold;
+            margin-top: 20px;
+            padding-top: 15px;
+            border-top: 2px solid blue;
+        }
+
+        .qr-code-container {
+            text-align: center;
+            margin: 20px 0;
+        }
+
+        .qr-image {
+            max-width: 200px;
+            margin: 0 auto;
+            display: block;
+        }
+
+        .btn-confirm-payment {
+            background: linear-gradient(90deg, #4caf50, #8bc34a);
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 8px;
+            font-weight: bold;
+            cursor: pointer;
+            width: 100%;
+            margin-top: 20px;
         }
 
         @media (max-width: 768px) {
@@ -330,6 +506,42 @@
             .product-container {
                 grid-template-columns: 1fr;
             }
+
+            .search-container {
+                flex-direction: column;
+            }
+
+            .cart-button {
+                width: 100%;
+                justify-content: center;
+            }
+        }
+
+        .quantity-selector {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        .quantity-selector button {
+            width: 30px;
+            height: 30px;
+            border: 1px solid #ddd;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: white;
+            cursor: pointer;
+        }
+
+        .quantity-selector input {
+            width: 50px;
+            text-align: center;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            padding: 5px;
         }
     </style>
 </head>
@@ -348,12 +560,15 @@
             <a href="/admin_dashboard"><i class="fas fa-home"></i>Dashboard</a>
             <a href="/admin_dashboard/add_medicine"><i class="fas fa-plus-circle"></i>Add Medicine</a>
             <a href="/admin/verify_payment"><i class="fas fa-check-circle"></i>Verify Payment</a>
+            <a href="/admin/orders"><i class="fas fa-box"></i>Orders</a>
         {% elif session.get('role') == 'doctor' %}
             <a href="/doctor_dashboard"><i class="fas fa-home"></i>Dashboard</a>
             <a href="/doctor/appointments"><i class="fas fa-calendar-check"></i>Appointments</a>
         {% elif session.get('role') == 'patient' %}
             <a href="/patient_dashboard"><i class="fas fa-home"></i>Dashboard</a>
             <a href="/patient/appointments"><i class="fas fa-calendar-check"></i>Appointments</a>
+            <a href="/patient/prescriptions"><i class="fas fa-prescription-bottle-alt"></i>My Prescriptions</a>
+            <a href="/patient/orders"><i class="fas fa-box"></i>My Orders</a>
         {% endif %}
         <a href="/pharmacy" class="active"><i class="fas fa-pills"></i>Pharmacy</a>
         <hr>
@@ -377,42 +592,27 @@
                 {% endif %}
             {% endwith %}
             
-            {% if is_patient and prescriptions %}
-            <div class="section prescription-container">
-                <h3><i class="fas fa-prescription-bottle-alt"></i> Your Prescriptions</h3>
-                
-                {% for prescription in prescriptions %}
-                <div class="prescription-card">
-                    {% if prescription.product_image %}
-                    <img src="data:image/jpeg;base64,{{ prescription.product_image }}" alt="{{ prescription.product_name }}" class="prescription-image">
-                    {% else %}
-                    <div class="prescription-image" style="background-color: #ddd; display: flex; align-items: center; justify-content: center;">
-                        <i class="fas fa-pills" style="font-size: 30px; color: #888;"></i>
-                    </div>
-                    {% endif %}
-                    
-                    <div class="prescription-details">
-                        <h4>{{ prescription.product_name }}</h4>
-                        <p>{{ prescription.product_description }}</p>
-                        <p><small>Prescribed on: {{ prescription.date.strftime('%d-%m-%Y') }}</small></p>
-                    </div>
-                    
-                    <div class="prescription-actions">
-                        <a href="{{ url_for('proceed_payment', prescription_id=prescription._id) }}" class="btn-buy">
-                            <i class="fas fa-shopping-cart"></i> Buy Now
-                        </a>
-                    </div>
-                </div>
-                {% endfor %}
+            <!-- Search Bar and Cart button -->
+            <div class="section search-container">
+                <form action="{{ url_for('pharmacy') }}" method="GET" class="flex-grow-1">
+                    <input type="text" name="search" placeholder="Search medicines..." value="{{ request.args.get('search', '') }}">
+                    <button type="submit"><i class="fas fa-search"></i> Search</button>
+                </form>
+                {% if session.get('role') == 'patient' %}
+                <a href="#" class="cart-button" onclick="openCheckout()">
+                    <i class="fas fa-shopping-cart"></i>
+                    <span>Cart</span>
+                    <span class="cart-count" id="cart-count">0</span>
+                </a>
+                {% endif %}
             </div>
-            {% endif %}
             
             <div class="section">
                 <h3><i class="fas fa-store"></i> Available Medicines</h3>
                 
                 <div class="product-container">
                     {% for product in products %}
-                    <div class="product-card">
+                    <div class="product-card" data-id="{{ product._id }}" data-name="{{ product.name }}" data-price="{{ product.price }}" data-image="{{ product.image }}" data-stock="{{ product.stock }}">
                         {% if product.image %}
                         <img src="data:image/jpeg;base64,{{ product.image }}" alt="{{ product.name }}" class="product-image">
                         {% else %}
@@ -431,12 +631,49 @@
                             <a href="{{ url_for('update_medicine', medicine_id=product._id) }}" class="btn-buy">
                                 <i class="fas fa-edit"></i> Edit
                             </a>
+                            {% elif session.get('role') == 'patient' %}
+                            <div class="quantity-selector">
+                                <button type="button" onclick="decreaseQuantity(this)">-</button>
+                                <input type="number" min="1" max="{{ product.stock }}" value="1" class="quantity-input">
+                                <button type="button" onclick="increaseQuantity(this)">+</button>
+                            </div>
+                            <button class="btn-add-to-cart" onclick="addToCart(this.parentNode.parentNode)">
+                                <i class="fas fa-cart-plus"></i> Add to Cart
+                            </button>
+                            <a href="{{ url_for('buy_product', product_id=product._id) }}" class="btn-buy">
+                                <i class="fas fa-shopping-cart"></i> Buy Now
+                            </a>
                             {% endif %}
                         </div>
                     </div>
                     {% endfor %}
                 </div>
             </div>
+        </div>
+    </div>
+
+    <!-- Checkout Popup -->
+    <div class="checkout-popup" id="checkout-popup">
+        <div class="checkout-content">
+            <div class="checkout-header">
+                <h3>Your Cart</h3>
+                <button class="close-checkout" onclick="closeCheckout()">&times;</button>
+            </div>
+            <div id="cart-items">
+                <!-- Cart items will be dynamically added here -->
+            </div>
+            <div class="checkout-total">
+                <span>Total Amount:</span>
+                <span id="cart-total">₹0</span>
+            </div>
+            <div class="qr-code-container">
+                <h4>Scan to Pay</h4>
+                <img src="{{ url_for('static', filename='images/payement.jpg') }}" alt="Payment QR Code" class="qr-image">
+                <p>Scan the QR code to make payment</p>
+            </div>
+            <button class="btn-confirm-payment" onclick="confirmPayment()">
+                <i class="fas fa-check-circle"></i> Confirm Payment
+            </button>
         </div>
     </div>
 
@@ -460,6 +697,221 @@
                 sidebar.classList.remove('active');
             }
         });
+
+        // Shopping Cart functionality
+        let cart = [];
+
+        function decreaseQuantity(button) {
+            const input = button.nextElementSibling;
+            let value = parseInt(input.value);
+            if (value > 1) {
+                input.value = value - 1;
+            }
+        }
+
+        function increaseQuantity(button) {
+            const input = button.previousElementSibling;
+            let value = parseInt(input.value);
+            let max = parseInt(input.getAttribute('max'));
+            if (value < max) {
+                input.value = value + 1;
+            }
+        }
+
+        function addToCart(productCard) {
+            const productId = productCard.dataset.id;
+            const productName = productCard.dataset.name;
+            const productPrice = parseFloat(productCard.dataset.price);
+            const productImage = productCard.dataset.image;
+            const productStock = parseInt(productCard.dataset.stock);
+            const quantityInput = productCard.querySelector('.quantity-input');
+            const quantity = parseInt(quantityInput.value);
+
+            // Check if product already in cart
+            const existingItemIndex = cart.findIndex(item => item.id === productId);
+            
+            if (existingItemIndex > -1) {
+                // Update quantity if not exceeding stock
+                const newQuantity = cart[existingItemIndex].quantity + quantity;
+                if (newQuantity <= productStock) {
+                    cart[existingItemIndex].quantity = newQuantity;
+                } else {
+                    alert(`Sorry, only ${productStock} items in stock.`);
+                    return;
+                }
+            } else {
+                // Add new item to cart
+                cart.push({
+                    id: productId,
+                    name: productName,
+                    price: productPrice,
+                    image: productImage,
+                    quantity: quantity
+                });
+            }
+
+            // Reset quantity input
+            quantityInput.value = 1;
+            
+            // Update cart count
+            updateCartCount();
+            
+            // Show success message
+            alert(`Added ${quantity} ${productName} to cart!`);
+        }
+
+        function updateCartCount() {
+            const cartCount = document.getElementById('cart-count');
+            const totalItems = cart.reduce((total, item) => total + item.quantity, 0);
+            cartCount.textContent = totalItems;
+        }
+
+        function openCheckout() {
+    if (cart.length === 0) {
+        alert('Your cart is empty. Add some items first!');
+        return;
+    }
+    
+    const cartItems = document.getElementById('cart-items');
+    const cartTotal = document.getElementById('cart-total');
+    
+    // Clear previous items
+    cartItems.innerHTML = '';
+    
+    // Add each item to the checkout
+    let total = 0;
+    
+    cart.forEach(item => {
+        const itemTotal = item.price * item.quantity;
+        total += itemTotal;
+        
+        const itemElement = document.createElement('div');
+        itemElement.className = 'cart-item';
+        itemElement.innerHTML = `
+            ${item.image ? 
+                `<img src="data:image/jpeg;base64,${item.image}" alt="${item.name}" class="cart-item-image">` : 
+                `<div class="cart-item-image" style="background-color: #ddd; display: flex; align-items: center; justify-content: center;">
+                    <i class="fas fa-pills" style="font-size: 30px; color: #888;"></i>
+                </div>`
+            }
+            <div class="cart-item-details">
+                <h5>${item.name}</h5>
+                <p>₹${item.price} × ${item.quantity}</p>
+                <p><strong>₹${itemTotal.toFixed(2)}</strong></p>
+            </div>
+            <div class="cart-item-quantity">
+                <button class="quantity-btn" onclick="updateCartItem('${item.id}', ${item.quantity - 1})">-</button>
+                <span>${item.quantity}</span>
+                <button class="quantity-btn" onclick="updateCartItem('${item.id}', ${item.quantity + 1})">+</button>
+                <button class="remove-item" onclick="removeCartItem('${item.id}')">
+                    <i class="fas fa-trash"></i>
+                </button>
+            </div>
+        `;
+        
+        cartItems.appendChild(itemElement);
+    });
+    
+    // Update total
+    cartTotal.textContent = `₹${total.toFixed(2)}`;
+    
+    // Show popup
+    document.getElementById('checkout-popup').style.display = 'flex';
+}
+
+        function closeCheckout() {
+            document.getElementById('checkout-popup').style.display = 'none';
+        }
+
+        function updateCartItem(itemId, newQuantity) {
+            const itemIndex = cart.findIndex(item => item.id === itemId);
+            
+            if (itemIndex > -1) {
+                if (newQuantity <= 0) {
+                    // Remove item if quantity is 0 or less
+                    removeCartItem(itemId);
+                } else {
+                    // Update quantity
+                    cart[itemIndex].quantity = newQuantity;
+                    // Refresh checkout display
+                    openCheckout();
+                }
+                
+                // Update cart count
+                updateCartCount();
+            }
+        }
+
+        function removeCartItem(itemId) {
+            cart = cart.filter(item => item.id !== itemId);
+            // Update cart count
+            updateCartCount();
+            // Refresh checkout display or close if empty
+            if (cart.length > 0) {
+                openCheckout();
+            } else {
+                closeCheckout();
+            }
+        }
+
+        function confirmPayment() {
+    if (cart.length === 0) {
+        alert('Your cart is empty!');
+        return;
+    }
+    
+    // Show loading indicator
+    const confirmButton = document.querySelector('.btn-confirm-payment');
+    confirmButton.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Processing...';
+    confirmButton.disabled = true;
+    
+    // Prepare data for server
+    const orderData = {
+        items: cart,
+        total: cart.reduce((total, item) => total + (item.price * item.quantity), 0)
+    };
+    
+    // Send order to server
+    fetch('/process_order', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(orderData)
+    })
+    .then(response => {
+        if (!response.ok) {
+            throw new Error('Server error');
+        }
+        return response.json();
+    })
+    .then(data => {
+        if (data.success) {
+            alert('Payment successful! Your order has been placed.');
+            // Clear cart
+            cart = [];
+            updateCartCount();
+            closeCheckout();
+            
+            // Redirect to orders page after a short delay
+            setTimeout(() => {
+                window.location.href = '/patient/orders';
+            }, 1500);
+        } else {
+            alert('Payment failed: ' + data.message);
+            // Reset button
+            confirmButton.innerHTML = '<i class="fas fa-check-circle"></i> Confirm Payment';
+            confirmButton.disabled = false;
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('An error occurred while processing your payment.');
+        // Reset button
+        confirmButton.innerHTML = '<i class="fas fa-check-circle"></i> Confirm Payment';
+        confirmButton.disabled = false;
+    });
+}
     </script>
 </body>
 </html>

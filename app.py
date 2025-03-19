@@ -1373,7 +1373,20 @@ def pharmacy():
         return redirect(url_for('login'))
     
     user = mongo.db.users.find_one({'_id': ObjectId(session['user_id'])})
-    products = list(mongo.db.pharmacy_products.find())
+    
+    # Handle search functionality
+    search_query = request.args.get('search', '')
+    if search_query:
+        # Search in name and description fields
+        search_filter = {
+            "$or": [
+                {"name": {"$regex": search_query, "$options": "i"}},
+                {"description": {"$regex": search_query, "$options": "i"}}
+            ]
+        }
+        products = list(mongo.db.pharmacy_products.find(search_filter))
+    else:
+        products = list(mongo.db.pharmacy_products.find())
 
     # Convert binary image data to base64 string for rendering in Jinja2
     for product in products:
@@ -1391,16 +1404,23 @@ def pharmacy():
                 prescription.update({
                     "product_name": product.get("name"),
                     "product_description": product.get("description"),
-                    "product_image": base64.b64encode(product["image"]).decode("utf-8") if product.get("image") else ""
+                    "product_image": base64.b64encode(product["image"]).decode("utf-8") if product.get("image") else "",
+                    "product_price": product.get("price", 0)
                 })
+                
+                # Check if payment is verified
+                prescription["payment_verified"] = prescription.get("payment_status") == "verified"
             else:
                 prescription.update({
                     "product_name": "Unknown Product",
                     "product_description": "No description available",
-                    "product_image": ""
+                    "product_image": "",
+                    "product_price": 0,
+                    "payment_verified": False
                 })
     
-    return render_template('pharmacy.html', products=products, prescriptions=patient_prescriptions, is_patient=(session.get('role') == 'patient'), user=user)
+    return render_template('pharmacy.html', products=products, prescriptions=patient_prescriptions, 
+                          is_patient=(session.get('role') == 'patient'), user=user, search_query=search_query)
 
 
 @app.route('/admin_dashboard/add_medicine', methods=['GET', 'POST'])
@@ -1428,6 +1448,7 @@ def add_medicine():
         return redirect(url_for('pharmacy'))
     
     return render_template('add_medicine.html')
+
 
 @app.route('/admin_dashboard/update_medicine/<medicine_id>', methods=['GET', 'POST'])
 def update_medicine(medicine_id):
@@ -1458,6 +1479,7 @@ def update_medicine(medicine_id):
     
     return render_template('update_medicine.html', medicine=medicine)
 
+
 @app.route('/doctor_dashboard/prescribe_medicine/<patient_id>', methods=['GET', 'POST'])
 def prescribe_medicine(patient_id):
     if 'user_id' not in session or session.get('role') != 'doctor':
@@ -1465,35 +1487,146 @@ def prescribe_medicine(patient_id):
         return redirect(url_for('login'))
     
     if request.method == 'POST':
-        prescribed_medicine = {
+        product_ids = request.form.getlist('product_ids[]')
+
+        if not product_ids:
+            flash("Please select at least one medicine.", "warning")
+            medicines = list(mongo.db.pharmacy_products.find())
+            return render_template('prescribe_medicine.html', medicines=medicines, patient_id=patient_id)
+
+        dosage_instructions = request.form.get('dosage_instructions', '')
+        duration = request.form.get('duration', '7')
+        duration_unit = request.form.get('duration_unit', 'days')
+        special_instructions = request.form.get('special_instructions', '')
+        send_notification = 'send_notification' in request.form
+
+        # Fetch full product details and prepare medicine list
+        medicines_data = []
+        for pid in product_ids:
+            try:
+                product = mongo.db.pharmacy_products.find_one({'_id': ObjectId(pid)})
+                
+                if product:
+                    # Convert image to Base64 if it exists
+                    image_data = ""
+                    if 'image' in product and isinstance(product['image'], bytes):
+                        image_data = base64.b64encode(product['image']).decode('utf-8')
+
+                    medicines_data.append({
+                        'id': str(product['_id']),
+                        'name': product.get('name', 'Unknown'),
+                        'description': product.get('description', 'No description available'),
+                        'price': float(product.get('price', 0)),
+                        'stock': product.get('stock', 0),
+                        'image': image_data
+                    })
+            except Exception as e:
+                print(f"Error fetching product {pid}: {str(e)}")
+                traceback.print_exc()
+
+        # Create prescription document with full product details
+        prescription = {
             "patient_id": ObjectId(patient_id),
             "doctor_id": ObjectId(session['user_id']),
-            "product_id": ObjectId(request.form['product_id']),
+            "medicines": medicines_data,
+            "dosage_instructions": dosage_instructions,
+            "duration": duration,
+            "duration_unit": duration_unit,
+            "special_instructions": special_instructions,
             "status": "recommended",
             "date": datetime.utcnow()
         }
-        mongo.db.prescriptions.insert_one(prescribed_medicine)
-        flash("Medicine prescribed successfully.", "success")
+
+        # Insert the prescription into MongoDB
+        result = mongo.db.prescriptions.insert_one(prescription)
+
+
+        flash("Medicines prescribed successfully.", "success")
         return redirect(url_for('doctor_dashboard'))
-    
-    medicines = list(mongo.db.pharmacy_products.find())  # Fetch available medicines
+
+    # GET request: Fetch available medicines
+    medicines = list(mongo.db.pharmacy_products.find())
     return render_template('prescribe_medicine.html', medicines=medicines, patient_id=patient_id)
+
+@app.route('/buy_product/<product_id>', methods=['GET'])
+def buy_product(product_id):
+    if 'user_id' not in session:
+        flash("Please login to purchase products.", "danger")
+        return redirect(url_for('login'))
+    
+    product = mongo.db.pharmacy_products.find_one({"_id": ObjectId(product_id)})
+    if not product:
+        flash("Product not found.", "danger")
+        return redirect(url_for('pharmacy'))
+    
+    # Create a new purchase record
+    purchase = {
+        "patient_id": ObjectId(session['user_id']),
+        "product_id": ObjectId(product_id),
+        "status": "direct_purchase",
+        "date": datetime.utcnow()
+    }
+    purchase_id = mongo.db.prescriptions.insert_one(purchase).inserted_id
+    
+    # Path to the stored QR code in the static folder
+    qr_code_path = url_for('static', filename='images/payement.jpg')
+
+    # Prepare product details for display
+    if product.get("image"):
+        product["image"] = base64.b64encode(product["image"]).decode("utf-8")
+    
+    return render_template('payment.html', prescription_id=purchase_id, qr_code=qr_code_path, product=product)
 
 
 @app.route('/patient_dashboard/proceed_payment/<prescription_id>', methods=['GET'])
 def proceed_payment(prescription_id):
+    if 'user_id' not in session:
+        flash("Please login to proceed with payment.", "danger")
+        return redirect(url_for('login'))
+    
     prescription = mongo.db.prescriptions.find_one({"_id": ObjectId(prescription_id)})
-    if not prescription or prescription.get("patient_id") != ObjectId(session['user_id']):
+    
+    if not prescription or str(prescription.get("patient_id")) != session['user_id']:
         flash("Invalid request.", "danger")
         return redirect(url_for('pharmacy'))
     
-    qr_data = f"Payment for prescription {prescription_id}"
-    qr = qrcode.make(qr_data)
-    buffer = io.BytesIO()
-    qr.save(buffer, format="PNG")
-    qr_base64 = base64.b64encode(buffer.getvalue()).decode()
-    
-    return render_template('payment.html', prescription_id=prescription_id, qr_code=qr_base64)
+    # Check if it's a doctor prescription (multiple medicines) or direct purchase
+    if "medicines" in prescription:
+        # Get product details for all medicines in the prescription
+        medicines = []
+        total_price = 0
+        
+        for medicine_id in prescription.get("medicines", []):
+            product = mongo.db.pharmacy_products.find_one({"_id": medicine_id})
+            if product:
+                if product.get("image"):
+                    product["image"] = base64.b64encode(product["image"]).decode("utf-8")
+                medicines.append(product)
+                total_price += float(product.get("price", 0))
+        
+        # Path to the stored QR code in the static folder
+        qr_code_path = url_for('static', filename='images/payement.jpg')
+
+        return render_template('payment.html', 
+                              prescription_id=prescription_id, 
+                              qr_code=qr_code_path, 
+                              medicines=medicines, 
+                              total_price=total_price,
+                              prescription=prescription)
+    else:
+        # Handle direct purchase (single product)
+        product = mongo.db.pharmacy_products.find_one({"_id": prescription.get("product_id")})
+        if product and product.get("image"):
+            product["image"] = base64.b64encode(product["image"]).decode("utf-8")
+        
+        # Path to the stored QR code in the static folder
+        qr_code_path = url_for('static', filename='images/payment_qr.png')
+
+        return render_template('payment.html', 
+                              prescription_id=prescription_id, 
+                              qr_code=qr_code_path, 
+                              product=product)
+
 
 @app.route('/patient_dashboard/submit_payment', methods=['POST'])
 def submit_payment():
@@ -1503,19 +1636,56 @@ def submit_payment():
     
     prescription_id = request.form['prescription_id']
     utr_id = request.form['utr_id']
-    mongo.db.prescriptions.update_one({"_id": ObjectId(prescription_id)}, {"$set": {"payment_status": "paid", "utr_id": utr_id}})
+    
+    # Update prescription with payment details
+    mongo.db.prescriptions.update_one(
+        {"_id": ObjectId(prescription_id)}, 
+        {"$set": {"payment_status": "paid", "utr_id": utr_id}}
+    )
     
     flash("Payment submitted successfully!", "success")
     return redirect(url_for('pharmacy'))
+
+
+
+import base64
 
 @app.route('/admin_dashboard/verify_payment')
 def verify_payment():
     if 'user_id' not in session or session.get('role') != 'admin':
         flash("Unauthorized access.", "danger")
         return redirect(url_for('login'))
-    
-    payments = list(mongo.db.prescriptions.find({"payment_status": "paid"}))
+
+    pipeline = [
+        {"$match": {"payment_status": "paid"}},
+        {"$lookup": {  
+            "from": "users",
+            "localField": "patient_id",
+            "foreignField": "_id",
+            "as": "patient"
+        }},
+        {"$lookup": {  
+            "from": "pharmacy_products",
+            "localField": "medicines",
+            "foreignField": "_id",
+            "as": "products"
+        }},
+        {"$unwind": {"path": "$patient", "preserveNullAndEmptyArrays": True}},  
+    ]
+
+    payments = list(mongo.db.prescriptions.aggregate(pipeline))
+
+    # Ensure 'products' is always a list and convert images
+    for payment in payments:
+        if not isinstance(payment.get("products"), list):
+            payment["products"] = []  # Ensure it's a list if empty
+
+        for product in payment["products"]:
+            if isinstance(product, dict) and "image" in product and isinstance(product["image"], bytes):
+                product["image"] = base64.b64encode(product["image"]).decode('utf-8')
+
     return render_template('verify_payment.html', payments=payments)
+
 
 @app.route('/admin_dashboard/verify_payment_action/<payment_id>', methods=['POST'])
 def verify_payment_action(payment_id):
@@ -1524,59 +1694,340 @@ def verify_payment_action(payment_id):
         return redirect(url_for('login'))
 
     action = request.form.get('action')
-    payment = mongo.db.prescriptions.find_one({"_id": ObjectId(payment_id)})
 
-    if not payment:
+    # Fetch payment details
+    pipeline = [
+        {"$match": {"_id": ObjectId(payment_id)}},
+        {"$lookup": {
+            "from": "users",
+            "localField": "patient_id",
+            "foreignField": "_id",
+            "as": "patient"
+        }},
+        {"$lookup": {
+            "from": "pharmacy_products",
+            "localField": "medicines",
+            "foreignField": "_id",
+            "as": "products"
+        }},
+        {"$unwind": {"path": "$patient", "preserveNullAndEmptyArrays": True}} 
+    ]
+
+    payment_details = list(mongo.db.prescriptions.aggregate(pipeline))
+
+    if not payment_details:
         flash("Payment record not found.", "danger")
         return redirect(url_for('verify_payment'))
-    
-    # Get patient details
-    patient = mongo.db.users.find_one({"_id": ObjectId(payment.get("patient_id"))})
-    if not patient or "email" not in patient:
+
+    payment = payment_details[0]
+    patient = payment.get('patient', {})
+
+    # Ensure medicines are correctly formatted
+    medicines = payment.get('products', [])
+    if not isinstance(medicines, list):
+        medicines = []
+
+    # Ensure each medicine is a dictionary
+    medicines = [med if isinstance(med, dict) else {} for med in medicines]
+
+    recipient_email = patient.get("email")
+    if not recipient_email:
         flash("User email not found, unable to send notification.", "warning")
         return redirect(url_for('verify_payment'))
-
-    recipient_email = patient["email"]
 
     if action == "verify":
         mongo.db.prescriptions.update_one({"_id": ObjectId(payment_id)}, {"$set": {"payment_status": "verified"}})
         flash("Payment verified successfully.", "success")
 
-        # Email content
+        # Construct email with medicine details
         subject = "Order Initiated - RapiACT"
+        medicine_rows = "".join(
+            f"<tr><td>{med.get('name', 'Unknown')}</td><td>{med.get('description', 'No description')}</td><td>₹{med.get('price', 0)}</td></tr>"
+            for med in medicines
+        )
+
         body = f"""
-        Dear {patient.get('name', 'User')},
-
-        Your payment has been successfully verified, and your order has been initiated.
-        Soon, you will receive your tracking ID for shipment updates.
-
-        Thank you for choosing RapiACT!
-
-        Best Regards,
-        RapiACT Team
+        <html>
+        <head>
+            <style>
+                table {{
+                    border-collapse: collapse;
+                    width: 100%;
+                    margin-bottom: 20px;
+                }}
+                th, td {{
+                    border: 1px solid #ddd;
+                    padding: 8px;
+                    text-align: left;
+                }}
+                th {{
+                    background-color: #f2f2f2;
+                }}
+            </style>
+        </head>
+        <body>
+            <h2>Order Confirmation</h2>
+            <p>Dear {patient.get('name', 'User')},</p>
+            <p>Your payment has been successfully verified, and your order has been initiated.</p>
+            
+            <h3>Order Details:</h3>
+            <table>
+                <tr><th>Product</th><th>Description</th><th>Price</th></tr>
+                {medicine_rows}
+                <tr><th colspan="2" style="text-align: right;">Total:</th><td>₹{sum(med.get('price', 0) for med in medicines)}</td></tr>
+            </table>
+            
+            <p>Thank you for choosing RapiACT!</p>
+            <p>Best Regards,<br>RapiACT Team</p>
+        </body>
+        </html>
         """
+
+        send_html_email(subject, [recipient_email], body)
 
     elif action == "reject":
         mongo.db.prescriptions.update_one({"_id": ObjectId(payment_id)}, {"$set": {"payment_status": "rejected"}})
         flash("Payment rejected.", "danger")
 
-        # Email content for rejection
         subject = "Payment Rejected - RapiACT"
         body = f"""
-        Dear {patient.get('name', 'User')},
-
-        Unfortunately, your payment has been rejected. Please contact support for more details.
-
-        Thank you for using RapiACT!
-
-        Best Regards,
-        RapiACT Team
+        <html>
+        <body>
+            <h2>Payment Rejected</h2>
+            <p>Dear {patient.get('name', 'User')},</p>
+            <p>Unfortunately, your payment has been rejected. Please contact support for more details.</p>
+            <p>Thank you for using RapiACT!</p>
+            <p>Best Regards,<br>RapiACT Team</p>
+        </body>
+        </html>
         """
 
-    # Send email
-    send_email(subject, [recipient_email], body)
+        send_html_email(subject, [recipient_email], body)
 
     return redirect(url_for('verify_payment'))
+
+
+def send_html_email(subject, recipients, html_body):
+    msg = Message(subject, recipients=recipients)
+    msg.html = html_body
+    mail.send(msg)
+
+# Assuming you have these imports and connection setup already
+# Replace with your actual db connection if different
+
+@app.route('/process_order', methods=['POST'])
+def process_order():
+    if 'user_id' not in session or session.get('role') != 'patient':
+        return jsonify({'success': False, 'message': 'You must be logged in as a patient to place an order'}), 403
+    
+    user_id = session.get('user_id')
+    data = request.json
+    
+    if not data or 'items' not in data or not data['items']:
+        return jsonify({'success': False, 'message': 'No items in cart'}), 400
+    
+    try:
+        # Create order document
+        order = {
+            'user_id': ObjectId(user_id),
+            'items': [],
+            'total_amount': float(data['total']),
+            'status': 'pending',  # pending, verified, shipped, delivered
+            'payment_status': 'pending',  # pending, completed
+            'created_at': datetime.now(),
+            'updated_at': datetime.now()
+        }
+        
+        # Process each item and update inventory
+        for item in data['items']:
+            product_id = item['id']
+            quantity = item['quantity']
+            
+            # Verify product exists and has sufficient stock
+            product = db.products.find_one({'_id': ObjectId(product_id)})
+            if not product:
+                return jsonify({'success': False, 'message': f'Product not found: {item["name"]}'}), 400
+            
+            if product['stock'] < quantity:
+                return jsonify({'success': False, 'message': f'Insufficient stock for {product["name"]}. Only {product["stock"]} available.'}), 400
+            
+            # Add item to order with current product details
+            order_item = {
+                'product_id': ObjectId(product_id),
+                'name': product['name'],
+                'price': float(product['price']),
+                'quantity': quantity,
+                'subtotal': float(product['price']) * quantity
+            }
+            order['items'].append(order_item)
+            
+            # Update product stock
+            db.products.update_one(
+                {'_id': ObjectId(product_id)},
+                {'$inc': {'stock': -quantity}}
+            )
+        
+        # Save order to database
+        result = db.orders.insert_one(order)
+        
+        # Create a notification for admin
+        notification = {
+            'user_id': None,  # None means it's for all admins
+            'role': 'admin',
+            'type': 'new_order',
+            'message': f'New order received from {session.get("username")}',
+            'read': False,
+            'created_at': datetime.now()
+        }
+        db.notifications.insert_one(notification)
+        
+        return jsonify({
+            'success': True, 
+            'message': 'Order placed successfully',
+            'order_id': str(result.inserted_id)
+        })
+        
+    except Exception as e:
+        print(f"Error processing order: {e}")
+        return jsonify({'success': False, 'message': 'An error occurred while processing your order'}), 500
+
+
+@app.route('/admin_dashboard/orders')
+def admin_orders():
+    if 'user_id' not in session or session.get('role') != 'admin':
+        flash("Unauthorized access.", "danger")
+        return redirect(url_for('login'))
+    
+    # Get all verified orders with patient and product details
+    pipeline = [
+        {"$match": {"payment_status": "verified"}},
+        {"$lookup": {
+            "from": "users",
+            "localField": "patient_id",
+            "foreignField": "_id",
+            "as": "patient"
+        }},
+        {"$lookup": {
+            "from": "pharmacy_products",
+            "localField": "product_id",
+            "foreignField": "_id",
+            "as": "product"
+        }},
+        {"$unwind": "$patient"},
+        {"$unwind": "$product"}
+    ]
+    
+    orders = list(mongo.db.prescriptions.aggregate(pipeline))
+    
+    return render_template('admin_orders.html', orders=orders)
+
+
+@app.route('/patient/orders')
+def patient_orders():
+    if 'user_id' not in session or session.get('role') != 'patient':
+        flash("Unauthorized access.", "danger")
+        return redirect(url_for('login'))
+    
+    patient_id = ObjectId(session['user_id'])
+    
+    pipeline = [
+        {"$match": {"patient_id": patient_id, "payment_status": {"$exists": True}}},
+        {"$lookup": {
+            "from": "pharmacy_products",
+            "localField": "product_ids",  # Assuming an order can contain multiple product IDs
+            "foreignField": "_id",
+            "as": "products"  # Store all matched products as a list
+        }}
+    ]
+    
+    orders = list(mongo.db.prescriptions.aggregate(pipeline))
+
+    # Convert binary images to base64 for each product
+    for order in orders:
+        for product in order.get("products", []):  # Iterate over multiple products
+            if "image" in product and product["image"]:
+                product["image"] = base64.b64encode(product["image"]).decode('utf-8')
+
+    return render_template('patient_orders.html', orders=orders)
+import traceback
+@app.route('/patient/prescriptions')
+def patient_prescriptions():
+    try:
+        user_id = session.get('user_id')
+
+        if not user_id:
+            return jsonify({'error': 'User not logged in'}), 401
+
+        # Fetch only prescriptions where status is "recommended"
+        prescriptions = list(mongo.db.prescriptions.find({
+            'patient_id': ObjectId(user_id),
+            'status': 'recommended'  # Filter only recommended prescriptions
+        }))
+
+        formatted_prescriptions = []
+        grand_total = 0  # To store the sum of all prescriptions' total cost
+
+        for prescription in prescriptions:
+            prescription['_id'] = str(prescription['_id'])
+
+            # Retrieve medicine ObjectIds
+            medicine_ids = prescription.get('medicines', [])
+
+            # Fetch medicine details from pharmacy_products collection
+            medicines = []
+            total_cost = 0
+
+            for medicine_id in medicine_ids:
+                try:
+                    if isinstance(medicine_id, ObjectId):  # If it's an ObjectId, fetch details
+                        product = mongo.db.pharmacy_products.find_one({'_id': medicine_id})
+                        if product:
+                            medicine_data = {
+                                'id': str(product['_id']),
+                                'name': product.get('name', 'Unknown'),
+                                'description': product.get('description', 'No description available'),
+                                'price': float(product.get('price', 0)),
+                                'stock': product.get('stock', 0),
+                                'image': product.get('image', '')
+                            }
+                            medicines.append(medicine_data)
+                            total_cost += medicine_data['price']
+                    else:
+                        medicines.append(medicine_id)  # If it's already a dict, use it directly
+                        total_cost += medicine_id.get('price', 0)
+
+                except Exception as e:
+                    print(f"Error processing medicine {medicine_id}: {str(e)}")
+                    traceback.print_exc()
+
+            # Add to grand total
+            grand_total += total_cost
+
+            formatted_prescriptions.append({
+                'prescription_id': prescription['_id'],
+                'medicines': medicines,
+                'total_cost': total_cost,
+                'dosage_instructions': prescription.get('dosage_instructions', ''),
+                'duration': prescription.get('duration', ''),
+                'duration_unit': prescription.get('duration_unit', ''),
+                'special_instructions': prescription.get('special_instructions', ''),
+                'status': prescription.get('status', ''),
+                'date': prescription.get('date', '')
+            })
+
+        # Render template or return JSON if requested
+        if request.headers.get('Accept') == 'application/json':
+            return jsonify({
+                'prescriptions': formatted_prescriptions,
+                'grand_total': grand_total
+            })
+        
+        return render_template('prescriptions.html', prescriptions=formatted_prescriptions, grand_total=grand_total)
+
+    except Exception as e:
+        print(f"Error in patient_prescriptions API: {str(e)}")
+        traceback.print_exc()
+        return jsonify({'error': str(e)}), 500
 
 
 

@@ -224,7 +224,7 @@
             box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
         }
 
-        .medicine-card input[type="radio"] {
+        .medicine-card input[type="checkbox"] {
             margin-right: 15px;
         }
 
@@ -329,11 +329,14 @@
                     </div>
                     
                     <div class="form-group">
-                        <label class="form-label">Select Medicine</label>
+                        <label class="form-label">Select Medicines</label>
+                        <div class="alert alert-info mb-3">
+                            <i class="fas fa-info-circle"></i> You can select multiple medicines for this prescription.
+                        </div>
                         
                         {% for medicine in medicines %}
                         <div class="medicine-card">
-                            <input type="radio" id="medicine{{ loop.index }}" name="product_id" value="{{ medicine._id }}" required>
+                            <input type="checkbox" id="medicine{{ loop.index }}" name="product_ids[]" value="{{ medicine._id }}">
                             <div class="medicine-info">
                                 <div class="medicine-name">{{ medicine.name }}</div>
                                 <div class="medicine-description">{{ medicine.description }}</div>
@@ -343,8 +346,37 @@
                         {% endfor %}
                     </div>
                     
+                    <div class="form-group">
+                        <label class="form-label">Dosage Instructions</label>
+                        <textarea class="form-control" name="dosage_instructions" rows="4" placeholder="Enter detailed dosage instructions for the patient..."></textarea>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">Duration</label>
+                        <div class="input-group">
+                            <input type="number" class="form-control" name="duration" min="1" value="7">
+                            <select class="form-select" name="duration_unit" style="max-width: 100px;">
+                                <option value="days">Days</option>
+                                <option value="weeks">Weeks</option>
+                                <option value="months">Months</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">Special Instructions</label>
+                        <textarea class="form-control" name="special_instructions" rows="3" placeholder="Any special instructions or warnings..."></textarea>
+                    </div>
+                    
+                    <div class="form-check mb-3">
+                        <input class="form-check-input" type="checkbox" id="notification" name="send_notification" checked>
+                        <label class="form-check-label" for="notification">
+                            Send notification to patient
+                        </label>
+                    </div>
+                    
                     <button type="submit" class="btn-submit">
-                        <i class="fas fa-prescription"></i> Prescribe Medicine
+                        <i class="fas fa-prescription"></i> Prescribe Medicines
                     </button>
                 </form>
             </div>
@@ -369,6 +401,23 @@
                 !menuToggle.contains(e.target) && 
                 sidebar.classList.contains('active')) {
                 sidebar.classList.remove('active');
+            }
+        });
+        
+        // Form validation
+        document.querySelector('form').addEventListener('submit', function(event) {
+            const checkboxes = document.querySelectorAll('input[name="product_ids[]"]');
+            let checked = false;
+            
+            checkboxes.forEach(function(checkbox) {
+                if (checkbox.checked) {
+                    checked = true;
+                }
+            });
+            
+            if (!checked) {
+                event.preventDefault();
+                alert('Please select at least one medicine.');
             }
         });
     </script>
