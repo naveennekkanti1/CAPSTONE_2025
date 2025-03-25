@@ -276,6 +276,7 @@
             border-radius: 10px;
             overflow: hidden;
             box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            margin-bottom: 15px;
         }
 
         .product-image {
@@ -307,6 +308,57 @@
             font-size: 14px;
             margin-top: 5px;
         }
+        
+        .product-quantity {
+            color: #555;
+            font-size: 14px;
+            margin-top: 5px;
+        }
+
+        .total-section {
+            background-color: rgba(124, 77, 255, 0.1);
+            padding: 20px;
+            border-radius: 10px;
+            margin-top: 20px;
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .total-label {
+            font-size: 18px;
+            font-weight: bold;
+            color: var(--primary-dark);
+        }
+
+        .total-amount {
+            font-size: 24px;
+            font-weight: bold;
+            color: var(--accent-color);
+        }
+
+        .order-summary {
+            margin-top: 20px;
+            border-top: 1px dashed #ccc;
+            padding-top: 20px;
+        }
+
+        .summary-item {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+        }
+
+        .summary-label {
+            font-weight: 500;
+            color: #555;
+        }
+
+        .summary-value {
+            font-weight: bold;
+            color: var(--primary-dark);
+        }
 
         @media (max-width: 768px) {
             .menu-toggle {
@@ -329,6 +381,16 @@
 
             .section {
                 width: 100%;
+            }
+            
+            .product-card {
+                flex-direction: column;
+                text-align: center;
+            }
+            
+            .product-image {
+                width: 100%;
+                height: 150px;
             }
         }
     </style>
@@ -369,7 +431,46 @@
             {% endwith %}
             
             <div class="section">
-                {% if product %}
+                {% if products %}
+                <div class="product-details">
+                    <h4>Order Details</h4>
+                    {% for product in products %}
+                    <div class="product-card">
+                        {% if product.image %}
+                        <img src="data:image/jpeg;base64,{{ product.image }}" alt="{{ product.name }}" class="product-image">
+                        {% else %}
+                        <img src="{{ url_for('static', filename='images/medicine-placeholder.jpg') }}" alt="Product Image" class="product-image">
+                        {% endif %}
+                        <div class="product-info">
+                            <div class="product-title">{{ product.name }}</div>
+                            <div class="product-price">₹{{ product.price }}</div>
+                            <div class="product-description">{{ product.description }}</div>
+                            <div class="product-quantity">Quantity: {{ product.quantity }}</div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                    
+                    <div class="order-summary">
+                        <div class="summary-item">
+                            <span class="summary-label">Subtotal:</span>
+                            <span class="summary-value">₹{{ subtotal }}</span>
+                        </div>
+                        <div class="summary-item">
+                            <span class="summary-label">Shipping:</span>
+                            <span class="summary-value">₹{{ shipping_fee }}</span>
+                        </div>
+                        <div class="summary-item">
+                            <span class="summary-label">Tax:</span>
+                            <span class="summary-value">₹{{ tax }}</span>
+                        </div>
+                    </div>
+                    
+                    <div class="total-section">
+                        <span class="total-label">Total Amount:</span>
+                        <span class="total-amount">₹{{ total_amount }}</span>
+                    </div>
+                </div>
+                {% elif product %}
                 <div class="product-details">
                     <h4>Product Details</h4>
                     <div class="product-card">
@@ -382,7 +483,13 @@
                             <div class="product-title">{{ product.name }}</div>
                             <div class="product-price">₹{{ product.price }}</div>
                             <div class="product-description">{{ product.description }}</div>
+                            <div class="product-quantity">Quantity: 1</div>
                         </div>
+                    </div>
+                    
+                    <div class="total-section">
+                        <span class="total-label">Total Amount:</span>
+                        <span class="total-amount">₹{{ product.price }}</span>
                     </div>
                 </div>
                 {% endif %}
@@ -399,7 +506,7 @@
                     <ol>
                         <li>Open your UPI app (GPay, PhonePe, BHIM, etc.)</li>
                         <li>Scan the QR code shown above</li>
-                        <li>Complete the payment</li>
+                        <li>Complete the payment for </li>
                         <li>Note down the UTR/Transaction ID</li>
                         <li>Submit the UTR/Transaction ID below</li>
                     </ol>

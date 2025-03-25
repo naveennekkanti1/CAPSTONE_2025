@@ -292,6 +292,20 @@
             background: linear-gradient(90deg, #20c997, #28a745);
         }
 
+        .btn-prescribe {
+            background: linear-gradient(90deg, #7c4dff, #5c6bc0);
+            border: none;
+            color: white;
+            transition: all 0.3s ease;
+            margin-top: 10px;
+        }
+
+        .btn-prescribe:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(124, 77, 255, 0.3);
+            background: linear-gradient(90deg, #5c6bc0, #7c4dff);
+        }
+
         .menu-toggle {
             display: none;
             position: fixed;
@@ -419,6 +433,9 @@
                                             <a href="{{ url_for('schedule_meeting', appointment_id=appointment._id) }}" class="btn btn-meeting w-100">
                                                 <i class="fas fa-video"></i> Schedule Meeting
                                             </a>
+                                            <a href="{{ url_for('prescribe_medicine', patient_id=appointment.patient_id) }}" class="btn btn-prescribe w-100">
+                                                <i class="fas fa-prescription-bottle-medical"></i> Prescribe Medicine
+                                            </a>
                                         {% endif %}
 
                                         {% if section == 'ongoing' %}
@@ -431,6 +448,9 @@
                                                     <i class="fas fa-comment-medical"></i> Submit Feedback
                                                 </button>
                                             </form>
+                                            <a href="{{ url_for('prescribe_medicine', patient_id=appointment.patient_id) }}" class="btn btn-prescribe w-100 mt-2">
+                                                <i class="fas fa-prescription-bottle-medical"></i> Prescribe Medicine
+                                            </a>
                                             <form action="{{ url_for('mark_as_done', appointment_id=appointment._id) }}" method="POST" class="mt-2">
                                                 <button type="submit" class="btn btn-done w-100">
                                                     <i class="fas fa-check"></i> Mark as Done

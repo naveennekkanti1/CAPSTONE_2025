@@ -1423,6 +1423,7 @@ def pharmacy():
                           is_patient=(session.get('role') == 'patient'), user=user, search_query=search_query)
 
 
+
 @app.route('/admin_dashboard/add_medicine', methods=['GET', 'POST'])
 def add_medicine():
     if 'user_id' not in session or session.get('role') != 'admin':
@@ -1491,7 +1492,11 @@ def prescribe_medicine(patient_id):
 
         if not product_ids:
             flash("Please select at least one medicine.", "warning")
+            # Fetch medicines with image processing for display
             medicines = list(mongo.db.pharmacy_products.find())
+            for medicine in medicines:
+                if 'image' in medicine and isinstance(medicine['image'], bytes):
+                    medicine['image_base64'] = base64.b64encode(medicine['image']).decode('utf-8')
             return render_template('prescribe_medicine.html', medicines=medicines, patient_id=patient_id)
 
         dosage_instructions = request.form.get('dosage_instructions', '')
@@ -1540,12 +1545,17 @@ def prescribe_medicine(patient_id):
         # Insert the prescription into MongoDB
         result = mongo.db.prescriptions.insert_one(prescription)
 
-
         flash("Medicines prescribed successfully.", "success")
         return redirect(url_for('doctor_dashboard'))
 
     # GET request: Fetch available medicines
     medicines = list(mongo.db.pharmacy_products.find())
+    
+    # Process images for display in the template
+    for medicine in medicines:
+        if 'image' in medicine and isinstance(medicine['image'], bytes):
+            medicine['image_base64'] = base64.b64encode(medicine['image']).decode('utf-8')
+    
     return render_template('prescribe_medicine.html', medicines=medicines, patient_id=patient_id)
 
 @app.route('/buy_product/<product_id>', methods=['GET'])
@@ -1555,27 +1565,42 @@ def buy_product(product_id):
         return redirect(url_for('login'))
     
     product = mongo.db.pharmacy_products.find_one({"_id": ObjectId(product_id)})
+    
     if not product:
         flash("Product not found.", "danger")
         return redirect(url_for('pharmacy'))
-    
-    # Create a new purchase record
+
+    # Store purchase as a prescription-like record with full product details
     purchase = {
         "patient_id": ObjectId(session['user_id']),
-        "product_id": ObjectId(product_id),
+        "medicines": [
+            {
+                "id": str(product["_id"]),
+                "name": product.get("name", "Unknown"),
+                "description": product.get("description", "No description available"),
+                "price": float(product.get("price", 0)),
+                "stock": int(product.get("stock", 0)),
+                "image": base64.b64encode(product["image"]).decode("utf-8") if product.get("image") else None
+            }
+        ],
         "status": "direct_purchase",
         "date": datetime.utcnow()
     }
-    purchase_id = mongo.db.prescriptions.insert_one(purchase).inserted_id
     
+    purchase_id = mongo.db.prescriptions.insert_one(purchase).inserted_id
+
     # Path to the stored QR code in the static folder
     qr_code_path = url_for('static', filename='images/payement.jpg')
 
-    # Prepare product details for display
-    if product.get("image"):
-        product["image"] = base64.b64encode(product["image"]).decode("utf-8")
-    
-    return render_template('payment.html', prescription_id=purchase_id, qr_code=qr_code_path, product=product)
+    return render_template(
+        'payment.html',
+        prescription_id=purchase_id,
+        qr_code=qr_code_path,
+        medicines=purchase["medicines"],  # Send medicines list
+        total_price=purchase["medicines"][0]["price"]
+    )
+
+
 
 
 @app.route('/patient_dashboard/proceed_payment/<prescription_id>', methods=['GET'])
@@ -2037,8 +2062,6 @@ def generate_status_email(patient, order, status):
     return subject, body
 
 
-
-
 @app.route('/patient/orders')
 def patient_orders():
     if 'user_id' not in session or session.get('role') != 'patient':
@@ -2046,17 +2069,30 @@ def patient_orders():
         return redirect(url_for('login'))
     
     patient_id = ObjectId(session['user_id'])
-    
+
     pipeline = [
         {"$match": {"patient_id": patient_id, "payment_status": {"$exists": True}}},
+
+        # Extract medicine IDs from the `medicines` array
+        {"$addFields": {
+            "medicine_ids": {
+                "$map": {
+                    "input": "$medicines",
+                    "as": "med",
+                    "in": {"$toObjectId": "$$med.id"}  # Convert medicine "id" string to ObjectId
+                }
+            }
+        }},
+
+        # Lookup pharmacy products using extracted medicine_ids
         {"$lookup": {
             "from": "pharmacy_products",
-            "localField": "product_ids",  # Assuming an order can contain multiple product IDs
+            "localField": "medicine_ids",
             "foreignField": "_id",
-            "as": "products"  # Store all matched products as a list
+            "as": "products"
         }}
     ]
-    
+
     orders = list(mongo.db.prescriptions.aggregate(pipeline))
 
     # Convert binary images to base64 for each product
@@ -2066,6 +2102,7 @@ def patient_orders():
                 product["image"] = base64.b64encode(product["image"]).decode('utf-8')
 
     return render_template('patient_orders.html', orders=orders)
+
 import traceback
 @app.route('/patient/prescriptions')
 def patient_prescriptions():
