@@ -570,6 +570,22 @@ def doctor_register():
         return jsonify({"message": "Registration successful! Await admin approval.", "redirect_url": url_for('login')})
 
 # ---- Login ----
+from flask import request
+import ipaddress
+
+# Define allowed IP ranges for SRMAP-BYOD (example — replace with actual range)
+ALLOWED_IP_RANGES = [
+    ipaddress.IPv4Network('10.0.0.0/8'),      # Replace with SRMAP-BYOD's actual range
+    ipaddress.IPv4Network('192.168.1.0/24')   # Optional additional range
+]
+
+def is_allowed_ip(ip):
+    try:
+        ip_obj = ipaddress.IPv4Address(ip)
+        return any(ip_obj in network for network in ALLOWED_IP_RANGES)
+    except ipaddress.AddressValueError:
+        return False
+
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     if request.method == 'GET':
@@ -581,14 +597,21 @@ def login():
         password = data.get("password")
 
         if not (email and password):
-            flash("Email and password are required", "error")  # Changed from "danger" to "error" to match your CSS
+            flash("Email and password are required", "error")
             return redirect(url_for('login'))
 
         user = users_collection.find_one({"email": email})
 
         if not user or not check_password_hash(user["password"], password):
-            flash("Invalid credentials", "error")  # Changed from "danger" to "error" to match your CSS
+            flash("Invalid credentials", "error")
             return redirect(url_for('login'))
+
+        # Restrict admin login to SRMAP-BYOD IP ranges
+        if user.get("role") == "admin":
+            client_ip = request.remote_addr
+            if not is_allowed_ip(client_ip):
+                flash("Admin login allowed only on SRMAP-BYOD WiFi network.", "error")
+                return redirect(url_for('login'))
 
         if user.get("role") == "doctor" and user.get("account_status") != "approved":
             flash("Your account is pending approval from the administrator.", "warning")
@@ -599,6 +622,7 @@ def login():
 
         flash("You have successfully logged in!", "success")
         return redirect(url_for('dashboard'))
+
 
 # ---- Admin Dashboard ----
 @app.route('/admin_dashboard')
