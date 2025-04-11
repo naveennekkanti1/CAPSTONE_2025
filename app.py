@@ -575,8 +575,8 @@ import ipaddress
 
 # Define allowed IP ranges for SRMAP-BYOD (example — replace with actual range)
 ALLOWED_IP_RANGES = [
-    ipaddress.IPv4Network('10.0.0.0/8'),      # Replace with SRMAP-BYOD's actual range
-    ipaddress.IPv4Network('192.168.1.0/24')   # Optional additional range
+    ipaddress.IPv4Network('10.1.185.176'),      # Replace with SRMAP-BYOD's actual range
+    
 ]
 
 def is_allowed_ip(ip):
