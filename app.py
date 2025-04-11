@@ -610,7 +610,7 @@ def login():
         if user.get("role") == "admin":
             client_ip = request.remote_addr
             if not is_allowed_ip(client_ip):
-                flash("Admin login allowed only on SRMAP-BYOD WiFi network.", "error")
+                flash("Admin login allowed only on Accessed WiFi network.", "error")
                 return redirect(url_for('login'))
 
         if user.get("role") == "doctor" and user.get("account_status") != "approved":
