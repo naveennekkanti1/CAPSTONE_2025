@@ -570,22 +570,6 @@ def doctor_register():
         return jsonify({"message": "Registration successful! Await admin approval.", "redirect_url": url_for('login')})
 
 # ---- Login ----
-from flask import request
-import ipaddress
-
-# Define allowed IP ranges for SRMAP-BYOD (example — replace with actual range)
-ALLOWED_IP_RANGES = [
-    ipaddress.IPv4Network('10.0.0.0/8'),      # Replace with SRMAP-BYOD's actual range
-    
-]
-
-def is_allowed_ip(ip):
-    try:
-        ip_obj = ipaddress.IPv4Address(ip)
-        return any(ip_obj in network for network in ALLOWED_IP_RANGES)
-    except ipaddress.AddressValueError:
-        return False
-
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     if request.method == 'GET':
@@ -595,30 +579,38 @@ def login():
         data = request.form
         email = data.get("email")
         password = data.get("password")
+        captcha_input = data.get("captcha")
+        captcha_value = data.get("captchaValue")
+        remember_me = True if data.get("rememberMe") else False
 
+        # Validate required fields
         if not (email and password):
             flash("Email and password are required", "error")
             return redirect(url_for('login'))
+            
+        # Validate CAPTCHA
+        if not captcha_input or captcha_input != captcha_value:
+            flash("CAPTCHA verification failed. Please try again.", "error")
+            return redirect(url_for('login'))
 
+        # Check if user exists and password is correct
         user = users_collection.find_one({"email": email})
 
         if not user or not check_password_hash(user["password"], password):
             flash("Invalid credentials", "error")
             return redirect(url_for('login'))
 
-        # Restrict admin login to SRMAP-BYOD IP ranges
-        if user.get("role") == "admin":
-            client_ip = request.remote_addr
-            if not is_allowed_ip(client_ip):
-                flash("Admin login allowed only on Accessed WiFi network.", "error")
-                return redirect(url_for('login'))
-
+        # Check if doctor account is approved
         if user.get("role") == "doctor" and user.get("account_status") != "approved":
             flash("Your account is pending approval from the administrator.", "warning")
             return redirect(url_for('login'))
 
+        # Set session variables
         session["user_id"] = str(user["_id"])
         session["role"] = user.get("role")
+        
+        # Set session permanence based on remember me checkbox
+        session.permanent = remember_me
 
         flash("You have successfully logged in!", "success")
         return redirect(url_for('dashboard'))
