@@ -304,6 +304,69 @@
             font-weight: 500;
         }
 
+        /* Forgot Password Link */
+        .forgot-password {
+            text-align: right;
+            margin-bottom: 16px;
+        }
+
+        .forgot-password a {
+            color: #007bff;
+            text-decoration: none;
+            font-weight: 500;
+            transition: all 0.3s;
+        }
+
+        .forgot-password a:hover {
+            color: #0056b3;
+            text-decoration: underline;
+        }
+
+        /* Modal Styling */
+        .modal-content {
+            border-radius: 16px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+        }
+
+        .modal-header {
+            background: #007bff;
+            color: white;
+            border-radius: 16px 16px 0 0;
+        }
+
+        .modal-body {
+            padding: 24px;
+        }
+
+        .modal-footer {
+            border-top: none;
+            padding: 0 24px 24px;
+        }
+
+        .otp-input-container {
+            display: flex;
+            justify-content: center;
+            gap: 8px;
+            margin: 24px 0;
+        }
+
+        .otp-input {
+            width: 50px;
+            height: 60px;
+            border: 2px solid #ced4da;
+            border-radius: 8px;
+            text-align: center;
+            font-size: 24px;
+            font-weight: bold;
+            transition: all 0.3s;
+        }
+
+        .otp-input:focus {
+            border-color: #007bff;
+            box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.25);
+            outline: none;
+        }
+
         /* Responsive Adjustments */
         @media (max-width: 576px) {
             .card-container {
@@ -319,12 +382,15 @@
                 padding: 1.5rem;
             }
 
+            .otp-input {
+                width: 40px;
+                height: 50px;
+                font-size: 20px;
+            }
         }
     </style>
 </head>
 <body>
-
-
     <!-- Animated Background -->
     <div class="background">
         <div class="circle"></div>
@@ -377,6 +443,13 @@
                         </span>
                     </div>
                     
+                    <!-- Forgot Password Link -->
+                    <div class="forgot-password">
+                        <a href="{{ url_for('forgot_password') }}">
+                            <i class="fas fa-key me-1"></i>Forgot Password?
+                        </a>
+                    </div>
+                    
                     <!-- CAPTCHA Field - Improved design and positioning -->
                     <div class="captcha-container mb-3">
                         <label class="form-label fw-bold mb-2"><i class="fas fa-shield-alt me-2"></i>Security Check</label>
@@ -421,7 +494,7 @@
             </div>
         </div>
     </div>
-
+    
     <!-- Toast Container -->
     <div class="toast-container position-fixed bottom-0 end-0 p-3">
         <!-- Success Toast -->
@@ -449,6 +522,26 @@
             <div class="d-flex">
                 <div class="toast-body">
                     <i class="fas fa-hourglass-half me-2"></i> Your account is awaiting admin approval.
+                </div>
+                <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+            </div>
+        </div>
+        
+        <!-- OTP Sent Toast -->
+        <div id="otpSentToast" class="toast align-items-center text-white bg-info border-0" role="alert" aria-live="assertive" aria-atomic="true">
+            <div class="d-flex">
+                <div class="toast-body">
+                    <i class="fas fa-envelope me-2"></i> OTP code has been sent to your email.
+                </div>
+                <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+            </div>
+        </div>
+        
+        <!-- OTP Error Toast -->
+        <div id="otpErrorToast" class="toast align-items-center text-white bg-danger border-0" role="alert" aria-live="assertive" aria-atomic="true">
+            <div class="d-flex">
+                <div class="toast-body">
+                    <i class="fas fa-exclamation-circle me-2"></i> Invalid OTP code. Please try again.
                 </div>
                 <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
             </div>

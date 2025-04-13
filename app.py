@@ -74,17 +74,119 @@ def submit_enquiry():
             "name": name,
             "email": email,
             "message": message,
+            "status": "pending",
             "date": datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S")
         })
 
-        # Send Confirmation Email
+        # Plain text fallback
+        text_body = f"""
+        Hello {name},
+
+        Thank you for reaching out! We have received your enquiry and will get back to you soon.
+
+        Your Message:
+        {message}
+
+        Best Regards,
+        RapiACT! Team❤️
+        """
+
+        # HTML formatted email
+        html_body = f"""
+        <!DOCTYPE html>
+        <html lang="en">
+        <head>
+            <meta charset="UTF-8">
+            <title>Enquiry Received</title>
+            <style>
+                body {{
+                    font-family: Arial, sans-serif;
+                    line-height: 1.6;
+                    color: #333333;
+                    margin: 0;
+                    padding: 0;
+                }}
+                .container {{
+                    max-width: 600px;
+                    margin: 0 auto;
+                    padding: 20px;
+                }}
+                .header {{
+                    background-color: #2196F3;
+                    color: white;
+                    padding: 20px;
+                    text-align: center;
+                    border-top-left-radius: 5px;
+                    border-top-right-radius: 5px;
+                }}
+                .content {{
+                    background-color: #f9f9f9;
+                    padding: 20px;
+                    border: 1px solid #dddddd;
+                    border-bottom-left-radius: 5px;
+                    border-bottom-right-radius: 5px;
+                }}
+                .section {{
+                    background-color: #ffffff;
+                    border: 1px solid #dddddd;
+                    padding: 15px;
+                    margin: 20px 0;
+                    border-radius: 5px;
+                }}
+                .section-title {{
+                    font-weight: bold;
+                    margin-bottom: 5px;
+                    color: #2196F3;
+                }}
+                .footer {{
+                    margin-top: 20px;
+                    text-align: center;
+                    font-size: 12px;
+                    color: #777777;
+                }}
+                .logo {{
+                    font-size: 24px;
+                    font-weight: bold;
+                    color: white;
+                }}
+            </style>
+        </head>
+        <body>
+            <div class="container">
+                <div class="header">
+                    <div class="logo">RapiACT!</div>
+                </div>
+                <div class="content">
+                    <p>Hello {name},</p>
+                    <p>Thank you for reaching out! We have received your enquiry and will get back to you soon.</p>
+                    
+                    <div class="section">
+                        <div class="section-title">Your Message:</div>
+                        <div>{message}</div>
+                    </div>
+                    
+                    <p>We appreciate your interest. Stay tuned for updates.</p>
+                    <p>Best Regards,<br>The RapiACT! Team ❤️</p>
+                </div>
+                <div class="footer">
+                    <p>This is an automated message, please do not reply to this email.</p>
+                    <p>&copy; 2025 RapiACT! All rights reserved.</p>
+                </div>
+            </div>
+        </body>
+        </html>
+        """
+
+        # Send confirmation email
         msg = Message("Enquiry Received", recipients=[email])
-        msg.body = f"Hello {name},\n\nThank you for reaching out! We have received your enquiry and will get back to you soon.\n\nYour Message:\n{message}\n\nBest Regards,\nRapiACT! Team❤️"
+        msg.body = text_body
+        msg.html = html_body
         mail.send(msg)
 
         return redirect('/')  # Redirect to home page after submission
 
     return "Failed to submit enquiry", 400
+
 
 @app.route("/enquiry_details")
 def get_enquiry_details():
@@ -102,7 +204,7 @@ def get_enquiry_details():
 
 @app.route("/mark_done", methods=["POST"])
 def mark_done():
-    """ Mark an enquiry as done and send a response email. """
+    """ Mark an enquiry as done and send a response email with styled inline HTML. """
     data = request.json
     enquiry_id = data.get("enquiry_id")
     response_text = data.get("response")
@@ -111,51 +213,72 @@ def mark_done():
         return jsonify({"success": False, "message": "Invalid data"}), 400
 
     try:
-        # Fetch the enquiry details
         enquiry = mongo.db.enquiry_details.find_one({"_id": ObjectId(enquiry_id)})
 
         if not enquiry:
             return jsonify({"success": False, "message": "Enquiry not found"}), 404
 
-        # Update the enquiry status
         result = mongo.db.enquiry_details.update_one(
-            {"_id": ObjectId(enquiry_id)},  
-            {"$set": {"status": "done", "response": response_text, "response_date": datetime.utcnow()}}
+            {"_id": ObjectId(enquiry_id)},
+            {"$set": {
+                "status": "done",
+                "response": response_text,
+                "response_date": datetime.utcnow()
+            }}
         )
 
         if result.modified_count == 1:
-            # Send response email
             user_email = enquiry.get("email")
             user_name = enquiry.get("name")
 
             if user_email:
+                html_body = f"""
+                <html>
+                <body style="font-family: Arial, sans-serif; color: #333; margin: 0; padding: 0;">
+                    <div style="max-width: 600px; margin: auto;">
+                        <div style="background-color: #2196F3; color: white; padding: 20px; text-align: center; border-top-left-radius: 5px; border-top-right-radius: 5px;">
+                            <h2 style="margin: 0; font-size: 24px;">RapiACT!</h2>
+                        </div>
+                        <div style="background-color: #f9f9f9; padding: 20px; border: 1px solid #ddd; border-bottom-left-radius: 5px; border-bottom-right-radius: 5px;">
+                            <p>Hello {user_name},</p>
+                            <p>Your enquiry has been marked as <strong>resolved</strong>. Below are the details:</p>
+
+                            <div style="background-color: #fff; border: 1px solid #ddd; padding: 15px; margin: 20px 0; border-radius: 5px;">
+                                <div style="font-weight: bold; margin-bottom: 5px; color: #2196F3;">Your Message:</div>
+                                <div>{enquiry.get('message')}</div>
+                            </div>
+
+                            <div style="background-color: #fff; border: 1px solid #ddd; padding: 15px; margin: 20px 0; border-radius: 5px;">
+                                <div style="font-weight: bold; margin-bottom: 5px; color: #2196F3;">Admin Response:</div>
+                                <div>{response_text}</div>
+                            </div>
+
+                            <p>If you have any further questions, feel free to reach out.</p>
+                            <p>Thank you,<br><strong>RapiACT! Team ❤️</strong></p>
+                        </div>
+                        <div style="text-align: center; font-size: 12px; color: #777; margin-top: 20px;">
+                            <p>This is an automated message, please do not reply to this email.</p>
+                            <p>&copy; 2025 RapiACT! All rights reserved.</p>
+                        </div>
+                    </div>
+                </body>
+                </html>
+                """
+
                 msg = Message(
                     subject="Your Enquiry has been Resolved",
                     recipients=[user_email]
                 )
-                msg.body = f"""
-                Hello {user_name},
-
-                Your enquiry has been marked as resolved. 
-
-                **Your Message:**
-                {enquiry.get('message')}
-
-                **Admin Response:**
-                {response_text}
-
-                If you have any further questions, feel free to reach out.
-
-                Best Regards,
-                RapiACT! Team❤️
-                """
+                msg.html = html_body
                 mail.send(msg)
 
             return jsonify({"success": True, "message": "Enquiry marked as done and email sent."})
-        else:
-            return jsonify({"success": False, "message": "Failed to update enquiry."}), 500
+
+        return jsonify({"success": False, "message": "Failed to update enquiry."}), 500
+
     except Exception as e:
         return jsonify({"success": False, "message": str(e)}), 500
+
 
 def send_email(subject, recipients, body):
     """Function to send emails."""
@@ -642,6 +765,259 @@ def admin_dashboard():
                            total_enquires=total_enquires,
                            unapproved_doctors=unapproved_doctors)
 
+import secrets
+
+
+@app.route('/forgot-password', methods=['GET', 'POST'])
+def forgot_password():
+    if request.method == 'GET':
+        return render_template('forgot_password.html', step="email")
+    
+    elif request.method == 'POST':
+        email = request.form.get('email')
+        
+        if not email:
+            flash("Email is required", "error")
+            return redirect(url_for('forgot_password'))
+        
+        # Check if user exists
+        user = users_collection.find_one({"email": email})
+        if not user:
+            # Still show success message for security reasons
+            flash("If your email is registered, you will receive password reset instructions", "info")
+            return redirect(url_for('login'))
+        
+        # Generate OTP
+        otp = str(random.randint(100000, 999999))
+        otp_store[email] = {
+            'otp': otp,
+            'expires_at': datetime.utcnow() + timedelta(minutes=10)
+        }
+        
+        # HTML Email Template with CSS styling
+        html_body = f"""
+        <!DOCTYPE html>
+        <html lang="en">
+        <head>
+            <meta charset="UTF-8">
+            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+            <title>Reset Your Password</title>
+            <style>
+                body {{
+                    font-family: Arial, sans-serif;
+                    line-height: 1.6;
+                    color: #333333;
+                    margin: 0;
+                    padding: 0;
+                }}
+                .container {{
+                    max-width: 600px;
+                    margin: 0 auto;
+                    padding: 20px;
+                }}
+                .header {{
+                    background-color: #4CAF50;
+                    color: white;
+                    padding: 20px;
+                    text-align: center;
+                    border-top-left-radius: 5px;
+                    border-top-right-radius: 5px;
+                }}
+                .content {{
+                    background-color: #f9f9f9;
+                    padding: 20px;
+                    border: 1px solid #dddddd;
+                    border-bottom-left-radius: 5px;
+                    border-bottom-right-radius: 5px;
+                }}
+                .otp-container {{
+                    background-color: #ffffff;
+                    border: 1px solid #dddddd;
+                    padding: 15px;
+                    margin: 20px 0;
+                    text-align: center;
+                    border-radius: 5px;
+                }}
+                .otp-code {{
+                    font-size: 32px;
+                    font-weight: bold;
+                    letter-spacing: 5px;
+                    color: #4CAF50;
+                }}
+                .footer {{
+                    margin-top: 20px;
+                    text-align: center;
+                    font-size: 12px;
+                    color: #777777;
+                }}
+                .expire-note {{
+                    color: #FF5722;
+                    font-size: 14px;
+                    text-align: center;
+                    margin-top: 10px;
+                }}
+                .logo {{
+                    font-size: 24px;
+                    font-weight: bold;
+                    color: white;
+                }}
+            </style>
+        </head>
+        <body>
+            <div class="container">
+                <div class="header">
+                    <div class="logo">RapiACT!</div>
+                </div>
+                <div class="content">
+                    <p>Hello,</p>
+                    <p>We received a request to reset your password for your RapiACT! account. To proceed with the password reset, please use the following One-Time Password (OTP):</p>
+                    
+                    <div class="otp-container">
+                        <div class="otp-code">{otp}</div>
+                    </div>
+                    
+                    <p class="expire-note">This code will expire in 10 minutes.</p>
+                    
+                    <p>If you did not request a password reset, please ignore this email and your account will remain secure.</p>
+                    
+                    <p>Thank you,<br>The RapiACT! Team ❤️</p>
+                </div>
+                <div class="footer">
+                    <p>This is an automated message, please do not reply to this email.</p>
+                    <p>&copy; 2025 RapiACT! All rights reserved.</p>
+                </div>
+            </div>
+        </body>
+        </html>
+        """
+        
+        # Plain text version as fallback
+        text_body = f"""
+        Hello,
+
+        You have requested to reset your password for your RapiACT! account. Your OTP code is:
+
+        {otp}
+
+        This code will expire in 10 minutes.
+
+        If you did not request a password reset, please ignore this email.
+
+        Best Regards,
+        RapiACT! Team❤️
+        """
+        
+        try:
+            msg = Message(subject="Reset Your Password - RapiACT!", recipients=[email])
+            msg.body = text_body
+            msg.html = html_body
+            mail.send(msg)
+            
+            # Store email in session for next step
+            session['reset_email'] = email
+            
+            flash("OTP sent to your email", "success")
+            return render_template('forgot_password.html', step="otp")
+        except Exception as e:
+            flash(f"Error sending email: {str(e)}", "error")
+            return redirect(url_for('forgot_password'))
+
+@app.route('/verify-reset-otp', methods=['POST'])
+def verify_reset_otp():
+    if 'reset_email' not in session:
+        flash("Please start the password reset process again", "error")
+        return redirect(url_for('forgot_password'))
+    
+    email = session.get('reset_email')
+    otp_entered = request.form.get('otp')
+    
+    if not otp_entered:
+        flash("OTP is required", "error")
+        return render_template('forgot_password.html', step="otp")
+    
+    # Verify OTP
+    if email not in otp_store or otp_store[email]['otp'] != otp_entered:
+        flash("Invalid OTP", "error")
+        return render_template('forgot_password.html', step="otp")
+    
+    # Check if OTP is expired
+    if otp_store[email]['expires_at'] < datetime.utcnow():
+        flash("OTP has expired", "error")
+        del otp_store[email]
+        return redirect(url_for('forgot_password'))
+    
+    # Generate reset token
+    reset_token = secrets.token_urlsafe(32)
+    token_expiry = datetime.utcnow() + timedelta(hours=1)
+    
+    # Store token in database
+    users_collection.update_one(
+        {"email": email},
+        {"$set": {
+            "reset_token": reset_token,
+            "reset_token_expiry": token_expiry
+        }}
+    )
+    
+    # Remove OTP after use
+    del otp_store[email]
+    
+    # Set token in session
+    session['reset_token'] = reset_token
+    
+    flash("OTP verified successfully", "success")
+    return render_template('forgot_password.html', step="new-password")
+
+@app.route('/reset-password', methods=['POST'])
+def reset_password():
+    if 'reset_email' not in session or 'reset_token' not in session:
+        flash("Please start the password reset process again", "error")
+        return redirect(url_for('forgot_password'))
+    
+    email = session.get('reset_email')
+    token = session.get('reset_token')
+    
+    # Verify token is still valid in the database
+    user = users_collection.find_one({
+        "email": email,
+        "reset_token": token,
+        "reset_token_expiry": {"$gt": datetime.utcnow()}
+    })
+    
+    if not user:
+        flash("Password reset link has expired", "error")
+        return redirect(url_for('forgot_password'))
+    
+    new_password = request.form.get('new_password')
+    confirm_password = request.form.get('confirm_password')
+    
+    if not (new_password and confirm_password):
+        flash("All fields are required", "error")
+        return render_template('forgot_password.html', step="new-password")
+    
+    if new_password != confirm_password:
+        flash("Passwords do not match", "error")
+        return render_template('forgot_password.html', step="new-password")
+    
+    # Update password
+    hashed_password = generate_password_hash(new_password)
+    
+    users_collection.update_one(
+        {"email": email},
+        {"$set": {
+            "password": hashed_password,
+            "reset_token": None,
+            "reset_token_expiry": None
+        }}
+    )
+    
+    # Clear session data
+    session.pop('reset_email', None)
+    session.pop('reset_token', None)
+    
+    flash("Password has been reset successfully. You can now log in with your new password.", "success")
+    return redirect(url_for('login'))
+
 # ---- Approve Doctor ----
 @app.route('/approve_doctor/<doctor_id>', methods=['POST'])
 def approve_doctor(doctor_id):
@@ -922,27 +1298,89 @@ def profile():
             return "User not found", 404
 
         if request.method == 'POST':
-            name = request.form.get('name')
-            phone = request.form.get('phone')
-            age = request.form.get('age')
-            gender = request.form.get('gender')
-            address = request.form.get('address')
+            if 'update_profile' in request.form:
+                # Handle profile update
+                name = request.form.get('name')
+                phone = request.form.get('phone')
+                age = request.form.get('age')
+                gender = request.form.get('gender')
+                address = request.form.get('address')
 
-            # Update user details except email
-            mongo.db.users.update_one(
-                {"_id": ObjectId(user_id)},
-                {"$set": {
-                    "name": name,
-                    "phone": phone,
-                    "age": age,
-                    "gender": gender,
-                    "address": address
-                }}
-            )
-            flash("Profile updated successfully", "success")
-            return redirect(url_for('profile'))
+                # Update user details except email
+                mongo.db.users.update_one(
+                    {"_id": ObjectId(user_id)},
+                    {"$set": {
+                        "name": name,
+                        "phone": phone,
+                        "age": age,
+                        "gender": gender,
+                        "address": address
+                    }}
+                )
+                flash("Profile updated successfully", "success")
+                return redirect(url_for('profile'))
+            
+            elif 'change_password' in request.form:
+                # Handle password change
+                old_password = request.form.get('old_password')
+                new_password = request.form.get('new_password')
+                confirm_password = request.form.get('confirm_password')
+                
+                # Verify old password
+                if not check_password_hash(user['password'], old_password):
+                    flash("Current password is incorrect", "error")
+                    return redirect(url_for('profile'))
+                
+                # Check if new passwords match
+                if new_password != confirm_password:
+                    flash("New passwords do not match", "error")
+                    return redirect(url_for('profile'))
+                
+                # Update password
+                hashed_password = generate_password_hash(new_password)
+                mongo.db.users.update_one(
+                    {"_id": ObjectId(user_id)},
+                    {"$set": {"password": hashed_password}}
+                )
+                
+                # Send email notification
+                try:
+                    email = user['email']
+                    name = user['name']
+                    
+                    msg = Message(
+                        "Password Change Notification - RapiACT",
+                        sender=app.config['MAIL_USERNAME'],
+                        recipients=[email]
+                    )
+                    
+                    msg.html = f"""
+                    <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #ddd; border-radius: 5px;">
+                        <div style="text-align: center; margin-bottom: 20px;">
+                            <h2 style="color: #0056b3;">RapiACT Security Alert</h2>
+                        </div>
+                        <p>Hello {name},</p>
+                        <p>This is to inform you that your RapiACT account password was changed successfully. This change was made on {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}.</p>
+                        <p>If you did not make this change, please contact our support team immediately or reset your password.</p>
+                        <div style="margin-top: 30px; padding-top: 20px; border-top: 1px solid #ddd; font-size: 0.9em; color: #777;">
+                            <p>This is an automated message. Please do not reply to this email.</p>
+                            <p>RapiACT Team</p>
+                        </div>
+                    </div>
+                    """
+                    
+                    mail.send(msg)
+                except Exception as e:
+                    # Log the error but don't prevent password change
+                    print(f"Error sending password change email: {str(e)}")
+                
+                flash("Password changed successfully", "success")
+                return redirect(url_for('profile'))
 
         return render_template('profile.html', user=user)
+    
+    except Exception as e:
+        return f"Error fetching/updating user details: {str(e)}", 500
 
     except Exception as e:
         return f"Error fetching/updating user details: {str(e)}", 500
