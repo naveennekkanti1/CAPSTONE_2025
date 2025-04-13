@@ -1789,6 +1789,90 @@ def verify_payment_action(payment_id):
         flash("User email not found, unable to send notification.", "warning")
         return redirect(url_for('verify_payment'))
 
+    # Common CSS styles for both emails
+    email_css = """
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            max-width: 650px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f9f9f9;
+        }
+        .email-container {
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            padding: 30px;
+        }
+        .header {
+            text-align: center;
+            padding-bottom: 20px;
+            border-bottom: 1px solid #eee;
+            margin-bottom: 20px;
+        }
+        .logo {
+            font-size: 24px;
+            font-weight: bold;
+            color: #2c3e50;
+        }
+        h2 {
+            color: #2c3e50;
+            margin-top: 0;
+        }
+        h3 {
+            color: #3498db;
+        }
+        table {
+            border-collapse: collapse;
+            width: 100%;
+            margin: 20px 0;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 12px;
+            text-align: left;
+        }
+        th {
+            background-color: #3498db;
+            color: white;
+            font-weight: 600;
+        }
+        tr:nth-child(even) {
+            background-color: #f2f2f2;
+        }
+        tr:hover {
+            background-color: #e9f7fe;
+        }
+        .total-row {
+            font-weight: bold;
+            background-color: #eaf6ff;
+        }
+        .footer {
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 1px solid #eee;
+            text-align: center;
+            font-size: 0.9em;
+            color: #7f8c8d;
+        }
+        .button {
+            display: inline-block;
+            background-color: #3498db;
+            color: white;
+            padding: 10px 20px;
+            text-decoration: none;
+            border-radius: 4px;
+            margin-top: 15px;
+        }
+        .contact-info {
+            margin-top: 20px;
+            font-size: 0.9em;
+        }
+    """
+
     if action == "verify":
         mongo.db.prescriptions.update_one({"_id": ObjectId(payment_id)}, {"$set": {"payment_status": "verified"}})
         flash("Payment verified successfully.", "success")
@@ -1807,39 +1891,58 @@ def verify_payment_action(payment_id):
         if not medicine_rows:
             medicine_rows = "<tr><td colspan='3'>No medicines available</td></tr>"
 
+        total_amount = sum(med.get('price', 0) for med in medicines)
+        order_id = str(payment.get('_id', 'Unknown'))[:8]  # Use first 8 chars of payment ID
+
         body = f"""
         <html>
         <head>
             <style>
-                table {{
-                    border-collapse: collapse;
-                    width: 100%;
-                    margin-bottom: 20px;
-                }}
-                th, td {{
-                    border: 1px solid #ddd;
-                    padding: 8px;
-                    text-align: left;
-                }}
-                th {{
-                    background-color: #f2f2f2;
-                }}
+                {email_css}
             </style>
         </head>
         <body>
-            <h2>Order Confirmation</h2>
-            <p>Dear {patient.get('name', 'User')},</p>
-            <p>Your payment has been successfully verified, and your order has been initiated.</p>
-            
-            <h3>Order Details:</h3>
-            <table>
-                <tr><th>Product</th><th>Description</th><th>Price</th></tr>
-                {medicine_rows}
-                <tr><th colspan="2" style="text-align: right;">Total:</th><td>₹{sum(med.get('price', 0) for med in medicines)}</td></tr>
-            </table>
-            
-            <p>Thank you for choosing RapiACT!</p>
-            <p>Best Regards,<br>RapiACT Team</p>
+            <div class="email-container">
+                <div class="header">
+                    <div class="logo">RapiACT</div>
+                    <p>Healthcare at your fingertips</p>
+                </div>
+                
+                <h2>Order Confirmation</h2>
+                <p>Dear {patient.get('name', 'User')},</p>
+                <p>Your payment has been successfully verified, and your order has been initiated.</p>
+                
+                <div style="background-color: #e8f4fd; padding: 15px; border-radius: 6px; margin: 20px 0;">
+                    <p style="margin: 0;"><strong>Order ID:</strong> #{order_id}</p>
+                    <p style="margin: 8px 0 0;"><strong>Date:</strong> {datetime.now().strftime('%B %d, %Y')}</p>
+                </div>
+                
+                <h3>Order Details:</h3>
+                <table>
+                    <tr>
+                        <th>Product</th>
+                        <th>Description</th>
+                        <th>Price</th>
+                    </tr>
+                    {medicine_rows}
+                    <tr class="total-row">
+                        <th colspan="2" style="text-align: right;">Total:</th>
+                        <td>₹{total_amount}</td>
+                    </tr>
+                </table>
+                
+                <p>Your order will be processed shortly. You will receive a notification when your order is ready for delivery or pickup.</p>
+                
+                <p>Thank you for choosing RapiACT for your healthcare needs!</p>
+                
+                <div class="footer">
+                    <p>Best Regards,<br>The RapiACT Team</p>
+                    <div class="contact-info">
+                        <p>If you have any questions, please contact our support team</p>
+                        <p>© 2025 RapiACT. All rights reserved.</p>
+                    </div>
+                </div>
+            </div>
         </body>
         </html>
         """
@@ -1853,12 +1956,44 @@ def verify_payment_action(payment_id):
         subject = "Payment Rejected - RapiACT"
         body = f"""
         <html>
+        <head>
+            <style>
+                {email_css}
+            </style>
+        </head>
         <body>
-            <h2>Payment Rejected</h2>
-            <p>Dear {patient.get('name', 'User')},</p>
-            <p>Unfortunately, your payment has been rejected. Please contact support for more details.</p>
-            <p>Thank you for using RapiACT!</p>
-            <p>Best Regards,<br>RapiACT Team</p>
+            <div class="email-container">
+                <div class="header">
+                    <div class="logo">RapiACT</div>
+                    <p>Healthcare at your fingertips</p>
+                </div>
+                
+                <h2>Payment Rejected</h2>
+                <p>Dear {patient.get('name', 'User')},</p>
+                
+                <div style="background-color: #ffebee; padding: 15px; border-radius: 6px; margin: 20px 0;">
+                    <p style="margin: 0;">Unfortunately, your payment has been rejected.</p>
+                </div>
+                
+                <p>This could be due to one of the following reasons:</p>
+                <ul style="padding-left: 20px;">
+                    <li>Payment validation issue</li>
+                    <li>Incomplete payment information</li>
+                    <li>Transaction error with your payment provider</li>
+                </ul>
+                
+                <p>Please contact our support team for more details and assistance in resolving this issue.</p>
+                
+                <a href="#" class="button">Contact Support</a>
+                
+                <div class="footer">
+                    <p>Thank you for using RapiACT!</p>
+                    <p>Best Regards,<br>The RapiACT Team</p>
+                    <div class="contact-info">
+                        <p>© 2025 RapiACT. All rights reserved.</p>
+                    </div>
+                </div>
+            </div>
         </body>
         </html>
         """
@@ -1873,85 +2008,6 @@ def send_html_email(subject, recipients, html_body):
     msg = Message(subject, recipients=recipients)
     msg.html = html_body
     mail.send(msg)
-
-# Assuming you have these imports and connection setup already
-# Replace with your actual db connection if different
-
-@app.route('/process_order', methods=['POST'])
-def process_order():
-    if 'user_id' not in session or session.get('role') != 'patient':
-        return jsonify({'success': False, 'message': 'You must be logged in as a patient to place an order'}), 403
-    
-    user_id = session.get('user_id')
-    data = request.json
-    
-    if not data or 'items' not in data or not data['items']:
-        return jsonify({'success': False, 'message': 'No items in cart'}), 400
-    
-    try:
-        # Create order document
-        order = {
-            'user_id': ObjectId(user_id),
-            'items': [],
-            'total_amount': float(data['total']),
-            'status': 'pending',  # pending, verified, shipped, delivered
-            'payment_status': 'pending',  # pending, completed
-            'created_at': datetime.now(),
-            'updated_at': datetime.now()
-        }
-        
-        # Process each item and update inventory
-        for item in data['items']:
-            product_id = item['id']
-            quantity = item['quantity']
-            
-            # Verify product exists and has sufficient stock
-            product = db.products.find_one({'_id': ObjectId(product_id)})
-            if not product:
-                return jsonify({'success': False, 'message': f'Product not found: {item["name"]}'}), 400
-            
-            if product['stock'] < quantity:
-                return jsonify({'success': False, 'message': f'Insufficient stock for {product["name"]}. Only {product["stock"]} available.'}), 400
-            
-            # Add item to order with current product details
-            order_item = {
-                'product_id': ObjectId(product_id),
-                'name': product['name'],
-                'price': float(product['price']),
-                'quantity': quantity,
-                'subtotal': float(product['price']) * quantity
-            }
-            order['items'].append(order_item)
-            
-            # Update product stock
-            db.products.update_one(
-                {'_id': ObjectId(product_id)},
-                {'$inc': {'stock': -quantity}}
-            )
-        
-        # Save order to database
-        result = db.orders.insert_one(order)
-        
-        # Create a notification for admin
-        notification = {
-            'user_id': None,  # None means it's for all admins
-            'role': 'admin',
-            'type': 'new_order',
-            'message': f'New order received from {session.get("username")}',
-            'read': False,
-            'created_at': datetime.now()
-        }
-        db.notifications.insert_one(notification)
-        
-        return jsonify({
-            'success': True, 
-            'message': 'Order placed successfully',
-            'order_id': str(result.inserted_id)
-        })
-        
-    except Exception as e:
-        print(f"Error processing order: {e}")
-        return jsonify({'success': False, 'message': 'An error occurred while processing your order'}), 500
 
 
 @app.route('/admin_dashboard/orders')
@@ -2035,42 +2091,154 @@ def generate_status_email(patient, order, status):
 
     # Calculate total price
     total_price = sum(med.get('price', 0) for med in order.get("medicines", []))
+    
+    # Generate a simple order ID from the MongoDB ObjectId
+    order_id = str(order.get('_id', 'Unknown'))[:8]
 
     subject = f"Order Update - RapiACT [{status}]"
 
+    # Enhanced CSS for a more professional email
     body = f"""
     <html>
     <head>
         <style>
+            body {{
+                font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+                line-height: 1.6;
+                color: #333;
+                max-width: 650px;
+                margin: 0 auto;
+                padding: 20px;
+                background-color: #f9f9f9;
+            }}
+            .email-container {{
+                background-color: white;
+                border-radius: 8px;
+                box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+                padding: 30px;
+            }}
+            .header {{
+                text-align: center;
+                padding-bottom: 20px;
+                border-bottom: 1px solid #eee;
+                margin-bottom: 20px;
+            }}
+            .logo {{
+                font-size: 24px;
+                font-weight: bold;
+                color: #2c3e50;
+            }}
+            h2 {{
+                color: #2c3e50;
+                margin-top: 0;
+            }}
+            h3 {{
+                color: #3498db;
+            }}
             table {{
                 border-collapse: collapse;
                 width: 100%;
-                margin-bottom: 20px;
+                margin: 20px 0;
+                box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
             }}
             th, td {{
                 border: 1px solid #ddd;
-                padding: 8px;
+                padding: 12px;
                 text-align: left;
             }}
             th {{
+                background-color: #3498db;
+                color: white;
+                font-weight: 600;
+            }}
+            tr:nth-child(even) {{
                 background-color: #f2f2f2;
+            }}
+            tr:hover {{
+                background-color: #e9f7fe;
+            }}
+            .total-row {{
+                font-weight: bold;
+                background-color: #eaf6ff;
+            }}
+            .status-badge {{
+                display: inline-block;
+                padding: 8px 16px;
+                border-radius: 4px;
+                font-weight: bold;
+                color: white;
+                background-color: #3498db;
+            }}
+            .status-processing {{
+                background-color: #3498db;
+            }}
+            .status-shipped {{
+                background-color: #f39c12;
+            }}
+            .status-delivered {{
+                background-color: #2ecc71;
+            }}
+            .status-canceled {{
+                background-color: #e74c3c;
+            }}
+            .footer {{
+                margin-top: 30px;
+                padding-top: 20px;
+                border-top: 1px solid #eee;
+                text-align: center;
+                font-size: 0.9em;
+                color: #7f8c8d;
+            }}
+            .order-info {{
+                background-color: #eaf6ff;
+                padding: 15px;
+                border-radius: 6px;
+                margin: 20px 0;
             }}
         </style>
     </head>
     <body>
-        <h2>Order Update</h2>
-        <p>Dear {patient.get('name', 'User')},</p>
-        <p>Your order status has been updated to: <b>{status}</b></p>
-        
-        <h3>Order Details:</h3>
-        <table>
-            <tr><th>Product</th><th>Description</th><th>Price</th></tr>
-            {order_items}
-            <tr><th colspan="2" style="text-align: right;">Total:</th><td>₹{total_price}</td></tr>
-        </table>
-
-        <p>Thank you for choosing RapiACT!</p>
-        <p>Best Regards,<br>RapiACT Team</p>
+        <div class="email-container">
+            <div class="header">
+                <div class="logo">RapiACT</div>
+                <p>Healthcare at your fingertips</p>
+            </div>
+            
+            <h2>Order Update</h2>
+            <p>Dear {patient.get('name', 'User')},</p>
+            
+            <p>Your order status has been updated to: 
+                <span class="status-badge status-{status.lower()}">
+                    {status.upper()}
+                </span>
+            </p>
+            
+            <div class="order-info">
+                <p><strong>Order ID:</strong> #{order_id}</p>
+                <p><strong>Date:</strong> {order.get('date', datetime.now()).strftime('%B %d, %Y')}</p>
+            </div>
+            
+            <h3>Order Details:</h3>
+            <table>
+                <tr>
+                    <th>Product</th>
+                    <th>Description</th>
+                    <th>Price</th>
+                </tr>
+                {order_items}
+                <tr class="total-row">
+                    <th colspan="2" style="text-align: right;">Total:</th>
+                    <td>₹{total_price}</td>
+                </tr>
+            </table>
+            
+            <p>Thank you for choosing RapiACT for your healthcare needs!</p>
+            
+            <div class="footer">
+                <p>Best Regards,<br>The RapiACT Team</p>
+                <p>© 2025 RapiACT. All rights reserved.</p>
+            </div>
+        </div>
     </body>
     </html>
     """

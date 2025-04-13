@@ -115,10 +115,15 @@
             left: 100%;
         }
 
-        .sidebar a:hover {
-            background: rgba(255, 255, 255, 0.1);
+        .sidebar a:hover, .sidebar a.active {
+            background: rgba(255, 255, 255, 0.15);
             transform: translateX(5px);
             box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        .sidebar a.active {
+            background: rgba(255, 255, 255, 0.2);
+            border-left: 4px solid white;
         }
 
         .main-content {
@@ -145,6 +150,9 @@
             border-radius: 15px;
             backdrop-filter: blur(10px);
             animation: fadeInUp 0.6s ease-out;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
         }
 
         .dashboard-header h2 {
@@ -153,6 +161,84 @@
             font-weight: 600;
             color: white;
             text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2);
+        }
+
+        .search-container {
+            width: 100%;
+            max-width: 800px;
+            margin-top: 20px;
+            animation: fadeInUp 0.8s ease-out;
+        }
+
+        .search-box {
+            display: flex;
+            gap: 10px;
+            width: 100%;
+        }
+
+        .search-input {
+            flex-grow: 1;
+            padding: 12px 20px;
+            border: none;
+            border-radius: 50px;
+            background: rgba(255, 255, 255, 0.9);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            font-size: 1rem;
+            transition: all 0.3s ease;
+        }
+
+        .search-input:focus {
+            outline: none;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+            transform: translateY(-2px);
+        }
+
+        .search-btn {
+            background: linear-gradient(90deg, #7c4dff, #5c6bc0);
+            color: white;
+            border: none;
+            border-radius: 50px;
+            padding: 0 25px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .search-btn:hover {
+            background: linear-gradient(90deg, #673ab7, #3f51b5);
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
+            transform: translateY(-2px);
+        }
+
+        .search-filters {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .filter-btn {
+            background: rgba(255, 255, 255, 0.2);
+            border: none;
+            border-radius: 20px;
+            padding: 8px 15px;
+            color: white;
+            font-size: 0.85rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            backdrop-filter: blur(5px);
+        }
+
+        .filter-btn:hover, .filter-btn.active {
+            background: rgba(255, 255, 255, 0.3);
+            transform: translateY(-2px);
+        }
+
+        .filter-btn.active {
+            background: var(--accent-color);
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
         }
 
         .section {
@@ -169,22 +255,45 @@
             animation: fadeInUp 0.6s ease-out;
         }
 
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            border-bottom: 2px solid #f0f0f0;
+            padding-bottom: 15px;
+        }
+
+        .section-header h3 {
+            margin: 0;
+            color: var(--primary-dark);
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .section-header h3 i {
+            color: var(--accent-color);
+        }
+
         .order-card {
             background: white;
-            border-radius: 10px;
+            border-radius: 15px;
             overflow: hidden;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-            margin-bottom: 20px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+            margin-bottom: 25px;
             transition: all 0.3s ease;
+            border: 1px solid #f0f0f0;
         }
 
         .order-card:hover {
             transform: translateY(-5px);
-            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.1);
         }
 
         .order-header {
-            padding: 15px 20px;
+            padding: 18px 25px;
             background: linear-gradient(90deg, var(--primary-dark), var(--primary-light));
             color: white;
             font-weight: bold;
@@ -194,10 +303,10 @@
         }
 
         .order-body {
-            padding: 20px;
+            padding: 25px;
             display: flex;
             flex-wrap: wrap;
-            gap: 20px;
+            gap: 25px;
         }
 
         .order-info {
@@ -205,67 +314,108 @@
             min-width: 300px;
         }
 
+        .order-info h4 {
+            color: var(--primary-dark);
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #f0f0f0;
+            font-weight: 600;
+        }
+
         .order-product {
-            flex: 1;
-            min-width: 300px;
-            padding: 15px;
+            flex: 1.5;
+            min-width: 350px;
+            padding: 20px;
             background-color: #f9f9f9;
-            border-radius: 8px;
+            border-radius: 12px;
+            box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.05);
+        }
+
+        .order-product h4 {
+            color: var(--primary-dark);
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #f0f0f0;
+            font-weight: 600;
         }
 
         .order-actions {
             width: 100%;
             margin-top: 15px;
-            padding: 15px;
+            padding: 20px;
             background-color: #f9f9f9;
-            border-radius: 8px;
+            border-radius: 12px;
+            box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.05);
+        }
+
+        .order-actions h4 {
+            color: var(--primary-dark);
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #f0f0f0;
+            font-weight: 600;
         }
 
         .btn-action {
-            padding: 8px 15px;
+            padding: 10px 20px;
             border: none;
-            border-radius: 5px;
+            border-radius: 8px;
             cursor: pointer;
             font-weight: bold;
             transition: all 0.3s ease;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
         }
 
         .btn-update {
             background: linear-gradient(90deg, #1565c0, #42a5f5);
             color: white;
+            width: 100%;
+            padding: 12px;
+            font-size: 1rem;
         }
 
         .btn-update:hover {
             background: linear-gradient(90deg, #0d47a1, #1976d2);
             transform: translateY(-2px);
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
         }
 
         .status-select {
             width: 100%;
-            padding: 10px;
+            padding: 12px;
             border: 1px solid #ddd;
-            border-radius: 5px;
-            margin-bottom: 10px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            font-size: 1rem;
+            background-color: white;
+            transition: all 0.3s ease;
+        }
+
+        .status-select:focus {
+            outline: none;
+            border-color: var(--primary-light);
+            box-shadow: 0 0 0 2px rgba(92, 107, 192, 0.2);
         }
 
         .badge {
-            padding: 8px 12px;
+            padding: 8px 15px;
             border-radius: 50px;
             color: white;
-            font-size: 0.8rem;
-            font-weight: bold;
+            font-size: 0.85rem;
+            font-weight: 600;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
         }
 
         .badge-verified {
-            background-color: #4caf50;
+            background: linear-gradient(90deg, #43a047, #66bb6a);
         }
 
         .status-label {
             display: inline-block;
-            padding: 5px 10px;
-            border-radius: 4px;
-            font-size: 0.8rem;
-            font-weight: bold;
+            padding: 6px 12px;
+            border-radius: 6px;
+            font-size: 0.85rem;
+            font-weight: 600;
         }
 
         .status-verified {
@@ -278,6 +428,11 @@
             color: #1565c0;
         }
 
+        .status-packed {
+            background-color: #ede7f6;
+            color: #5e35b1;
+        }
+
         .status-shipped {
             background-color: #fff8e1;
             color: #ff8f00;
@@ -286,6 +441,11 @@
         .status-delivered {
             background-color: #e8f5e9;
             color: #2e7d32;
+        }
+
+        .status-out {
+            background-color: #fff3e0;
+            color: #e65100;
         }
 
         .menu-toggle {
@@ -304,18 +464,75 @@
 
         .products-table {
             width: 100%;
-            border-collapse: collapse;
+            border-collapse: separate;
+            border-spacing: 0;
             margin-top: 10px;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.05);
         }
 
         .products-table th, .products-table td {
-            padding: 8px;
-            border-bottom: 1px solid #ddd;
+            padding: 12px 15px;
+            text-align: left;
         }
 
         .products-table th {
             background-color: #f2f2f2;
-            text-align: left;
+            font-weight: 600;
+            color: var(--primary-dark);
+            border-bottom: 2px solid #ddd;
+        }
+
+        .products-table tr:nth-child(even) {
+            background-color: #f9f9f9;
+        }
+
+        .products-table tr:hover {
+            background-color: #f5f5f5;
+        }
+
+        .products-table td {
+            border-bottom: 1px solid #eee;
+        }
+
+        .products-table tfoot tr {
+            background-color: #f2f2f2;
+        }
+
+        .products-table tfoot td {
+            font-weight: bold;
+            border-top: 2px solid #ddd;
+        }
+
+        .customer-info {
+            display: grid;
+            grid-template-columns: auto 1fr;
+            gap: 10px 15px;
+            align-items: center;
+            font-size: 1rem;
+        }
+
+        .customer-info-label {
+            font-weight: 600;
+            color: #555;
+        }
+
+        .customer-info-value {
+            color: #333;
+        }
+
+        .empty-results {
+            text-align: center;
+            padding: 40px;
+            color: #777;
+            font-size: 1.2rem;
+        }
+
+        .empty-results i {
+            font-size: 3rem;
+            margin-bottom: 15px;
+            color: #ccc;
         }
 
         @media (max-width: 768px) {
@@ -340,6 +557,15 @@
             .order-body {
                 flex-direction: column;
             }
+
+            .search-box {
+                flex-direction: column;
+            }
+
+            .search-btn {
+                width: 100%;
+                padding: 12px;
+            }
         }
     </style>
 </head>
@@ -361,7 +587,7 @@
         <a href="/appointments"><i class="fas fa-calendar-check"></i>Appointments</a>
         <a href="/admin_dashboard/add_medicine"><i class="fas fa-plus-circle"></i>Add Medicine</a>
         <a href="/pharmacy"><i class="fas fa-pills"></i>Pharmacy</a>
-        <a href="/email_dashboard"><i class="fas fa-calendar-check"></i>Email Sending</a>
+        <a href="/email_dashboard"><i class="fas fa-envelope"></i>Email Sending</a>
         <a href="/enquiry_details"><i class="fas fa-question-circle"></i>Contact Queries</a>
         <a href="/admin_dashboard/verify_payment"><i class="fas fa-check-circle"></i>Verify Payment</a>
         <a href="/admin_dashboard/orders" class="active"><i class="fas fa-box"></i>Orders</a>
@@ -374,7 +600,22 @@
     <div class="main-content">
         <div class="main-content-wrapper">
             <div class="dashboard-header">
-                <h2>Manage Orders</h2>
+                <h2><i class="fas fa-box-open"></i> Order Management</h2>
+                
+                <div class="search-container">
+                    <div class="search-box">
+                        <input type="text" id="orderSearch" class="search-input" placeholder="Search orders by name, email, phone, UTR ID or order ID...">
+                        <button id="searchBtn" class="search-btn"><i class="fas fa-search"></i> Search</button>
+                    </div>
+                    <div class="search-filters">
+                        <button class="filter-btn active" data-filter="all">All Orders</button>
+                        <button class="filter-btn" data-filter="processing">Processing</button>
+                        <button class="filter-btn" data-filter="packed">Packed</button>
+                        <button class="filter-btn" data-filter="shipped">Shipped</button>
+                        <button class="filter-btn" data-filter="out">Out for Delivery</button>
+                        <button class="filter-btn" data-filter="delivered">Delivered</button>
+                    </div>
+                </div>
             </div>
             
             {% with messages = get_flashed_messages(with_categories=true) %}
@@ -389,109 +630,112 @@
             {% endwith %}
             
             <div class="section">
-                <h3><i class="fas fa-box"></i> Order Management</h3>
+                <div class="section-header">
+                    <h3><i class="fas fa-shipping-fast"></i> Active Orders</h3>
+                    <span id="orderCount" class="badge badge-verified">{{ orders|length }} Orders</span>
+                </div>
                 
-                {% if orders %}
-                    {% for order in orders %}
-                    <div class="order-card">
-                        <div class="order-header">
-                            <div>Order #{{ order._id }}</div>
-                            <div class="badge badge-verified">Verified Payment</div>
-                        </div>
-                        <div class="order-body">
-                            <div class="order-info">
-                                <h4>Customer Details</h4>
-                                <table class="table table-borderless">
-                                    <tr>
-                                        <th>Name:</th>
-                                        <td>{{ order.patient.name }}</td>
-                                    </tr>
-                                    <tr>
-                                        <th>Email:</th>
-                                        <td>{{ order.patient.email }}</td>
-                                    </tr>
-                                    <tr>
-                                        <th>Phone:</th>
-                                        <td>{{ order.patient.phone }}</td>
-                                    </tr>
-                                    <tr>
-                                        <th>Order Date:</th>
-                                        <td>{{ order.date.strftime('%d-%m-%Y %H:%M') if order.date else 'N/A' }}</td>
-                                    </tr>
-                                    <tr>
-                                        <th>UTR ID:</th>
-                                        <td>{{ order.utr_id }}</td>
-                                    </tr>
-                                    <tr>
-                                        <th>Status:</th>
-                                        <td>
+                <div id="ordersList">
+                    {% if orders %}
+                        {% for order in orders %}
+                        <div class="order-card" data-order-id="{{ order._id }}" data-customer-name="{{ order.patient.name|lower }}" data-customer-email="{{ order.patient.email|lower }}" data-customer-phone="{{ order.patient.phone }}" data-utr-id="{{ order.utr_id|lower }}" data-order-status="{{ order.status|lower if order.status else 'verified' }}">
+                            <div class="order-header">
+                                <div><i class="fas fa-hashtag"></i> Order #{{ order._id }}</div>
+                                <div class="badge badge-verified">Verified Payment</div>
+                            </div>
+                            <div class="order-body">
+                                <div class="order-info">
+                                    <h4><i class="fas fa-user-circle"></i> Customer Details</h4>
+                                    <div class="customer-info">
+                                        <div class="customer-info-label"><i class="fas fa-user"></i> Name:</div>
+                                        <div class="customer-info-value">{{ order.patient.name }}</div>
+                                        
+                                        <div class="customer-info-label"><i class="fas fa-envelope"></i> Email:</div>
+                                        <div class="customer-info-value">{{ order.patient.email }}</div>
+                                        
+                                        <div class="customer-info-label"><i class="fas fa-phone"></i> Phone:</div>
+                                        <div class="customer-info-value">{{ order.patient.phone }}</div>
+                                        
+                                        <div class="customer-info-label"><i class="fas fa-calendar-alt"></i> Order Date:</div>
+                                        <div class="customer-info-value">{{ order.date.strftime('%d-%m-%Y %H:%M') if order.date else 'N/A' }}</div>
+                                        
+                                        <div class="customer-info-label"><i class="fas fa-money-check"></i> UTR ID:</div>
+                                        <div class="customer-info-value">{{ order.utr_id }}</div>
+                                        
+                                        <div class="customer-info-label"><i class="fas fa-info-circle"></i> Status:</div>
+                                        <div class="customer-info-value">
                                             <span class="status-label status-{{ order.status|lower if order.status else 'verified' }}">
                                                 {{ order.status if order.status else 'Payment Verified' }}
                                             </span>
-                                        </td>
-                                    </tr>
-                                </table>
-                            </div>
-                            <div class="order-product">
-                                <h4>Product Details</h4>
-                                <table class="products-table">
-                                    <thead>
-                                        <tr>
-                                            <th>Product</th>
-                                            <th>Description</th>
-                                            <th>Price</th>
-                                            <th>Quantity</th>
-                                            <th>Subtotal</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        {% set total = namespace(value=0) %}
-                                        {% for product in order.products %}
-<tr>
-    <td>{{ product.name }}</td>
-    <td>{{ product.description }}</td>
-    <td>₹{{ product.price }}</td>
-    {% set quantity = 1 %}
-    {% for med in order.medicines %}
-        {% if med.id|string == product._id|string %}
-            {% set quantity = med['quantity']|int if 'quantity' in med else 1 %}
-        {% endif %}
-    {% endfor %}
-    <td>{{ quantity }}</td>
-    <td>₹{{ product.price * quantity }}</td>
-    {% set total.value = total.value + (product.price * quantity) %}
-</tr>
-{% endfor %}
-                                    </tbody>
-                                    <tfoot>
-                                        <tr>
-                                            <th colspan="4" style="text-align: right;">Total:</th>
-                                            <td><strong>₹{{ total.value }}</strong></td>
-                                        </tr>
-                                    </tfoot>
-                                </table>
-                            </div>
-                            <div class="order-actions">
-                                <h4>Update Order Status</h4>
-                                <form action="{{ url_for('update_order_status', order_id=order._id) }}" method="POST">
-                                    <select name="status" class="status-select">
-                                        <option value="Processing" {% if order.status == 'Processing' %}selected{% endif %}>Processing</option>
-                                        <option value="Packed" {% if order.status == 'Packed' %}selected{% endif %}>Packed</option>
-                                        <option value="Shipped" {% if order.status == 'Shipped' %}selected{% endif %}>Shipped</option>
-                                        <option value="Out for Delivery" {% if order.status == 'Out for Delivery' %}selected{% endif %}>Out for Delivery</option>
-                                        <option value="Delivered" {% if order.status == 'Delivered' %}selected{% endif %}>Delivered</option>
-                                    </select>
-                                    <button type="submit" class="btn btn-action btn-update">Update Status & Notify Customer</button>
-                                </form>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="order-product">
+                                    <h4><i class="fas fa-pills"></i> Product Details</h4>
+                                    <table class="products-table">
+                                        <thead>
+                                            <tr>
+                                                <th>Product</th>
+                                                <th>Description</th>
+                                                <th>Price</th>
+                                                <th>Quantity</th>
+                                                <th>Subtotal</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {% set total = namespace(value=0) %}
+                                            {% for product in order.products %}
+                                            <tr>
+                                                <td>{{ product.name }}</td>
+                                                <td>{{ product.description }}</td>
+                                                <td>₹{{ product.price }}</td>
+                                                {% set quantity = 1 %}
+                                                {% for med in order.medicines %}
+                                                    {% if med.id|string == product._id|string %}
+                                                        {% set quantity = med['quantity']|int if 'quantity' in med else 1 %}
+                                                    {% endif %}
+                                                {% endfor %}
+                                                <td>{{ quantity }}</td>
+                                                <td>₹{{ product.price * quantity }}</td>
+                                                {% set total.value = total.value + (product.price * quantity) %}
+                                            </tr>
+                                            {% endfor %}
+                                        </tbody>
+                                        <tfoot>
+                                            <tr>
+                                                <th colspan="4" style="text-align: right;">Total:</th>
+                                                <td><strong>₹{{ total.value }}</strong></td>
+                                            </tr>
+                                        </tfoot>
+                                    </table>
+                                </div>
+                                <div class="order-actions">
+                                    <h4><i class="fas fa-cog"></i> Update Order Status</h4>
+                                    <form action="{{ url_for('update_order_status', order_id=order._id) }}" method="POST">
+                                        <select name="status" class="status-select">
+                                            <option value="Processing" {% if order.status == 'Processing' %}selected{% endif %}>Processing</option>
+                                            <option value="Packed" {% if order.status == 'Packed' %}selected{% endif %}>Packed</option>
+                                            <option value="Shipped" {% if order.status == 'Shipped' %}selected{% endif %}>Shipped</option>
+                                            <option value="Out for Delivery" {% if order.status == 'Out for Delivery' %}selected{% endif %}>Out for Delivery</option>
+                                            <option value="Delivered" {% if order.status == 'Delivered' %}selected{% endif %}>Delivered</option>
+                                        </select>
+                                        <button type="submit" class="btn btn-action btn-update"><i class="fas fa-sync-alt"></i> Update Status & Notify Customer</button>
+                                    </form>
+                                </div>
                             </div>
                         </div>
-                    </div>
-                    {% endfor %}
-                {% else %}
-                    <div class="alert alert-info">
-                        <i class="fas fa-info-circle"></i> No orders found.
-                    </div>
-                {% endif %}
+                        {% endfor %}
+                    {% else %}
+                        <div class="empty-results">
+                            <i class="fas fa-box-open"></i>
+                            <p>No orders found.</p>
+                        </div>
+                    {% endif %}
+                </div>
+                <div id="noResults" class="empty-results" style="display: none;">
+                    <i class="fas fa-search"></i>
+                    <p>No orders match your search criteria.</p>
+                </div>
             </div>
         </div>
     </div>
@@ -516,6 +760,80 @@
                 sidebar.classList.remove('active');
             }
         });
-    </script>
+
+        // Search functionality
+document.addEventListener('DOMContentLoaded', function() {
+    const searchInput = document.getElementById('orderSearch');
+    const searchBtn = document.getElementById('searchBtn');
+    const orderCards = document.querySelectorAll('.order-card');
+    const noResults = document.getElementById('noResults');
+    const orderCount = document.getElementById('orderCount');
+    const filterBtns = document.querySelectorAll('.filter-btn');
+    
+    // Search function
+    function performSearch() {
+        const searchTerm = searchInput.value.toLowerCase().trim();
+        const activeFilter = document.querySelector('.filter-btn.active').dataset.filter;
+        let visibleCount = 0;
+        
+        orderCards.forEach(card => {
+            const orderId = card.dataset.orderId.toLowerCase();
+            const customerName = card.dataset.customerName;
+            const customerEmail = card.dataset.customerEmail;
+            const customerPhone = card.dataset.customerPhone;
+            const utrId = card.dataset.utrId;
+            const orderStatus = card.dataset.orderStatus;
+            
+            // Check if card matches both search term and active filter
+            const matchesSearch = searchTerm === '' || 
+                                orderId.includes(searchTerm) || 
+                                customerName.includes(searchTerm) || 
+                                customerEmail.includes(searchTerm) || 
+                                customerPhone.includes(searchTerm) || 
+                                utrId.includes(searchTerm);
+                                
+            const matchesFilter = activeFilter === 'all' || orderStatus.includes(activeFilter);
+            
+            if (matchesSearch && matchesFilter) {
+                card.style.display = 'block';
+                visibleCount++;
+            } else {
+                card.style.display = 'none';
+            }
+        });
+        
+        // Update count and show/hide no results message
+        orderCount.textContent = visibleCount + ' Orders';
+        noResults.style.display = visibleCount === 0 ? 'block' : 'none';
+    }
+    
+    // Event listeners
+    searchBtn.addEventListener('click', performSearch);
+    
+    // Search on pressing Enter key
+    searchInput.addEventListener('keypress', function(e) {
+        if (e.key === 'Enter') {
+            performSearch();
+        }
+    });
+
+    // Filter buttons functionality
+    filterBtns.forEach(btn => {
+        btn.addEventListener('click', function() {
+            // Remove active class from all buttons
+            filterBtns.forEach(b => b.classList.remove('active'));
+            
+            // Add active class to clicked button
+            this.classList.add('active');
+            
+            // Perform search with new filter
+            performSearch();
+        });
+    });
+
+    // Initial search to handle page load with filter active
+    performSearch();
+});
+</script>
 </body>
 </html>
