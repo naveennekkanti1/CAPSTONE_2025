@@ -401,7 +401,6 @@ html, body {
     box-shadow: 0 5px 15px rgba(0,0,0,0.3);
     animation: fadeInUp 0.3s;
 }
-
 .modal-header {
     padding: 15px 20px;
     background: linear-gradient(90deg, #28a745, #20c997);
@@ -409,18 +408,19 @@ html, body {
     border-top-left-radius: 15px;
     border-top-right-radius: 15px;
 }
-
 .modal-body {
     padding: 20px;
     text-align: center;
 }
-
+/* Added specific color for the paragraphs in modal body */
+.modal-body p {
+    color: #000000;  /* Black text color */
+}
 .modal-footer {
     padding: 15px 20px;
     text-align: center;
     border-top: 1px solid #e0e0e0;
 }
-
 .modal-btn {
     background: var(--primary-dark);
     color: white;
@@ -431,12 +431,10 @@ html, body {
     font-weight: 600;
     transition: all 0.3s;
 }
-
 .modal-btn:hover {
     background: #121858;
     transform: translateY(-2px);
 }
-
 .success-icon {
     font-size: 60px;
     color: #28a745;
