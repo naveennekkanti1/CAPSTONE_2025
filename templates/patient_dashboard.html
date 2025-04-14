@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Patient Dashboard</title>
+    <link rel="icon" type="image/jpg" href="{{ url_for('static', filename='images/logo.jpg') }}">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/css/bootstrap.min.css" rel="stylesheet">
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
@@ -319,29 +320,55 @@
             backdrop-filter: blur(10px);
         }
 
-        .medication-info {
+        /* Patient profile card styles */
+        .profile-photo {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            border: 4px solid white;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            object-fit: cover;
+            margin-right: 25px;
+        }
+
+        .profile-detail {
             display: flex;
             align-items: center;
-            margin-bottom: 15px;
-        }
-
-        .medication-icon {
-            font-size: 1.5rem;
-            margin-right: 15px;
-            color: var(--accent-color);
-        }
-
-        .prescription-details {
-            border-top: 1px dashed #ddd;
-            padding-top: 15px;
-            margin-top: 10px;
-        }
-
-        .prescription-item {
-            display: flex;
-            justify-content: space-between;
             margin-bottom: 10px;
-            padding: 5px 0;
+        }
+
+        .profile-detail i {
+            width: 24px;
+            margin-right: 10px;
+            color: var(--primary-dark);
+        }
+
+        .profile-main {
+            display: flex;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .patient-info-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 20px;
+            width: 100%;
+        }
+
+        .patient-info-card {
+            background: rgba(255, 255, 255, 0.8);
+            border-radius: 12px;
+            padding: 15px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .patient-info-card h5 {
+            color: var(--primary-dark);
+            font-weight: 600;
+            margin-bottom: 15px;
+            border-bottom: 1px solid #e0e0e0;
+            padding-bottom: 10px;
         }
 
         /* Added for larger screens */
@@ -387,6 +414,16 @@
             .dashboard-header h2 {
                 font-size: 2rem;
             }
+
+            .profile-main {
+                flex-direction: column;
+                text-align: center;
+            }
+
+            .profile-photo {
+                margin-right: 0;
+                margin-bottom: 15px;
+            }
         }
     </style>
 </head>
@@ -415,90 +452,6 @@
         <div class="main-content-wrapper">
             <div class="dashboard-header">
                 <h2>Patient Dashboard</h2>
-            </div>
-
-            <div id="pharmacy" class="section">
-                <h3><i class="fas fa-pills"></i> My Medications</h3>
-                <div class="card-container" id="pharmacy-medications">
-                    <!-- Sample medication cards -->
-                    <div class="card">
-                        <h5 class="card-title">
-                            <i class="fas fa-prescription-bottle-alt"></i> 
-                            Current Prescription
-                        </h5>
-                        <div class="medication-info">
-                            <i class="fas fa-capsules medication-icon"></i>
-                            <div>
-                                <p class="card-text"><strong>Doctor:</strong> Dr. Sarah Johnson</p>
-                                <p class="card-text"><strong>Prescribed:</strong> March 12, 2025</p>
-                            </div>
-                        </div>
-                        <div class="prescription-details">
-                            <div class="prescription-item">
-                                <span><i class="fas fa-pills"></i> Amoxicillin 500mg</span>
-                                <span>3x daily</span>
-                            </div>
-                            <div class="prescription-item">
-                                <span><i class="fas fa-tablets"></i> Ibuprofen 400mg</span>
-                                <span>As needed</span>
-                            </div>
-                        </div>
-                        <button class="btn btn-order w-100 mt-3">
-                            <i class="fas fa-shopping-cart"></i> Reorder Medication
-                        </button>
-                    </div>
-                    
-                    <div class="card">
-                        <h5 class="card-title">
-                            <i class="fas fa-prescription"></i> 
-                            Maintenance Medication
-                        </h5>
-                        <div class="medication-info">
-                            <i class="fas fa-heartbeat medication-icon"></i>
-                            <div>
-                                <p class="card-text"><strong>Doctor:</strong> Dr. Michael Chen</p>
-                                <p class="card-text"><strong>Prescribed:</strong> January 5, 2025</p>
-                            </div>
-                        </div>
-                        <div class="prescription-details">
-                            <div class="prescription-item">
-                                <span><i class="fas fa-tablets"></i> Atorvastatin 20mg</span>
-                                <span>1x daily</span>
-                            </div>
-                            <div class="prescription-item">
-                                <span><i class="fas fa-pills"></i> Metformin 500mg</span>
-                                <span>2x daily</span>
-                            </div>
-                        </div>
-                        <p class="card-text mt-2">
-                            <i class="fas fa-exclamation-circle" style="color: orange;"></i>
-                            <strong>Refill Available:</strong> 5 remaining
-                        </p>
-                        <button class="btn btn-order w-100 mt-3">
-                            <i class="fas fa-sync-alt"></i> Refill Prescription
-                        </button>
-                    </div>
-                    
-                    <div class="card">
-                        <h5 class="card-title">
-                            <i class="fas fa-store-alt"></i> 
-                            Pharmacy Services
-                        </h5>
-                        <p class="card-text">
-                            <i class="fas fa-info-circle"></i>
-                            <strong>Our pharmacy offers:</strong>
-                        </p>
-                        <ul style="list-style-type: none; padding-left: 0;">
-                            <li><i class="fas fa-check text-success"></i> Free delivery for orders above $50</li>
-                            <li><i class="fas fa-check text-success"></i> 24/7 pharmacist consultation</li>
-                            <li><i class="fas fa-check text-success"></i> Auto-refill program</li>
-                            <li><i class="fas fa-check text-success"></i> Medication reminders</li>
-                        </ul>
-                        <button class="btn btn-primary w-100 mt-auto">
-                            <i class="fas fa-headset"></i> Contact Pharmacy
-                        </button>
-                    </div>
-                </div>
             </div>
 
             {% for section, title, appointments, icon in [
