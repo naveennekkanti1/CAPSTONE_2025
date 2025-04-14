@@ -598,6 +598,8 @@ def patient_register():
 
         # Get pending user details from session
         user_data = session["pending_user"]
+        name = user_data.get("name")
+        email = user_data.get("email")
 
         # Handle photo upload
         if 'photo' not in request.files:
@@ -626,6 +628,9 @@ def patient_register():
 
         # Remove session data
         session.pop("pending_user", None)
+
+        # Send welcome email
+        send_welcome_email1(name, email, "patient")
 
         return jsonify({"message": "Registration successful!", "redirect_url": url_for('login')})
 
@@ -661,7 +666,7 @@ def doctor_register():
 
         # Retrieve email from session
         pending_user = session["pending_user"]
-        name=pending_user.get("name")
+        name = pending_user.get("name")
         email = pending_user.get("email")
         password = pending_user.get("password")
 
@@ -671,7 +676,7 @@ def doctor_register():
         user_data = {
             "email": email,  # Ensure email is saved
             "password": password,  # Save hashed password
-            "name":name,
+            "name": name,
             "role": "doctor",
             "phone": phone,
             "age": age,
@@ -690,7 +695,306 @@ def doctor_register():
         # Remove session data after registration
         session.pop("pending_user", None)
 
+        # Send welcome email
+        send_welcome_email1(name, email, "doctor")
+
         return jsonify({"message": "Registration successful! Await admin approval.", "redirect_url": url_for('login')})
+
+def send_welcome_email1(name, email, role):
+    try:
+        # Configure email settings
+        msg = Message(
+            subject="Welcome to the RapiACT! Family ❤️",
+            sender=app.config['MAIL_DEFAULT_SENDER'],
+            recipients=[email]
+        )
+        
+        # Customize message based on role
+        role_specific_message = "book appointments and manage your healthcare needs" if role == "patient" else "manage patients and handle appointments"
+        approval_message = "" if role == "patient" else "<p>Your doctor account is pending approval. An administrator will review your information and approve your account soon.</p>"
+        
+        # HTML email with styling and logo
+        msg.html = f"""
+<!DOCTYPE html>
+<html>
+<head>
+    <style>
+        body {{
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            color: #333333;
+            max-width: 600px;
+            margin: 0 auto;
+        }}
+        .container {{
+            padding: 20px;
+            background-color: #f9f9f9;
+            border-radius: 8px;
+        }}
+        .header {{
+            background-color: #4a90e2;
+            color: white;
+            padding: 15px;
+            text-align: center;
+            border-radius: 8px 8px 0 0;
+        }}
+        .logo {{
+            max-width: 150px;
+            margin: 0 auto;
+            display: block;
+        }}
+        .content {{
+            background-color: white;
+            padding: 20px;
+            border-radius: 0 0 8px 8px;
+            border: 1px solid #e0e0e0;
+        }}
+        .footer {{
+            text-align: center;
+            margin-top: 20px;
+            color: #777;
+            font-size: 14px;
+        }}
+        .highlight {{
+            font-weight: bold;
+            color: #4a90e2;
+        }}
+        .button {{
+            display: inline-block;
+            background-color: #4CAF50;
+            color: white;
+            padding: 12px 20px;
+            text-decoration: none;
+            border-radius: 4px;
+            margin: 15px 0;
+            font-weight: bold;
+            text-align: center;
+        }}
+        .features {{
+            margin: 20px 0;
+        }}
+        .feature-item {{
+            margin-bottom: 10px;
+            padding-left: 20px;
+            position: relative;
+        }}
+        .feature-item:before {{
+            content: "✓";
+            color: #4CAF50;
+            position: absolute;
+            left: 0;
+            font-weight: bold;
+        }}
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <img src="https://your-website.com/logo.png" alt="RapiACT! Logo" class="logo">
+            <h2>Welcome to the RapiACT! Family</h2>
+        </div>
+        <div class="content">
+            <h3>Hello, {name}!</h3>
+            <p>We're thrilled to welcome you to the RapiACT! Healthcare System. Your account has been successfully created as a <span class="highlight">{role}</span>.</p>
+            
+            {approval_message}
+            
+            <p>As a {role}, you can now <span class="highlight">{role_specific_message}</span> through our intuitive platform.</p>
+            
+            <div style="text-align: center;">
+                <a href="https://capstone-2025-37jt.onrender.com/login" class="button">Log In to Your Account</a>
+            </div>
+            
+            <div class="features">
+                <h4>What you can do with RapiACT!:</h4>
+                <div class="feature-item">Access healthcare services quickly and efficiently</div>
+                <div class="feature-item">Manage your medical records securely</div>
+                <div class="feature-item">Schedule appointments with just a few clicks</div>
+                <div class="feature-item">Receive timely notifications about your healthcare</div>
+                <div class="feature-item">Connect with healthcare professionals effortlessly</div>
+            </div>
+            
+            <p>We'll be sending you another email shortly with more details about our platform and a special welcome flyer!</p>
+            
+            <p>If you have any questions or need assistance, please don't hesitate to contact our support team at <a href="mailto:support@rapiact.com">support@rapiact.com</a>.</p>
+        </div>
+        <div class="footer">
+            <p>Best regards,<br>The RapiACT! Team ❤️</p>
+            <p>&copy; 2025 RapiACT! Healthcare. All rights reserved.</p>
+        </div>
+    </div>
+</body>
+</html>
+"""
+        # Send first welcome email
+        mail.send(msg)
+        
+        # Send second email with details and flyer
+        send_welcome_flyer_email(name, email, role)
+        
+        return True
+    except Exception as e:
+        print(f"Error sending welcome email: {str(e)}")
+        return False
+
+def send_welcome_flyer_email(name, email, role):
+    try:
+        # Configure email settings for the second email
+        msg = Message(
+            subject="Discover RapiACT! - Your Complete Healthcare Solution",
+            sender=app.config['MAIL_DEFAULT_SENDER'],
+            recipients=[email]
+        )
+        
+        # HTML email with flyer and platform details
+        msg.html = f"""
+<!DOCTYPE html>
+<html>
+<head>
+    <style>
+        body {{
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            color: #333333;
+            max-width: 600px;
+            margin: 0 auto;
+        }}
+        .container {{
+            padding: 20px;
+            background-color: #f9f9f9;
+            border-radius: 8px;
+        }}
+        .header {{
+            background-color: #4a90e2;
+            color: white;
+            padding: 15px;
+            text-align: center;
+            border-radius: 8px 8px 0 0;
+        }}
+        .logo {{
+            max-width: 150px;
+            margin: 0 auto;
+            display: block;
+        }}
+        .content {{
+            background-color: white;
+            padding: 20px;
+            border-radius: 0 0 8px 8px;
+            border: 1px solid #e0e0e0;
+        }}
+        .flyer {{
+            max-width: 100%;
+            height: auto;
+            display: block;
+            margin: 20px auto;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+        }}
+        .section {{
+            margin: 25px 0;
+            padding-bottom: 15px;
+            border-bottom: 1px solid #e0e0e0;
+        }}
+        .section-title {{
+            color: #4a90e2;
+            font-size: 18px;
+            margin-bottom: 10px;
+        }}
+        .footer {{
+            text-align: center;
+            margin-top: 20px;
+            color: #777;
+            font-size: 14px;
+        }}
+        .social {{
+            margin: 15px 0;
+        }}
+        .social a {{
+            display: inline-block;
+            margin: 0 10px;
+            color: #4a90e2;
+            text-decoration: none;
+        }}
+        .button {{
+            display: inline-block;
+            background-color: #4CAF50;
+            color: white;
+            padding: 12px 20px;
+            text-decoration: none;
+            border-radius: 4px;
+            margin: 15px 0;
+            font-weight: bold;
+            text-align: center;
+        }}
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <img src="https://your-website.com/logo.png" alt="RapiACT! Logo" class="logo">
+            <h2>Discover RapiACT! Healthcare</h2>
+        </div>
+        <div class="content">
+            <h3>Dear {name},</h3>
+            
+            <p>Thank you for joining RapiACT! - where healthcare meets innovation. We're excited to have you as part of our growing community.</p>
+            
+            <img src="https://your-website.com/welcome-flyer.jpg" alt="Welcome to RapiACT! Healthcare" class="flyer">
+            
+            <div class="section">
+                <h4 class="section-title">About RapiACT!</h4>
+                <p>RapiACT! is a comprehensive healthcare platform designed to streamline the medical experience for both patients and healthcare providers. Our mission is to make quality healthcare accessible, efficient, and personalized for everyone.</p>
+            </div>
+            
+            <div class="section">
+                <h4 class="section-title">Key Features</h4>
+                <ul>
+                    <li><strong>Quick Appointments:</strong> Schedule appointments with just a few clicks</li>
+                    <li><strong>Secure Communication:</strong> Chat directly with your healthcare provider</li>
+                    <li><strong>Medical Records:</strong> Access and manage your medical history securely</li>
+                    <li><strong>Reminders:</strong> Never miss an appointment with our notification system</li>
+                    <li><strong>Health Tracking:</strong> Monitor your health metrics with our intuitive tools</li>
+                </ul>
+            </div>
+            
+            <div class="section">
+                <h4 class="section-title">Getting Started</h4>
+                <p>To make the most of RapiACT!, we recommend the following steps:</p>
+                <ol>
+                    <li>Complete your profile information</li>
+                    <li>Explore the dashboard to familiarize yourself with available features</li>
+                    <li>Download our mobile app for on-the-go access</li>
+                    <li>Set your notification preferences</li>
+                </ol>
+                <div style="text-align: center;">
+                    <a href="https://capstone-2025-37jt.onrender.com/guide" class="button">View User Guide</a>
+                </div>
+            </div>
+            
+            <p>We're constantly improving our services to better meet your healthcare needs. Your feedback is valuable to us!</p>
+            
+            <div class="social">
+                <p>Connect with us:</p>
+                <a href="https://facebook.com/rapiact">Facebook</a> |
+                <a href="https://twitter.com/rapiact">Twitter</a> |
+                <a href="https://instagram.com/rapiact">Instagram</a>
+            </div>
+        </div>
+        <div class="footer">
+            <p>Best regards,<br>The RapiACT! Team ❤️</p>
+            <p>&copy; 2025 RapiACT! Healthcare. All rights reserved.</p>
+            <p><small>If you have any questions or need assistance, contact us at support@rapiact.com</small></p>
+        </div>
+    </div>
+</body>
+</html>
+"""
+        # Send second email with flyer and details
+        mail.send(msg)
+        return True
+    except Exception as e:
+        print(f"Error sending flyer email: {str(e)}")
+        return False
 
 # ---- Login ----
 @app.route('/login', methods=['GET', 'POST'])
