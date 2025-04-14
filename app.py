@@ -931,7 +931,7 @@ def send_welcome_flyer_email(name, email, role):
 <body>
     <div class="container">
         <div class="header">
-            <img src="https://your-website.com/logo.png" alt="RapiACT! Logo" class="logo">
+            <img src="https://capstone-2025-37jt.onrender.com/static/images/logo.jpg" alt="RapiACT! Logo" class="logo">
             <h2>Discover RapiACT! Healthcare</h2>
         </div>
         <div class="content">
