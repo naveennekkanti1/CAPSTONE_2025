@@ -1563,18 +1563,107 @@ def send_welcome_email(name, email, password, role):
         
         # Customize message based on role
         role_specific_message = "book appointments and manage your healthcare needs" if role == "patient" else "manage patients and handle appointments"
-        approval_message = "" if role == "patient" else "\n\nYour doctor account is pending approval. An administrator will review your information and approve your account soon."
+        approval_message = "" if role == "patient" else "<p>Your doctor account is pending approval. An administrator will review your information and approve your account soon.</p>"
         
-        # Construct email body
+        # HTML email with styling
+        msg.html = f"""
+<!DOCTYPE html>
+<html>
+<head>
+    <style>
+        body {{
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            color: #333333;
+            max-width: 600px;
+            margin: 0 auto;
+        }}
+        .container {{
+            padding: 20px;
+            background-color: #f9f9f9;
+            border-radius: 8px;
+        }}
+        .header {{
+            background-color: #4a90e2;
+            color: white;
+            padding: 15px;
+            text-align: center;
+            border-radius: 8px 8px 0 0;
+        }}
+        .content {{
+            background-color: white;
+            padding: 20px;
+            border-radius: 0 0 8px 8px;
+            border: 1px solid #e0e0e0;
+        }}
+        .credentials {{
+            background-color: #f5f5f5;
+            padding: 15px;
+            margin: 15px 0;
+            border-left: 4px solid #4a90e2;
+        }}
+        .footer {{
+            text-align: center;
+            margin-top: 20px;
+            color: #777;
+            font-size: 14px;
+        }}
+        .highlight {{
+            font-weight: bold;
+            color: #4a90e2;
+        }}
+        .button {{
+            display: inline-block;
+            background-color: #4CAF50;
+            color: white;
+            padding: 12px 20px;
+            text-decoration: none;
+            border-radius: 4px;
+            margin: 15px 0;
+            font-weight: bold;
+        }}
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h2>RapiACT! Healthcare System</h2>
+        </div>
+        <div class="content">
+            <h3>Welcome, {name}!</h3>
+            <p>Your account has been successfully created. You can now log in to your account and <span class="highlight">{role_specific_message}</span>.</p>
+            
+            <div class="credentials">
+                <p><strong>Login Credentials:</strong></p>
+                <p>Email: <span class="highlight">{email}</span></p>
+                <p>Password: <span class="highlight">{password}</span></p>
+            </div>
+            
+            {approval_message}
+            
+            <p>For security reasons, we recommend changing your password after your first login.</p>
+            
+            <a href="#" class="button">Log In Now</a>
+            
+            <p>If you did not create this account, please contact our support team immediately.</p>
+        </div>
+        <div class="footer">
+            <p>Best regards,<br>RapiACT! Team❤️</p>
+            <p>&copy; 2025 RapiACT! Healthcare. All rights reserved.</p>
+        </div>
+    </div>
+</body>
+</html>
+"""
+        # Plain text version as fallback
         msg.body = f"""Dear {name},
-
 Welcome to the RapiACT! HealthCare System! Your account has been successfully created.
 
 Here are your login credentials:
 Email: {email}
 Password: {password}
 
-You can now log in to your account and {role_specific_message}.{approval_message}
+You can now log in to your account and {role_specific_message}.{'' if role == 'patient' else '\n\nYour doctor account is pending approval. An administrator will review your information and approve your account soon.'}
 
 For security reasons, we recommend changing your password after your first login.
 
