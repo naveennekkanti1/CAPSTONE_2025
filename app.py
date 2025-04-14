@@ -1643,7 +1643,7 @@ def send_welcome_email(name, email, password, role):
             
             <p>For security reasons, we recommend changing your password after your first login.</p>
             
-            <a href="#" class="button">Log In Now</a>
+            <a href="https://capstone-2025-37jt.onrender.com/login" class="button">Log In Now</a>
             
             <p>If you did not create this account, please contact our support team immediately.</p>
         </div>
