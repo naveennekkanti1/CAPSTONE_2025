@@ -790,7 +790,7 @@ def send_welcome_email1(name, email, role):
 <body>
     <div class="container">
         <div class="header">
-            <img src="https://your-website.com/logo.png" alt="RapiACT! Logo" class="logo">
+            <img src="https://capstone-2025-37jt.onrender.com/static/images/logo.jpg" alt="RapiACT! Logo" class="logo">
             <h2>Welcome to the RapiACT! Family</h2>
         </div>
         <div class="content">
@@ -939,7 +939,7 @@ def send_welcome_flyer_email(name, email, role):
             
             <p>Thank you for joining RapiACT! - where healthcare meets innovation. We're excited to have you as part of our growing community.</p>
             
-            <img src="https://your-website.com/welcome-flyer.jpg" alt="Welcome to RapiACT! Healthcare" class="flyer">
+            <img src="https://capstone-2025-37jt.onrender.com/static/images/logo.jpg" alt="Welcome to RapiACT! Healthcare" class="flyer">
             
             <div class="section">
                 <h4 class="section-title">About RapiACT!</h4>
