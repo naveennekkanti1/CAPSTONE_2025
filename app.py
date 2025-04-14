@@ -1565,7 +1565,7 @@ def send_welcome_email(name, email, password, role):
         role_specific_message = "book appointments and manage your healthcare needs" if role == "patient" else "manage patients and handle appointments"
         approval_message = "" if role == "patient" else "<p>Your doctor account is pending approval. An administrator will review your information and approve your account soon.</p>"
         
-        # HTML email with styling
+        # HTML email with styling - only send this version
         msg.html = f"""
 <!DOCTYPE html>
 <html>
@@ -1655,23 +1655,8 @@ def send_welcome_email(name, email, password, role):
 </body>
 </html>
 """
-        # Plain text version as fallback
-        msg.body = f"""Dear {name},
-Welcome to the RapiACT! HealthCare System! Your account has been successfully created.
-
-Here are your login credentials:
-Email: {email}
-Password: {password}
-
-You can now log in to your account and {role_specific_message}.{'' if role == 'patient' else '\n\nYour doctor account is pending approval. An administrator will review your information and approve your account soon.'}
-
-For security reasons, we recommend changing your password after your first login.
-
-If you did not create this account, please contact our support team immediately.
-
-Best regards,
-RapiACT! Team❤️
-"""
+        # Removed the plain text version (msg.body)
+        
         # Send email
         mail.send(msg)
         return True
