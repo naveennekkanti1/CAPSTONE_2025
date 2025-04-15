@@ -2544,8 +2544,7 @@ def send_individual_email():
     flash(f'Successfully sent emails to {sent_count} recipients', 'success')
     return redirect(url_for('email_dashboard'))
 
-# Helper function to send emails using Flask-Mail
-# Helper function to send emails using Flask-Mail with HTML styling
+# Helper function to send emails using Flask-Mail with HTML styling only
 def send_emails_with_flask_mail(recipients, subject, message):
     sent_count = 0
     
@@ -2595,15 +2594,11 @@ def send_emails_with_flask_mail(recipients, subject, message):
             </html>
             """
             
-            # Create a text-only version as fallback
-            text_body = f"Dear {recipient_name},\n\n{message}\n\nThank you for choosing our services.\nIf you have any questions, please don't hesitate to contact us.\n\n© 2025 Medical Center. All rights reserved."
-            
-            # Create a Flask-Mail message with both HTML and text versions
+            # Create a Flask-Mail message with HTML only
             msg = Message(
                 subject=subject,
                 recipients=[recipient['email']],
-                body=text_body,  # Plain text version
-                html=html_content,  # HTML version
+                html=html_content,  # HTML version only
                 sender=app.config['MAIL_DEFAULT_SENDER']
             )
             
