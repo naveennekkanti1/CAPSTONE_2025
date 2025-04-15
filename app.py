@@ -2545,21 +2545,65 @@ def send_individual_email():
     return redirect(url_for('email_dashboard'))
 
 # Helper function to send emails using Flask-Mail
+# Helper function to send emails using Flask-Mail with HTML styling
 def send_emails_with_flask_mail(recipients, subject, message):
     sent_count = 0
     
     for recipient in recipients:
         try:
-            # Personalize message with recipient's name if available
-            personalized_message = message
-            if 'name' in recipient:
-                personalized_message = f"Dear {recipient['name']},\n\n{message}"
+            # Get recipient name or use a generic greeting
+            recipient_name = recipient.get('name', 'Valued Patient')
             
-            # Create a Flask-Mail message
+            # Create HTML email with styling
+            html_content = f"""
+            <!DOCTYPE html>
+            <html lang="en">
+            <head>
+                <meta charset="UTF-8">
+                <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                <title>{subject}</title>
+            </head>
+            <body style="margin: 0; padding: 0; font-family: Arial, sans-serif; line-height: 1.6; color: #333333; background-color: #f5f5f5;">
+                <div style="max-width: 600px; margin: 0 auto; padding: 20px; background-color: #ffffff; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.1);">
+                    <div style="text-align: center; padding: 20px 0; border-bottom: 1px solid #eeeeee;">
+                        <h1 style="margin: 0; color: #3b82f6; font-size: 24px;">Medical Center</h1>
+                    </div>
+                    
+                    <div style="padding: 20px 0;">
+                        <p style="margin-top: 0; font-size: 16px; font-weight: bold;">Dear {recipient_name},</p>
+                        
+                        <div style="font-size: 16px; line-height: 1.6; color: #333333;">
+                            {message.replace('\n', '<br>')}
+                        </div>
+                    </div>
+                    
+                    <div style="padding: 20px 0; border-top: 1px solid #eeeeee; font-size: 14px; color: #666666;">
+                        <p style="margin: 0;">Thank you for choosing our services.</p>
+                        <p style="margin: 5px 0 0;">If you have any questions, please don't hesitate to contact us.</p>
+                    </div>
+                    
+                    <div style="background-color: #f8f9fa; text-align: center; padding: 15px; border-radius: 0 0 8px 8px; font-size: 12px; color: #666666;">
+                        <p style="margin: 0;">© 2025 Medical Center. All rights reserved.</p>
+                        <p style="margin: 5px 0 0;">123 Healthcare Avenue, Medical District, MD 12345</p>
+                        <p style="margin: 5px 0 0;">
+                            <a href="#" style="color: #3b82f6; text-decoration: none;">Privacy Policy</a> | 
+                            <a href="#" style="color: #3b82f6; text-decoration: none;">Unsubscribe</a>
+                        </p>
+                    </div>
+                </div>
+            </body>
+            </html>
+            """
+            
+            # Create a text-only version as fallback
+            text_body = f"Dear {recipient_name},\n\n{message}\n\nThank you for choosing our services.\nIf you have any questions, please don't hesitate to contact us.\n\n© 2025 Medical Center. All rights reserved."
+            
+            # Create a Flask-Mail message with both HTML and text versions
             msg = Message(
                 subject=subject,
                 recipients=[recipient['email']],
-                body=personalized_message,
+                body=text_body,  # Plain text version
+                html=html_content,  # HTML version
                 sender=app.config['MAIL_DEFAULT_SENDER']
             )
             
