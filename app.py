@@ -2472,13 +2472,37 @@ def email_dashboard():
     
     return render_template('email_dashboard.html', users=users)
 
+import hashlib
+import time
+
 # Send Bulk Email Route
 @app.route('/send_bulk_email', methods=['POST'])
 def send_bulk_email():
+    if 'user_id' not in session:
+        return redirect(url_for('login'))
     
     recipient_group = request.form.get('recipient_group')
     subject = request.form.get('subject')
     message = request.form.get('message')
+    image_position = request.form.get('image_position', 'middle')
+    
+    # Handle image upload if present
+    image_id = None
+    if 'email_image' in request.files and request.files['email_image'].filename != '':
+        file = request.files['email_image']
+        if file and allowed_file(file.filename):
+            # Store image in MongoDB
+            filename = secure_filename(file.filename)
+            file_data = file.read()
+            timestamp = datetime.now().strftime('%Y%m%d%H%M%S')
+            
+            image_id = mongo.db.email_images.insert_one({
+                'filename': filename,
+                'data': Binary(file_data),
+                'content_type': file.content_type,
+                'uploaded_by': session['user_id'],
+                'timestamp': datetime.now()
+            }).inserted_id
     
     # Query for recipient emails based on the selected group
     if recipient_group == 'all':
@@ -2492,7 +2516,7 @@ def send_bulk_email():
         return redirect(url_for('email_dashboard'))
     
     # Send emails using Flask-Mail
-    sent_count = send_emails_with_flask_mail(recipients, subject, message)
+    sent_count = send_emails_with_flask_mail(recipients, subject, message, image_id, image_position)
     
     # Log the email campaign
     mongo.db.email_logs.insert_one({
@@ -2500,6 +2524,8 @@ def send_bulk_email():
         'recipient_group': recipient_group,
         'subject': subject,
         'message': message,
+        'has_image': image_id is not None,
+        'image_id': image_id,
         'sent_count': sent_count,
         'timestamp': datetime.now()
     })
@@ -2510,10 +2536,30 @@ def send_bulk_email():
 # Send Individual Email Route
 @app.route('/send_individual_email', methods=['POST'])
 def send_individual_email():
+    if 'user_id' not in session:
+        return redirect(url_for('login'))
     
     user_ids = json.loads(request.form.get('user_ids', '[]'))
     subject = request.form.get('subject')
     message = request.form.get('message')
+    image_position = request.form.get('image_position', 'middle')
+    
+    # Handle image upload if present
+    image_id = None
+    if 'email_image' in request.files and request.files['email_image'].filename != '':
+        file = request.files['email_image']
+        if file and allowed_file(file.filename):
+            # Store image in MongoDB
+            filename = secure_filename(file.filename)
+            file_data = file.read()
+            
+            image_id = mongo.db.email_images.insert_one({
+                'filename': filename,
+                'data': Binary(file_data),
+                'content_type': file.content_type,
+                'uploaded_by': session['user_id'],
+                'timestamp': datetime.now()
+            }).inserted_id
     
     if not user_ids:
         flash('No recipients selected', 'error')
@@ -2529,7 +2575,7 @@ def send_individual_email():
     ))
     
     # Send emails using Flask-Mail
-    sent_count = send_emails_with_flask_mail(recipients, subject, message)
+    sent_count = send_emails_with_flask_mail(recipients, subject, message, image_id, image_position)
     
     # Log the individual emails
     mongo.db.email_logs.insert_one({
@@ -2537,6 +2583,8 @@ def send_individual_email():
         'recipient_ids': user_ids,
         'subject': subject,
         'message': message,
+        'has_image': image_id is not None,
+        'image_id': image_id,
         'sent_count': sent_count,
         'timestamp': datetime.now()
     })
@@ -2544,11 +2592,90 @@ def send_individual_email():
     flash(f'Successfully sent emails to {sent_count} recipients', 'success')
     return redirect(url_for('email_dashboard'))
 
+# Send Custom Email Route
+@app.route('/send_custom_email', methods=['POST'])
+def send_custom_email():
+    if 'user_id' not in session:
+        return redirect(url_for('login'))
+    
+    custom_email = request.form.get('custom_email')
+    subject = request.form.get('subject')
+    message = request.form.get('message')
+    image_position = request.form.get('image_position', 'middle')
+    
+    # Handle image upload if present
+    image_id = None
+    if 'email_image' in request.files and request.files['email_image'].filename != '':
+        file = request.files['email_image']
+        if file and allowed_file(file.filename):
+            # Store image in MongoDB
+            filename = secure_filename(file.filename)
+            file_data = file.read()
+            
+            image_id = mongo.db.email_images.insert_one({
+                'filename': filename,
+                'data': Binary(file_data),
+                'content_type': file.content_type,
+                'uploaded_by': session['user_id'],
+                'timestamp': datetime.now()
+            }).inserted_id
+    
+    if not custom_email:
+        flash('No recipient email provided', 'error')
+        return redirect(url_for('email_dashboard'))
+    
+    # Create a recipient object similar to what we'd get from the database
+    recipients = [{'email': custom_email, 'name': 'Recipient'}]
+    
+    # Send email using Flask-Mail
+    sent_count = send_emails_with_flask_mail(recipients, subject, message, image_id, image_position)
+    
+    # Log the custom email
+    mongo.db.email_logs.insert_one({
+        'sent_by': session['user_id'],
+        'recipient_email': custom_email,
+        'subject': subject,
+        'message': message,
+        'has_image': image_id is not None,
+        'image_id': image_id,
+        'sent_count': sent_count,
+        'timestamp': datetime.now()
+    })
+    
+    flash('Email sent successfully', 'success')
+    return redirect(url_for('email_dashboard'))
 
+# Add a route to serve images directly from MongoDB with authentication
+@app.route('/email_image/<image_id>', methods=['GET'])
+def get_email_image(image_id):
+    # Check if user is authenticated
+    if 'user_id' not in session:
+        return "Unauthorized", 401
+        
+    try:
+        # Convert string ID to ObjectId
+        image_oid = ObjectId(image_id)
+        
+        # Retrieve image from MongoDB
+        image = mongo.db.email_images.find_one({'_id': image_oid})
+        
+        if not image:
+            return "Image not found", 404
+            
+        # Create response with image binary data
+        response = make_response(image['data'])
+        response.headers.set('Content-Type', image['content_type'])
+        response.headers.set('Content-Disposition', f'inline; filename={image["filename"]}')
+        
+        return response
+    except Exception as e:
+        print(f"Error retrieving image: {str(e)}")
+        return "Error retrieving image", 500
 
-# Helper function to send emails using Flask-Mail with HTML styling only
-def send_emails_with_flask_mail(recipients, subject, message):
+# Helper function to send emails using Flask-Mail with HTML styling and image
+def send_emails_with_flask_mail(recipients, subject, message, image_id=None, image_position='middle'):
     sent_count = 0
+    app_url = request.host_url.rstrip('/')  # Get base URL without trailing slash
 
     for recipient in recipients:
         try:
@@ -2557,8 +2684,21 @@ def send_emails_with_flask_mail(recipients, subject, message):
 
             # Convert newlines in message to <br> for HTML formatting
             escaped_message = message.replace('\n', '<br>')
+            
+            # Create a unique token for this email that includes the recipient id to prevent sharing
+            # This makes sure each recipient only sees their own image
+            recipient_id = str(recipient.get('_id', 'unknown'))
+            timestamp = int(time.time())
+            email_token = hashlib.sha256(f"{recipient_id}:{image_id}:{timestamp}:{app.config['SECRET_KEY']}".encode()).hexdigest()
+            
+            # Prepare image HTML if an image was uploaded
+            image_html = ""
+            if image_id:
+                # Create a URL for the image that includes authentication token
+                image_url = f"{app_url}/email_image/{image_id}?token={email_token}&recipient={recipient_id}"
+                image_html = f'<div style="text-align: center; margin: 20px 0;"><img src="{image_url}" alt="Email Image" style="max-width: 100%; height: auto; border-radius: 8px;"></div>'
 
-            # Create HTML email with styling
+            # Create HTML email with styling and image placement
             html_content = f"""
             <!DOCTYPE html>
             <html lang="en">
@@ -2570,15 +2710,24 @@ def send_emails_with_flask_mail(recipients, subject, message):
             <body style="margin: 0; padding: 0; font-family: Arial, sans-serif; line-height: 1.6; color: #333333; background-color: #f5f5f5;">
                 <div style="max-width: 600px; margin: 0 auto; padding: 20px; background-color: #ffffff; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.1);">
                     <div style="text-align: center; padding: 20px 0; border-bottom: 1px solid #eeeeee;">
-                        <h1 style="margin: 0; color: #3b82f6; font-size: 24px;">Medical Center</h1>
+                        <h1 style="margin: 0; color: #3b82f6; font-size: 24px;">RapiACT! Medical Center</h1>
                     </div>
+                    
+                    {'<!-- Image at top position -->' if image_position == 'top' else ''}
+                    {image_html if image_position == 'top' else ''}
                     
                     <div style="padding: 20px 0;">
                         <p style="margin-top: 0; font-size: 16px; font-weight: bold;">Dear {recipient_name},</p>
                         
+                        {'<!-- Image at middle position -->' if image_position == 'middle' else ''}
+                        {image_html if image_position == 'middle' else ''}
+                        
                         <div style="font-size: 16px; line-height: 1.6; color: #333333;">
                             {escaped_message}
                         </div>
+                        
+                        {'<!-- Image at bottom position -->' if image_position == 'bottom' else ''}
+                        {image_html if image_position == 'bottom' else ''}
                     </div>
                     
                     <div style="padding: 20px 0; border-top: 1px solid #eeeeee; font-size: 14px; color: #666666;">
@@ -2587,7 +2736,7 @@ def send_emails_with_flask_mail(recipients, subject, message):
                     </div>
                     
                     <div style="background-color: #f8f9fa; text-align: center; padding: 15px; border-radius: 0 0 8px 8px; font-size: 12px; color: #666666;">
-                        <p style="margin: 0;">© 2025 Medical Center. All rights reserved.</p>
+                        <p style="margin: 0;">© 2025 RapiACT! Medical Center. All rights reserved.</p>
                         <p style="margin: 5px 0 0;">123 Healthcare Avenue, Medical District, MD 12345</p>
                         <p style="margin: 5px 0 0;">
                             <a href="#" style="color: #3b82f6; text-decoration: none;">Privacy Policy</a> | 
@@ -2620,10 +2769,11 @@ def send_emails_with_flask_mail(recipients, subject, message):
 
     return sent_count
 
-
 # API route to get email sending status
 @app.route('/email_status', methods=['GET'])
 def email_status():
+    if 'user_id' not in session:
+        return jsonify({'error': 'Unauthorized'}), 401
     
     # Get the latest 5 email logs
     logs = list(mongo.db.email_logs.find().sort('timestamp', -1).limit(5))
@@ -2632,6 +2782,8 @@ def email_status():
     for log in logs:
         log['_id'] = str(log['_id'])
         log['sent_by'] = str(log['sent_by'])
+        if 'image_id' in log and log['image_id']:
+            log['image_id'] = str(log['image_id'])
         log['timestamp'] = log['timestamp'].strftime('%Y-%m-%d %H:%M:%S')
     
     return jsonify({'logs': logs})

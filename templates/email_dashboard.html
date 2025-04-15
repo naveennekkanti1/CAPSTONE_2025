@@ -304,6 +304,35 @@
             box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
         }
 
+        .image-preview {
+            max-width: 100%;
+            margin-top: 10px;
+            border-radius: 5px;
+            border: 1px solid #ddd;
+            display: none;
+        }
+
+        .custom-file-upload {
+            display: inline-block;
+            padding: 8px 16px;
+            cursor: pointer;
+            background: linear-gradient(90deg, #1a237e, #7c4dff);
+            color: white;
+            border-radius: 5px;
+            transition: all 0.3s ease;
+            margin-top: 10px;
+        }
+
+        .custom-file-upload:hover {
+            background: linear-gradient(90deg, #3949ab, #5c6bc0);
+            transform: translateY(-2px);
+        }
+
+        .image-position-selector {
+            margin-top: 10px;
+            display: none;
+        }
+
         @media (max-width: 768px) {
             .menu-toggle {
                 display: block;
@@ -368,12 +397,17 @@
                             <i class="fas fa-user mr-2"></i> Individual Email
                         </button>
                     </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" id="custom-tab" data-bs-toggle="tab" data-bs-target="#custom" type="button" role="tab" aria-controls="custom" aria-selected="false">
+                            <i class="fas fa-envelope-open-text mr-2"></i> Custom Email
+                        </button>
+                    </li>
                 </ul>
                 
                 <div class="tab-content" id="emailTabsContent">
                     <!-- Bulk Email Tab -->
                     <div class="tab-pane fade show active" id="bulk" role="tabpanel" aria-labelledby="bulk-tab">
-                        <form action="/send_bulk_email" method="post" id="bulkEmailForm">
+                        <form action="/send_bulk_email" method="post" id="bulkEmailForm" enctype="multipart/form-data">
                             <div class="mb-4">
                                 <label class="form-label">Select Recipient Group:</label>
                                 <div class="form-check">
@@ -398,6 +432,29 @@
                             <div class="mb-4">
                                 <label for="bulkMessage" class="form-label">Message:</label>
                                 <textarea class="form-control" id="bulkMessage" name="message" rows="8" required></textarea>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label class="form-label">Email Image (optional):</label>
+                                <div>
+                                    <label class="custom-file-upload">
+                                        <input type="file" id="bulkImageUpload" name="email_image" accept="image/*" style="display: none;" onchange="previewImage(this, 'bulkImagePreview')">
+                                        <i class="fas fa-upload me-2"></i> Choose Image
+                                    </label>
+                                    <button type="button" class="btn btn-outline-danger ms-2" onclick="removeImage('bulkImageUpload', 'bulkImagePreview')">
+                                        <i class="fas fa-times"></i> Remove
+                                    </button>
+                                </div>
+                                <img id="bulkImagePreview" class="image-preview" src="#" alt="Image Preview">
+                                
+                                <div id="bulkImagePosition" class="image-position-selector">
+                                    <label class="form-label mt-2">Image Position:</label>
+                                    <select class="form-select" name="image_position">
+                                        <option value="top">Top of Email</option>
+                                        <option value="middle" selected>Middle of Email</option>
+                                        <option value="bottom">Bottom of Email</option>
+                                    </select>
+                                </div>
                             </div>
                             
                             <div class="text-end">
@@ -448,7 +505,7 @@
                             </table>
                         </div>
                         
-                        <form action="/send_individual_email" method="post" id="individualEmailForm" class="mt-4">
+                        <form action="/send_individual_email" method="post" id="individualEmailForm" class="mt-4" enctype="multipart/form-data">
                             <input type="hidden" id="selectedUserIds" name="user_ids">
                             
                             <div class="mb-3">
@@ -461,9 +518,81 @@
                                 <textarea class="form-control" id="individualMessage" name="message" rows="8" required></textarea>
                             </div>
                             
+                            <div class="mb-3">
+                                <label class="form-label">Email Image (optional):</label>
+                                <div>
+                                    <label class="custom-file-upload">
+                                        <input type="file" id="individualImageUpload" name="email_image" accept="image/*" style="display: none;" onchange="previewImage(this, 'individualImagePreview')">
+                                        <i class="fas fa-upload me-2"></i> Choose Image
+                                    </label>
+                                    <button type="button" class="btn btn-outline-danger ms-2" onclick="removeImage('individualImageUpload', 'individualImagePreview')">
+                                        <i class="fas fa-times"></i> Remove
+                                    </button>
+                                </div>
+                                <img id="individualImagePreview" class="image-preview" src="#" alt="Image Preview">
+                                
+                                <div id="individualImagePosition" class="image-position-selector">
+                                    <label class="form-label mt-2">Image Position:</label>
+                                    <select class="form-select" name="image_position">
+                                        <option value="top">Top of Email</option>
+                                        <option value="middle" selected>Middle of Email</option>
+                                        <option value="bottom">Bottom of Email</option>
+                                    </select>
+                                </div>
+                            </div>
+                            
                             <div class="text-end">
                                 <button type="submit" class="btn btn-send" id="sendIndividualBtn">
                                     <i class="fas fa-paper-plane me-2"></i> Send Emails
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+
+                    <!-- Custom Email Tab -->
+                    <div class="tab-pane fade" id="custom" role="tabpanel" aria-labelledby="custom-tab">
+                        <form action="/send_custom_email" method="post" id="customEmailForm" enctype="multipart/form-data">
+                            <div class="mb-3">
+                                <label for="customEmail" class="form-label">Recipient Email Address:</label>
+                                <input type="email" class="form-control" id="customEmail" name="custom_email" required>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label for="customSubject" class="form-label">Subject:</label>
+                                <input type="text" class="form-control" id="customSubject" name="subject" required>
+                            </div>
+                            
+                            <div class="mb-4">
+                                <label for="customMessage" class="form-label">Message:</label>
+                                <textarea class="form-control" id="customMessage" name="message" rows="8" required></textarea>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label class="form-label">Email Image (optional):</label>
+                                <div>
+                                    <label class="custom-file-upload">
+                                        <input type="file" id="customImageUpload" name="email_image" accept="image/*" style="display: none;" onchange="previewImage(this, 'customImagePreview')">
+                                        <i class="fas fa-upload me-2"></i> Choose Image
+                                    </label>
+                                    <button type="button" class="btn btn-outline-danger ms-2" onclick="removeImage('customImageUpload', 'customImagePreview')">
+                                        <i class="fas fa-times"></i> Remove
+                                    </button>
+                                </div>
+                                <img id="customImagePreview" class="image-preview" src="#" alt="Image Preview">
+                                
+                                <div id="customImagePosition" class="image-position-selector">
+                                    <label class="form-label mt-2">Image Position:</label>
+                                    <select class="form-select" name="image_position">
+                                        <option value="top">Top of Email</option>
+                                        <option value="middle" selected>Middle of Email</option>
+                                        <option value="bottom">Bottom of Email</option>
+                                    </select>
+                                </div>
+                            </div>
+                            
+                            <div class="text-end">
+                                <button type="submit" class="btn btn-send">
+                                    <i class="fas fa-paper-plane me-2"></i> Send Email
                                 </button>
                             </div>
                         </form>
@@ -503,6 +632,36 @@
                 sidebar.classList.remove('active');
             }
         });
+
+        // Image preview functionality
+        function previewImage(input, previewId) {
+            const preview = document.getElementById(previewId);
+            const positionSelector = document.getElementById(previewId.replace('Preview', 'Position'));
+            
+            if (input.files && input.files[0]) {
+                const reader = new FileReader();
+                
+                reader.onload = function(e) {
+                    preview.src = e.target.result;
+                    preview.style.display = 'block';
+                    positionSelector.style.display = 'block';
+                }
+                
+                reader.readAsDataURL(input.files[0]);
+            }
+        }
+        
+        // Remove image
+        function removeImage(inputId, previewId) {
+            const input = document.getElementById(inputId);
+            const preview = document.getElementById(previewId);
+            const positionSelector = document.getElementById(previewId.replace('Preview', 'Position'));
+            
+            input.value = '';
+            preview.src = '#';
+            preview.style.display = 'none';
+            positionSelector.style.display = 'none';
+        }
 
         // Select all users checkbox
         document.getElementById('selectAllUsers').addEventListener('change', function() {
@@ -567,6 +726,21 @@
             const recipientGroup = document.querySelector('input[name="recipient_group"]:checked');
             if (!recipientGroup) {
                 alert('Please select a recipient group.');
+                return;
+            }
+            
+            this.submit();
+        });
+
+        // Custom Email Form Submit
+        document.getElementById('customEmailForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const emailInput = document.getElementById('customEmail');
+            const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            
+            if (!emailPattern.test(emailInput.value)) {
+                alert('Please enter a valid email address.');
                 return;
             }
             
