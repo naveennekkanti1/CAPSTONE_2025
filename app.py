@@ -2544,8 +2544,7 @@ def send_individual_email():
     flash(f'Successfully sent emails to {sent_count} recipients', 'success')
     return redirect(url_for('email_dashboard'))
 
-# Helper function to send emails using Flask-Mail with HTML styling only
-from flask_mail import Message
+
 
 # Helper function to send emails using Flask-Mail with HTML styling only
 def send_emails_with_flask_mail(recipients, subject, message):
@@ -2555,6 +2554,9 @@ def send_emails_with_flask_mail(recipients, subject, message):
         try:
             # Get recipient name or use a generic greeting
             recipient_name = recipient.get('name', 'Valued Patient')
+
+            # Convert newlines in message to <br> for HTML formatting
+            escaped_message = message.replace('\n', '<br>')
 
             # Create HTML email with styling
             html_content = f"""
@@ -2575,7 +2577,7 @@ def send_emails_with_flask_mail(recipients, subject, message):
                         <p style="margin-top: 0; font-size: 16px; font-weight: bold;">Dear {recipient_name},</p>
                         
                         <div style="font-size: 16px; line-height: 1.6; color: #333333;">
-                            {message.replace('\n', '<br>')}
+                            {escaped_message}
                         </div>
                     </div>
                     
@@ -2596,9 +2598,6 @@ def send_emails_with_flask_mail(recipients, subject, message):
             </body>
             </html>
             """
-
-            # Debug print to confirm the HTML output (optional)
-            # print(html_content)
 
             # Create a Flask-Mail message with HTML only
             msg = Message(
