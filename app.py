@@ -2545,14 +2545,17 @@ def send_individual_email():
     return redirect(url_for('email_dashboard'))
 
 # Helper function to send emails using Flask-Mail with HTML styling only
+from flask_mail import Message
+
+# Helper function to send emails using Flask-Mail with HTML styling only
 def send_emails_with_flask_mail(recipients, subject, message):
     sent_count = 0
-    
+
     for recipient in recipients:
         try:
             # Get recipient name or use a generic greeting
             recipient_name = recipient.get('name', 'Valued Patient')
-            
+
             # Create HTML email with styling
             html_content = f"""
             <!DOCTYPE html>
@@ -2593,24 +2596,31 @@ def send_emails_with_flask_mail(recipients, subject, message):
             </body>
             </html>
             """
-            
+
+            # Debug print to confirm the HTML output (optional)
+            # print(html_content)
+
             # Create a Flask-Mail message with HTML only
             msg = Message(
                 subject=subject,
                 recipients=[recipient['email']],
-                html=html_content,  # HTML version only
+                html=html_content,
                 sender=app.config['MAIL_DEFAULT_SENDER']
             )
-            
+
+            # Force HTML content subtype (helps in some mail clients)
+            msg.content_subtype = "html"
+
             # Send the email
             mail.send(msg)
             sent_count += 1
-            
+
         except Exception as e:
             print(f"Error sending to {recipient['email']}: {str(e)}")
             continue
-    
+
     return sent_count
+
 
 # API route to get email sending status
 @app.route('/email_status', methods=['GET'])
