@@ -11,6 +11,8 @@ from google_auth_oauthlib.flow import InstalledAppFlow
 from googleapiclient.discovery import build
 from flask_mail import Mail, Message
 from google.oauth2.service_account import Credentials as ServiceAccountCredentials
+from apscheduler.schedulers.background import BackgroundScheduler
+from apscheduler.triggers.date import DateTrigger
 
 
 
@@ -40,6 +42,8 @@ mail = Mail(app)
 app.config['ALLOWED_EXTENSIONS'] = {'pdf', 'jpg', 'jpeg', 'png'}
 
 mongo = PyMongo(app)
+scheduler = BackgroundScheduler()
+scheduler.start()
 
 # Ensure upload folder exists
 
@@ -278,7 +282,6 @@ def mark_done():
 
     except Exception as e:
         return jsonify({"success": False, "message": str(e)}), 500
-
 
 
 def send_email(subject, recipients, text_body=None, html_body=None):
@@ -2149,26 +2152,25 @@ def create_appointment():
             height = request.form['height']
             weight = request.form['weight']
             cause = request.form['cause']
-            appointment_datetime = request.form['appointment_datetime']
+            appointment_datetime = request.form['appointment_datetime']  # 'YYYY-MM-DDTHH:MM'
+
+            # Convert to datetime object
+            appointment_obj = datetime.strptime(appointment_datetime, "%Y-%m-%dT%H:%M")
+            formatted_datetime = appointment_obj.strftime("%Y-%m-%d %I:%M %p")
+
             email = mongo.db.users.find_one({'_id': ObjectId(session['user_id'])})['email']
-            # File upload (GridFS)
+
+            # File upload
             report = request.files['report']
             file_id = None
             if report:
                 file_id = fs.put(report, filename=secure_filename(report.filename), content_type=report.content_type)
+
             doctor = mongo.db.users.find_one({'_id': ObjectId(doctor_id)})
-            doctor_name = f"{doctor['name']}"
+            doctor_name = doctor['name']
             doctor_email = doctor['email']
-            
-            # Convert appointment time to IST
-            utc_datetime = datetime.strptime(appointment_datetime, "%Y-%m-%dT%H:%M")
-            ist_timezone = pytz.timezone('Asia/Kolkata')
-            utc_timezone = pytz.timezone('UTC')
-            utc_datetime = utc_timezone.localize(utc_datetime)
-            ist_datetime = utc_datetime.astimezone(ist_timezone)
-            formatted_ist_datetime = ist_datetime.strftime("%Y-%m-%d %I:%M %p IST")
-            
-            # Insert appointment into DB
+
+            # Insert appointment
             appointment_id = mongo.db.appointments.insert_one({
                 'patient_name': patient_name,
                 'doctor_id': ObjectId(doctor_id),
@@ -2179,15 +2181,13 @@ def create_appointment():
                 'weight': weight,
                 'cause': cause,
                 'appointment_datetime': appointment_datetime,
-                'ist_appointment_datetime': formatted_ist_datetime,
+                'formatted_datetime': formatted_datetime,
                 'report_id': file_id,
                 'patient_id': ObjectId(session['user_id']),
             }).inserted_id
-            
-            # Email content with HTML formatting
+
+            # Email content
             subject = "Appointment Confirmation"
-            
-            # HTML email templates
             body_patient_html = f"""
             <html>
                 <body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333;">
@@ -2195,15 +2195,14 @@ def create_appointment():
                         <h2 style="color: #4CAF50;">Appointment Confirmation</h2>
                         <p>Dear {patient_name},</p>
                         <p>Your appointment with <strong>Dr. {doctor_name}</strong> is confirmed for:</p>
-                        <p style="background-color: #f9f9f9; padding: 10px; font-size: 16px; font-weight: bold;">{formatted_ist_datetime}</p>
+                        <p style="background-color: #f9f9f9; padding: 10px; font-size: 16px; font-weight: bold;">{formatted_datetime}</p>
                         <p>Please arrive 10 minutes before your scheduled time.</p>
-                        <p>If you need to reschedule or cancel, please contact us at least 24 hours in advance.</p>
                         <p>Thank you for choosing RapiACT!</p>
                     </div>
                 </body>
             </html>
             """
-            
+
             body_doctor_html = f"""
             <html>
                 <body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333;">
@@ -2211,7 +2210,7 @@ def create_appointment():
                         <h2 style="color: #4CAF50;">New Appointment</h2>
                         <p>Dear Dr. {doctor_name},</p>
                         <p>You have a new appointment with <strong>{patient_name}</strong> scheduled for:</p>
-                        <p style="background-color: #f9f9f9; padding: 10px; font-size: 16px; font-weight: bold;">{formatted_ist_datetime}</p>
+                        <p style="background-color: #f9f9f9; padding: 10px; font-size: 16px; font-weight: bold;">{formatted_datetime}</p>
                         <p>Patient details:</p>
                         <ul>
                             <li>Age: {age}</li>
@@ -2222,37 +2221,49 @@ def create_appointment():
                 </body>
             </html>
             """
-            
-            # Send HTML emails
+
             send_email(subject, [email], None, body_patient_html)
             send_email(subject, [doctor_email], None, body_doctor_html)
-            
-            # Schedule reminder email
-            reminder_time = ist_datetime - timedelta(minutes=30)  # 30 min reminder
-            reminder_subject = "Appointment Reminder"
-            reminder_body_html = f"""
-            <html>
-                <body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333;">
-                    <div style="max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #ddd; border-radius: 5px;">
-                        <h2 style="color: #4CAF50;">Appointment Reminder</h2>
-                        <p>Dear {patient_name},</p>
-                        <p>This is a reminder that your appointment with <strong>Dr. {doctor_name}</strong> is in 30 minutes:</p>
-                        <p style="background-color: #f9f9f9; padding: 10px; font-size: 16px; font-weight: bold;">{formatted_ist_datetime}</p>
-                        <p>Thank you for choosing RapiACT!</p>
-                    </div>
-                </body>
-            </html>
-            """
-            # Make sure this function correctly schedules the email
-            schedule_email(reminder_subject, [email], None, reminder_body_html, reminder_time)
-            
+
+            # Schedule reminder 30 min before
+            reminder_time = appointment_obj - timedelta(minutes=10)
+            if reminder_time > datetime.now():
+                scheduler.add_job(
+                    func=send_reminder_email,
+                    trigger=DateTrigger(run_date=reminder_time),
+                    args=[email, patient_name, doctor_name, formatted_datetime],
+                    id=str(appointment_id),
+                    replace_existing=True
+                )
+
             flash(f"Appointment created successfully with Dr. {doctor_name}!", "success")
             return redirect(url_for('patient_dashboard'))
-            
+
         doctors = list(mongo.db.users.find({'role': 'doctor'}))
         return render_template('create_appointment.html', doctors=doctors)
+
     flash("Unauthorized access.", "danger")
     return redirect(url_for('login'))
+
+
+def send_reminder_email(email, patient_name, doctor_name, appointment_time):
+    subject = "Appointment Reminder"
+    body = f"""
+    <html>
+        <body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333;">
+            <div style="max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #ddd; border-radius: 5px;">
+                <h2 style="color: #4CAF50;">Appointment Reminder</h2>
+                <p>Dear {patient_name},</p>
+                <p>This is a reminder that your appointment with <strong>Dr. {doctor_name}</strong> is in 10 minutes:</p>
+                <p style="background-color: #f9f9f9; padding: 10px; font-size: 16px; font-weight: bold;">{appointment_time}</p>
+                <p>Thank you for choosing RapiACT!</p>
+            </div>
+        </body>
+    </html>
+    """
+    send_email(subject, [email], None, body)
+
+
 
 @app.route('/add_user', methods=['POST'])
 def add_user():
