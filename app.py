@@ -281,20 +281,35 @@ def mark_done():
 
 
 
-def send_email(subject, recipients, html_body):
-    """Function to send emails with HTML only."""
+def send_email(subject, recipients, text_body=None, html_body=None):
     try:
         msg = Message(subject, recipients=recipients)
-        msg.html = html_body  # Set only HTML content, no plain text
+        if text_body:
+            msg.body = text_body
+        if html_body:
+            msg.html = html_body
         mail.send(msg)
+        return True
     except Exception as e:
-        print(f"Error sending email: {e}")
+        print(f"Email sending failed: {str(e)}")
+        return False
 
-def schedule_email(subject, recipients, body, send_time):
-    """Schedule an email to be sent at a later time."""
-    delay = (send_time - datetime.now()).total_seconds()
-    if delay > 0:
-        threading.Timer(delay, send_email, [subject, recipients, body]).start()
+def schedule_email(subject, recipients, text_body=None, html_body=None, send_time=None):
+    try:
+        # Convert to the server's local time if needed
+        # Store the scheduled email in database to be processed by a scheduler
+        mongo.db.scheduled_emails.insert_one({
+            'subject': subject,
+            'recipients': recipients,
+            'text_body': text_body,
+            'html_body': html_body,
+            'send_time': send_time,
+            'is_sent': False
+        })
+        return True
+    except Exception as e:
+        print(f"Email scheduling failed: {str(e)}")
+        return False
 def get_google_credentials():
     creds = None
     token_path = 'token.json'  # Stores user's access token
@@ -2136,17 +2151,23 @@ def create_appointment():
             cause = request.form['cause']
             appointment_datetime = request.form['appointment_datetime']
             email = mongo.db.users.find_one({'_id': ObjectId(session['user_id'])})['email']
-
             # File upload (GridFS)
             report = request.files['report']
             file_id = None
             if report:
                 file_id = fs.put(report, filename=secure_filename(report.filename), content_type=report.content_type)
-
             doctor = mongo.db.users.find_one({'_id': ObjectId(doctor_id)})
             doctor_name = f"{doctor['name']}"
             doctor_email = doctor['email']
-
+            
+            # Convert appointment time to IST
+            utc_datetime = datetime.strptime(appointment_datetime, "%Y-%m-%dT%H:%M")
+            ist_timezone = pytz.timezone('Asia/Kolkata')
+            utc_timezone = pytz.timezone('UTC')
+            utc_datetime = utc_timezone.localize(utc_datetime)
+            ist_datetime = utc_datetime.astimezone(ist_timezone)
+            formatted_ist_datetime = ist_datetime.strftime("%Y-%m-%d %I:%M %p IST")
+            
             # Insert appointment into DB
             appointment_id = mongo.db.appointments.insert_one({
                 'patient_name': patient_name,
@@ -2158,32 +2179,78 @@ def create_appointment():
                 'weight': weight,
                 'cause': cause,
                 'appointment_datetime': appointment_datetime,
+                'ist_appointment_datetime': formatted_ist_datetime,
                 'report_id': file_id,
                 'patient_id': ObjectId(session['user_id']),
             }).inserted_id
-
-            # Email content
+            
+            # Email content with HTML formatting
             subject = "Appointment Confirmation"
-            body_patient = f"Dear {patient_name},\n\nYour appointment with Dr. {doctor_name} is confirmed on {appointment_datetime}.\n\nThank you!\n RapiACT!"
-            body_doctor = f"Dear Dr. {doctor_name},\n\nYou have a new appointment with {patient_name} on {appointment_datetime}.\n\nThank you!\n RapiACT!"
-
-            # Send emails
-            send_email(subject, [email], body_patient)
-            send_email(subject, [doctor_email], body_doctor)
-
+            
+            # HTML email templates
+            body_patient_html = f"""
+            <html>
+                <body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333;">
+                    <div style="max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #ddd; border-radius: 5px;">
+                        <h2 style="color: #4CAF50;">Appointment Confirmation</h2>
+                        <p>Dear {patient_name},</p>
+                        <p>Your appointment with <strong>Dr. {doctor_name}</strong> is confirmed for:</p>
+                        <p style="background-color: #f9f9f9; padding: 10px; font-size: 16px; font-weight: bold;">{formatted_ist_datetime}</p>
+                        <p>Please arrive 10 minutes before your scheduled time.</p>
+                        <p>If you need to reschedule or cancel, please contact us at least 24 hours in advance.</p>
+                        <p>Thank you for choosing RapiACT!</p>
+                    </div>
+                </body>
+            </html>
+            """
+            
+            body_doctor_html = f"""
+            <html>
+                <body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333;">
+                    <div style="max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #ddd; border-radius: 5px;">
+                        <h2 style="color: #4CAF50;">New Appointment</h2>
+                        <p>Dear Dr. {doctor_name},</p>
+                        <p>You have a new appointment with <strong>{patient_name}</strong> scheduled for:</p>
+                        <p style="background-color: #f9f9f9; padding: 10px; font-size: 16px; font-weight: bold;">{formatted_ist_datetime}</p>
+                        <p>Patient details:</p>
+                        <ul>
+                            <li>Age: {age}</li>
+                            <li>Reason: {cause}</li>
+                        </ul>
+                        <p>Thank you for your service at RapiACT!</p>
+                    </div>
+                </body>
+            </html>
+            """
+            
+            # Send HTML emails
+            send_email(subject, [email], None, body_patient_html)
+            send_email(subject, [doctor_email], None, body_doctor_html)
+            
             # Schedule reminder email
-            appointment_time = datetime.strptime(appointment_datetime, "%Y-%m-%dT%H:%M")
-            reminder_time = appointment_time - timedelta(minutes=5)
+            reminder_time = ist_datetime - timedelta(minutes=30)  # 30 min reminder
             reminder_subject = "Appointment Reminder"
-            reminder_body = f"Dear {patient_name},\n\nThis is a reminder that your appointment with Dr. {doctor_name} is in 5 minutes."
-            schedule_email(reminder_subject, [email], reminder_body, reminder_time)
-
+            reminder_body_html = f"""
+            <html>
+                <body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333;">
+                    <div style="max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #ddd; border-radius: 5px;">
+                        <h2 style="color: #4CAF50;">Appointment Reminder</h2>
+                        <p>Dear {patient_name},</p>
+                        <p>This is a reminder that your appointment with <strong>Dr. {doctor_name}</strong> is in 30 minutes:</p>
+                        <p style="background-color: #f9f9f9; padding: 10px; font-size: 16px; font-weight: bold;">{formatted_ist_datetime}</p>
+                        <p>Thank you for choosing RapiACT!</p>
+                    </div>
+                </body>
+            </html>
+            """
+            # Make sure this function correctly schedules the email
+            schedule_email(reminder_subject, [email], None, reminder_body_html, reminder_time)
+            
             flash(f"Appointment created successfully with Dr. {doctor_name}!", "success")
             return redirect(url_for('patient_dashboard'))
-
+            
         doctors = list(mongo.db.users.find({'role': 'doctor'}))
         return render_template('create_appointment.html', doctors=doctors)
-
     flash("Unauthorized access.", "danger")
     return redirect(url_for('login'))
 
