@@ -3115,14 +3115,30 @@ def admin_orders():
     pipeline = [
         {"$match": {"payment_status": "verified"}},
 
+        # Convert patient_id string to ObjectId if needed
+        {"$addFields": {
+            "patient_id_obj": {
+                "$cond": {
+                    "if": {"$type": "$patient_id"},
+                    "then": "$patient_id",
+                    "else": {"$toObjectId": "$patient_id"}
+                }
+            }
+        }},
+
         # Join with patient details
         {"$lookup": {
             "from": "users",
-            "localField": "patient_id",
+            "localField": "patient_id_obj",
             "foreignField": "_id",
-            "as": "patient"
+            "as": "patient_data"
         }},
-        {"$unwind": {"path": "$patient", "preserveNullAndEmptyArrays": True}},
+        {"$unwind": {"path": "$patient_data", "preserveNullAndEmptyArrays": True}},
+        
+        # Add patient field for compatibility with template
+        {"$addFields": {
+            "patient": "$patient_data"
+        }},
 
         # Extract medicine IDs from the `medicines` array
         {"$addFields": {
@@ -3130,7 +3146,7 @@ def admin_orders():
                 "$map": {
                     "input": "$medicines",
                     "as": "med",
-                    "in": {"$toObjectId": "$$med.id"}  # Convert medicine "id" string to ObjectId
+                    "in": {"$toObjectId": "$$med.id"}
                 }
             }
         }},
