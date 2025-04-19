@@ -284,13 +284,12 @@ def mark_done():
         return jsonify({"success": False, "message": str(e)}), 500
 
 
-def send_email(subject, recipients, text_body=None, html_body=None):
+
+def send_email(subject, recipients, html_body):
+    """Function to send emails with HTML only."""
     try:
         msg = Message(subject, recipients=recipients)
-        if text_body:
-            msg.body = text_body
-        if html_body:
-            msg.html = html_body
+        msg.html = html_body  # Set only HTML content, no plain text
         mail.send(msg)
         return True
     except Exception as e:
@@ -421,118 +420,22 @@ def schedule_meeting():
             })
 
             # Send email notification
-            # Send email notification with HTML and CSS
             subject = "📅 Your Medical Appointment is Scheduled"
+            body = f"""
+        Dear {patient['name']},
 
-                # HTML email body with CSS styling
-            html_body = f"""
-                <!DOCTYPE html>
-<html>
-<head>
-    <style>
-        body {{
-            font-family: Arial, sans-serif;
-            line-height: 1.6;
-            color: #333;
-            max-width: 600px;
-            margin: 0 auto;
-        }}
-        .email-container {{
-            border: 1px solid #ddd;
-            border-radius: 8px;
-            padding: 20px;
-            background-color: #f9f9f9;
-        }}
-        .header {{
-            background-color: #4285F4;
-            color: white;
-            padding: 15px;
-            text-align: center;
-            border-radius: 5px 5px 0 0;
-            margin-bottom: 20px;
-        }}
-        .appointment-details {{
-            background-color: white;
-            padding: 15px;
-            border-radius: 5px;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-            margin-bottom: 20px;
-        }}
-        .detail-item {{
-            margin-bottom: 10px;
-            padding: 8px;
-            border-bottom: 1px solid #eee;
-        }}
-        .detail-label {{
-            font-weight: bold;
-            color: #555;
-        }}
-        .meeting-button {{
-            display: inline-block;
-            background-color: #4CAF50;
-            color: white;
-            padding: 12px 20px;
-            text-decoration: none;
-            border-radius: 5px;
-            font-weight: bold;
-            margin: 10px 0;
-        }}
-        .footer {{
-            text-align: center;
-            margin-top: 20px;
-            font-size: 14px;
-            color: #777;
-        }}
-        .appointment-id {{
-            background-color: #f1f1f1;
-            padding: 8px;
-            border-radius: 4px;
-            font-family: monospace;
-            font-size: 14px;
-        }}
-    </style>
-</head>
-<body>
-    <div class="email-container">
-        <div class="header">
-            <h2>Medical Appointment Confirmation</h2>
-        </div>
-        
-        <p>Dear {patient['name']},</p>
-        
-        <p>Your appointment with Dr. {doctor['name']} has been successfully scheduled.</p>
-        
-        <div class="appointment-details">
-            <div class="detail-item">
-                <span class="detail-label">📅 Date & Time:</span> {meeting_datetime}
-            </div>
-            <div class="detail-item">
-                <span class="detail-label">👨‍⚕️ Doctor:</span> Dr. {doctor['name']}
-            </div>
-            <div class="detail-item">
-                <span class="detail-label">🆔 Appointment ID:</span> 
-                <span class="appointment-id">{appointment_id}</span>
-            </div>
-        </div>
-        
-        <div style="text-align: center;">
-            <a href="{meeting_link}" class="meeting-button">Join Video Meeting</a>
-        </div>
-        
-        <p>Please ensure you join on time and have a stable internet connection for the best experience.</p>
-        
-        <p>If you need to reschedule or have any questions, please contact us as soon as possible.</p>
-        
-        <div class="footer">
-            <p>Best regards,<br>RapiACT! Team ❤️</p>
-        </div>
-    </div>
-</body>
-</html>
-"""
+        Your meeting with Dr. {doctor['name']} has been scheduled.
 
-# Send email with HTML content only
-            send_email(subject, [patient_email], html_body)
+        📅 Date & Time: {meeting_datetime}
+        🔗 Join Here: {meeting_link}
+        🆔 Appointment ID: {appointment_id}
+
+        Please ensure you join on time.
+
+        Regards,
+        RapiACT! Team ❤️
+        """
+            send_email(subject, [patient_email], body)
 
             flash("Meeting scheduled successfully!", "success")
             return redirect(url_for('schedule_meeting'))
@@ -654,106 +557,11 @@ def send_otp():
     otp = str(random.randint(100000, 999999))
     otp_store[email] = otp
 
-    subject = "Your OTP Code for RapiACT Registration"
-    
-    # HTML email with CSS styling
-    html_body = f"""
-    <!DOCTYPE html>
-    <html>
-    <head>
-        <style>
-            body {{
-                font-family: Arial, sans-serif;
-                line-height: 1.6;
-                color: #333;
-                max-width: 600px;
-                margin: 0 auto;
-            }}
-            .email-container {{
-                border: 1px solid #ddd;
-                border-radius: 8px;
-                padding: 20px;
-                background-color: #f9f9f9;
-            }}
-            .header {{
-                background-color: #6B46C1;
-                color: white;
-                padding: 15px;
-                text-align: center;
-                border-radius: 5px 5px 0 0;
-                margin-bottom: 20px;
-            }}
-            .otp-container {{
-                background-color: white;
-                padding: 20px;
-                border-radius: 5px;
-                box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-                margin: 25px 0;
-                text-align: center;
-            }}
-            .otp-code {{
-                font-size: 32px;
-                font-weight: bold;
-                letter-spacing: 5px;
-                color: #6B46C1;
-                padding: 10px 20px;
-                background-color: #f3f4f6;
-                border-radius: 5px;
-                margin: 10px 0;
-                display: inline-block;
-            }}
-            .footer {{
-                text-align: center;
-                margin-top: 20px;
-                font-size: 14px;
-                color: #777;
-            }}
-            .expiry-notice {{
-                background-color: #fffbeb;
-                border-left: 4px solid #f59e0b;
-                padding: 10px 15px;
-                margin: 15px 0;
-                font-size: 14px;
-            }}
-            .help-text {{
-                font-size: 15px;
-                color: #555;
-            }}
-        </style>
-    </head>
-    <body>
-        <div class="email-container">
-            <div class="header">
-                <h2>One-Time Password (OTP)</h2>
-            </div>
-            
-            <p>Hello,</p>
-            
-            <p>Thank you for registering with RapiACT! To verify your email address, please use the following One-Time Password (OTP):</p>
-            
-            <div class="otp-container">
-                <div class="otp-code">{otp}</div>
-                <p class="help-text">Please enter this code on the registration page.</p>
-            </div>
-            
-            <div class="expiry-notice">
-                <strong>Note:</strong> This OTP will expire in 10 minutes for security reasons.
-            </div>
-            
-            <p>If you did not request this code, please ignore this email. Someone might have entered your email address by mistake.</p>
-            
-            <div class="footer">
-                <p>Best regards,<br>RapiACT! Team ❤️</p>
-                <p style="font-size: 12px; color: #999;">This is an automated message, please do not reply to this email.</p>
-            </div>
-        </div>
-    </body>
-    </html>
-    """
+    subject = "Your OTP Code"
+    body = f"Hello,\n\nYour OTP code is: {otp}\n\nUse this code to complete your registration.\n\nThanks,\nRapiACT! Team"
     
     try:
-        msg = Message(subject=subject, recipients=[email])
-        msg.html = html_body
+        msg = Message(subject=subject, recipients=[email], body=body)
         mail.send(msg)
         return jsonify({"message": "OTP sent successfully!"})
     except Exception as e:
@@ -1150,6 +958,8 @@ def send_welcome_flyer_email(name, email, role):
             
             <p>Thank you for joining RapiACT! - where healthcare meets innovation. We're excited to have you as part of our growing community.</p>
             
+            <img src="https://capstone-2025-37jt.onrender.com/static/images/logo.jpg" alt="Welcome to RapiACT! Healthcare" class="flyer">
+            
             <div class="section">
                 <h4 class="section-title">About RapiACT!</h4>
                 <p>RapiACT! is a comprehensive healthcare platform designed to streamline the medical experience for both patients and healthcare providers. Our mission is to make quality healthcare accessible, efficient, and personalized for everyone.</p>
@@ -1535,224 +1345,52 @@ def reset_password():
 @app.route('/approve_doctor/<doctor_id>', methods=['POST'])
 def approve_doctor(doctor_id):
     if 'user_id' not in session or session.get('role') != 'admin':
-        flash("Unauthorized access", "danger")
-        return redirect(url_for('admin_dashboard'))
+        return jsonify({"error": "Unauthorized access"}), 403
 
     doctor = users_collection.find_one({'_id': ObjectId(doctor_id)}, {'email': 1, 'name':1})
 
     if not doctor:
-        flash("Doctor not found", "danger")
-        return redirect(url_for('admin_dashboard'))
+        return jsonify({"error": "Doctor not found"}), 404
 
     if 'email' not in doctor:
-        flash("Doctor email missing in database", "danger")
-        return redirect(url_for('admin_dashboard'))
+        return jsonify({"error": "Doctor email missing in database"}), 400
 
     # Approve the doctor
     users_collection.update_one({'_id': ObjectId(doctor_id)}, {'$set': {'account_status': 'approved'}})
 
     subject = "Doctor Registration Approved"
     recipients = [doctor['email']]
-    
-    # HTML email with CSS styling
-    html_body = f"""
-    <!DOCTYPE html>
-    <html>
-    <head>
-        <style>
-            body {{
-                font-family: Arial, sans-serif;
-                line-height: 1.6;
-                color: #333;
-                max-width: 600px;
-                margin: 0 auto;
-            }}
-            .email-container {{
-                border: 1px solid #ddd;
-                border-radius: 8px;
-                padding: 20px;
-                background-color: #f9f9f9;
-            }}
-            .header {{
-                background-color: #4285F4;
-                color: white;
-                padding: 15px;
-                text-align: center;
-                border-radius: 5px 5px 0 0;
-                margin-bottom: 20px;
-            }}
-            .content {{
-                background-color: white;
-                padding: 20px;
-                border-radius: 5px;
-                box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-                margin-bottom: 20px;
-            }}
-            .footer {{
-                text-align: center;
-                margin-top: 20px;
-                font-size: 14px;
-                color: #777;
-            }}
-            .login-button {{
-                display: inline-block;
-                background-color: #4CAF50;
-                color: white;
-                padding: 12px 24px;
-                text-decoration: none;
-                border-radius: 5px;
-                font-weight: bold;
-                margin: 10px 0;
-            }}
-        </style>
-    </head>
-    <body>
-        <div class="email-container">
-            <div class="header">
-                <h2>Registration Approved! 🎉</h2>
-            </div>
-            
-            <div class="content">
-                <p>Hello Dr. {doctor.get('name', 'Doctor')},</p>
-                
-                <p>We are pleased to inform you that your registration with RapiACT has been <strong>approved</strong>!</p>
-                
-                <p>You can now log in to your account and start using our platform to manage appointments and connect with patients.</p>
-                
-                <div style="text-align: center; margin: 25px 0;">
-                    <a href="https://capstone-2025-37jt.onrender.com//login" class="login-button">Login to Your Account</a>
-                </div>
-                
-                <p>If you have any questions or need assistance, please don't hesitate to contact our support team.</p>
-            </div>
-            
-            <div class="footer">
-                <p>Thank you for joining us!<br>RapiACT! Team ❤️</p>
-            </div>
-        </div>
-    </body>
-    </html>
-    """
+    body = f"Hello {doctor.get('name', 'Doctor')},\n\nYour registration has been approved by the RapiACT Team!❤️. You can now log in.\n\nThanks,\nRapiACT! Team"
 
-    send_email(subject, recipients, html_body)
+    send_email(subject, recipients, body)
 
-    flash("Doctor approved successfully! An email notification has been sent.", "success")
-    return redirect(url_for('admin_dashboard'))
+    # Add email-sending functionality here if required
 
+    return jsonify({"message": "Doctor approved successfully"})
 
 @app.route('/reject_doctor/<doctor_id>', methods=['POST'])
 def reject_doctor(doctor_id):
     if 'user_id' not in session or session.get('role') != 'admin':
-        flash("Unauthorized access", "danger")
-        return redirect(url_for('admin_dashboard'))
+        return jsonify({"error": "Unauthorized access"}), 403
 
     doctor = users_collection.find_one({'_id': ObjectId(doctor_id)}, {'email': 1, 'name': 1})
 
     if not doctor:
-        flash("Doctor not found", "danger")
-        return redirect(url_for('admin_dashboard'))
+        return jsonify({"error": "Doctor not found"}), 404
 
     if 'email' not in doctor:
-        flash("Doctor email missing in database", "danger")
-        return redirect(url_for('admin_dashboard'))
+        return jsonify({"error": "Doctor email missing in database"}), 400
 
     # Delete the doctor from the database
     users_collection.delete_one({'_id': ObjectId(doctor_id)})
 
-    subject = "Doctor Registration Status"
+    subject = "Doctor Registration Rejected"
     recipients = [doctor['email']]
-    
-    # HTML email with CSS styling
-    html_body = f"""
-    <!DOCTYPE html>
-    <html>
-    <head>
-        <style>
-            body {{
-                font-family: Arial, sans-serif;
-                line-height: 1.6;
-                color: #333;
-                max-width: 600px;
-                margin: 0 auto;
-            }}
-            .email-container {{
-                border: 1px solid #ddd;
-                border-radius: 8px;
-                padding: 20px;
-                background-color: #f9f9f9;
-            }}
-            .header {{
-                background-color: #e74c3c;
-                color: white;
-                padding: 15px;
-                text-align: center;
-                border-radius: 5px 5px 0 0;
-                margin-bottom: 20px;
-            }}
-            .content {{
-                background-color: white;
-                padding: 20px;
-                border-radius: 5px;
-                box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-                margin-bottom: 20px;
-            }}
-            .footer {{
-                text-align: center;
-                margin-top: 20px;
-                font-size: 14px;
-                color: #777;
-            }}
-            .contact-button {{
-                display: inline-block;
-                background-color: #3498db;
-                color: white;
-                padding: 12px 24px;
-                text-decoration: none;
-                border-radius: 5px;
-                font-weight: bold;
-                margin: 10px 0;
-            }}
-        </style>
-    </head>
-    <body>
-        <div class="email-container">
-            <div class="header">
-                <h2>Registration Update</h2>
-            </div>
-            
-            <div class="content">
-                <p>Hello Dr. {doctor.get('name', 'Doctor')},</p>
-                
-                <p>Thank you for your interest in joining the RapiACT platform.</p>
-                
-                <p>After careful review, we regret to inform you that your registration request has not been approved at this time.</p>
-                
-                <p>This decision may be due to one of the following reasons:</p>
-                <ul>
-                    <li>Incomplete or inaccurate information provided</li>
-                    <li>Unable to verify professional credentials</li>
-                    <li>High volume of applications in your specialty area</li>
-                </ul>
-                
-                <p>If you believe this decision was made in error or would like more information, please contact our support team.</p>
-                
-                <div style="text-align: center; margin: 25px 0;">
-                    <a href="mailto:support@rapidact.com" class="contact-button">Contact Support</a>
-                </div>
-            </div>
-            
-            <div class="footer">
-                <p>We wish you the best in your professional endeavors.<br>RapiACT! Team</p>
-            </div>
-        </div>
-    </body>
-    </html>
-    """
+    body = f"Hello {doctor.get('name', 'Doctor')},\n\nWe regret to inform you that your registration with RapiACT has been rejected.\n\nFor any queries, feel free to contact us.\n\nThanks,\nRapiACT! Team"
 
-    send_email(subject, recipients, html_body)
+    send_email(subject, recipients, body)
 
-    flash("Doctor rejected and removed successfully. An email notification has been sent.", "info")
-    return redirect(url_for('admin_dashboard'))
+    return jsonify({"message": "Doctor rejected and removed successfully"})
 
 @app.route('/user_photo/<user_id>')
 def user_photo(user_id):
@@ -1968,15 +1606,6 @@ def cancel_appointment(appointment_id):
 
         return redirect(url_for('patient_dashboard'))
     return redirect(url_for('login'))
-from bson.binary import Binary
-def get_content_type(file_ext):
-    content_types = {
-        '.jpg': 'image/jpeg',
-        '.jpeg': 'image/jpeg',
-        '.png': 'image/png',
-        '.gif': 'image/gif'
-    }
-    return content_types.get(file_ext, 'image/jpeg')
 
 @app.route('/profile', methods=['GET', 'POST'])
 def profile():
@@ -2001,38 +1630,15 @@ def profile():
                 address = request.form.get('address')
 
                 # Update user details except email
-                update_data = {
-                    "name": name,
-                    "phone": phone,
-                    "age": age,
-                    "gender": gender,
-                    "address": address
-                }
-                
-                # Handle profile picture upload
-                if 'profile_picture' in request.files:
-                    profile_pic = request.files['profile_picture']
-                    if profile_pic and profile_pic.filename != '':
-                        # Check if it's a valid image
-                        if profile_pic and allowed_file(profile_pic.filename):
-                            # Read the image data
-                            image_data = profile_pic.read()
-                            
-                            # Get file extension
-                            file_ext = os.path.splitext(profile_pic.filename)[1].lower()
-                            
-                            # Update profile picture in database
-                            update_data["profile_picture"] = {
-                                "data": Binary(image_data),
-                                "content_type": get_content_type(file_ext)
-                            }
-                        else:
-                            flash("Invalid file format. Allowed formats: jpg, jpeg, png, gif", "error")
-                            return redirect(url_for('profile'))
-
                 mongo.db.users.update_one(
                     {"_id": ObjectId(user_id)},
-                    {"$set": update_data}
+                    {"$set": {
+                        "name": name,
+                        "phone": phone,
+                        "age": age,
+                        "gender": gender,
+                        "address": address
+                    }}
                 )
                 flash("Profile updated successfully", "success")
                 return redirect(url_for('profile'))
@@ -2096,6 +1702,9 @@ def profile():
 
         return render_template('profile.html', user=user)
     
+    except Exception as e:
+        return f"Error fetching/updating user details: {str(e)}", 500
+
     except Exception as e:
         return f"Error fetching/updating user details: {str(e)}", 500
 
