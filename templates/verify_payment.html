@@ -1,0 +1,432 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Verify Payments | RapiACT!</title>
+    <link rel="icon" type="image/jpg" href="{{ url_for('static', filename='images/logo.jpg') }}">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --primary-dark: #1a237e;
+            --primary-light: #5c6bc0;
+            --accent-color: #7c4dff;
+            --sidebar-width: 250px;
+            --transition-speed: 0.3s;
+        }
+
+        @keyframes gradientBG {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        html, body {
+            height: 100%;
+            margin: 0;
+            background: linear-gradient(-45deg, #1a237e, #3949ab, #5c6bc0, #7c4dff);
+            background-size: 400% 400%;
+            animation: gradientBG 15s ease infinite;
+            font-family: 'Arial', sans-serif;
+            display: flex;
+            color: white;
+            overflow-x: hidden;
+        }
+
+        .sidebar {
+            width: var(--sidebar-width);
+            background: rgba(26, 35, 126, 0.9);
+            color: white;
+            padding: 20px;
+            position: fixed;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            text-align: center;
+            backdrop-filter: blur(10px);
+            transition: transform var(--transition-speed) ease;
+            z-index: 1000;
+        }
+
+        .logo-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px 0;
+        }
+
+        .logo {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            object-fit: cover;
+            box-shadow: 0 0 20px rgba(255, 255, 255, 0.2);
+            transition: transform var(--transition-speed) ease;
+        }
+
+        .logo:hover {
+            transform: scale(1.1);
+        }
+
+        .sidebar a {
+            display: flex;
+            align-items: center;
+            color: white;
+            text-decoration: none;
+            padding: 12px 20px;
+            font-weight: bold;
+            border-radius: 10px;
+            transition: all var(--transition-speed) ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .sidebar a i {
+            margin-right: 10px;
+            width: 20px;
+            text-align: center;
+        }
+
+        .sidebar a::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+            transition: left 0.5s ease;
+        }
+
+        .sidebar a:hover::before {
+            left: 100%;
+        }
+
+        .sidebar a:hover {
+            background: rgba(255, 255, 255, 0.1);
+            transform: translateX(5px);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        .main-content {
+            margin-left: var(--sidebar-width);
+            padding: 40px;
+            flex-grow: 1;
+            width: calc(100% - var(--sidebar-width));
+            min-height: 100vh;
+        }
+
+        .main-content-wrapper {
+            width: 100%;
+            max-width: 100%;
+            margin: 0 auto;
+            animation: fadeInUp 0.6s ease-out;
+        }
+
+        .dashboard-header {
+            width: 100%;
+            margin-bottom: 30px;
+            text-align: center;
+            padding: 20px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            backdrop-filter: blur(10px);
+            animation: fadeInUp 0.6s ease-out;
+        }
+
+        .dashboard-header h2 {
+            margin: 0;
+            font-size: 2.5rem;
+            font-weight: 600;
+            color: white;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2);
+        }
+
+        .section {
+            background-color: rgba(255, 255, 255, 0.95);
+            padding: 30px;
+            border-radius: 20px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+            color: #333;
+            margin-bottom: 30px;
+            width: 100%;
+            max-width: 1000px;
+            margin-left: auto;
+            margin-right: auto;
+            animation: fadeInUp 0.6s ease-out;
+        }
+
+        .table {
+            width: 100%;
+            margin-bottom: 0;
+        }
+
+        .table th {
+            background-color: rgba(26, 35, 126, 0.1);
+            font-weight: bold;
+            color: var(--primary-dark);
+        }
+
+        .table td, .table th {
+            padding: 12px 15px;
+            vertical-align: middle;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 10px;
+        }
+
+        .btn-verify {
+            background: linear-gradient(90deg, #4CAF50, #8BC34A);
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 8px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .btn-reject {
+            background: linear-gradient(90deg, #F44336, #FF5722);
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 8px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .btn-verify:hover, .btn-reject:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        .badge {
+            padding: 5px 10px;
+            border-radius: 5px;
+            font-weight: 600;
+        }
+
+        .badge-paid {
+            background-color: #FFC107;
+            color: #333;
+        }
+
+        .badge-verified {
+            background-color: #4CAF50;
+            color: white;
+        }
+
+        .badge-rejected {
+            background-color: #F44336;
+            color: white;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 40px 0;
+            color: #666;
+        }
+
+        .empty-state i {
+            font-size: 60px;
+            color: #ccc;
+            margin-bottom: 20px;
+        }
+
+        .menu-toggle {
+            display: none;
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            z-index: 1001;
+            background: rgba(255, 255, 255, 0.2);
+            border: none;
+            padding: 10px;
+            border-radius: 5px;
+            cursor: pointer;
+            backdrop-filter: blur(10px);
+        }
+
+        @media (max-width: 768px) {
+            .menu-toggle {
+                display: block;
+            }
+
+            .sidebar {
+                transform: translateX(-100%);
+            }
+
+            .sidebar.active {
+                transform: translateX(0);
+            }
+
+            .main-content {
+                margin-left: 0;
+                width: 100%;
+                padding: 20px;
+            }
+
+            .section {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <button class="menu-toggle" onclick="toggleSidebar()">
+        <i class="fas fa-bars" style="color: white; font-size: 24px;"></i>
+    </button>
+
+    <div class="sidebar">
+        <div class="logo-container">
+            <img src="{{ url_for('static', filename='images/logo.jpg') }}" alt="Logo" class="logo">
+            <h3>RapiACT!</h3>
+        </div>
+        <hr>
+        <a href="/admin_dashboard"><i class="fas fa-home"></i>Dashboard</a>
+        <a href="/add_user"><i class="fas fa-user-plus"></i>Add User</a>
+        <a href="/users"><i class="fas fa-users"></i>Users</a>
+        <a href="/appointments"><i class="fas fa-calendar-check"></i>Appointments</a>
+        <a href="/admin_dashboard/add_medicine"><i class="fas fa-plus-circle"></i>Add Medicine</a>
+        <a href="/pharmacy"><i class="fas fa-pills"></i>Pharmacy</a>
+        <a href="/email_dashboard"><i class="fas fa-calendar-check"></i>Email Sending</a>
+        <a href="/enquiry_details"><i class="fas fa-question-circle"></i>Contact Queries</a>
+        <a href="/admin_dashboard/verify_payment"><i class="fas fa-check-circle"></i>Verify Payment</a>
+        <hr>
+        <a href="/logout"><i class="fas fa-sign-out-alt"></i>Logout</a>
+    </div>
+    
+    <div class="main-content">
+        <div class="main-content-wrapper">
+            <div class="dashboard-header">
+                <h2>Verify Payments</h2>
+            </div>
+            
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    {% for category, message in messages %}
+                        <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+                            {{ message }}
+                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                        </div>
+                    {% endfor %}
+                {% endif %}
+            {% endwith %}
+            
+            <div class="section">
+                {% if payments %}
+                <div class="table-responsive">
+                    <table class="table table-striped table-hover">
+                        <thead>
+                            <tr>
+                                <th>Patient</th>
+                                <th>Doctor</th>
+                                <th>Medicine</th>
+                                <th>Date</th>
+                                <th>UTR/Transaction ID</th>
+                                <th>Status</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for payment in payments %}
+                            <tr>
+                                <td>
+                                    {% if payment.patient_name %}
+                                        {{ payment.patient_name }}
+                                    {% else %}
+                                        Patient #{{ payment.patient_id }}
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% if payment.doctor_name %}
+                                        {{ payment.doctor_name }}
+                                    {% else %}
+                                        Doctor #{{ payment.doctor_id }}
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% if payment.product_name %}
+                                        {{ payment.product_name }}
+                                    {% else %}
+                                        Medicine #{{ payment.product_id }}
+                                    {% endif %}
+                                </td>
+                                <td>{{ payment.date.strftime('%d-%m-%Y %H:%M') }}</td>
+                                <td>{{ payment.utr_id }}</td>
+                                <td>
+                                    <span class="badge badge-paid">Paid</span>
+                                </td>
+                                <td>
+                                    <div class="action-buttons">
+                                        <form action="{{ url_for('verify_payment_action', payment_id=payment._id) }}" method="POST">
+                                            <input type="hidden" name="action" value="verify">
+                                            <button type="submit" class="btn-verify">
+                                                <i class="fas fa-check"></i> Verify
+                                            </button>
+                                        </form>
+                                        <form action="{{ url_for('verify_payment_action', payment_id=payment._id) }}" method="POST">
+                                            <input type="hidden" name="action" value="reject">
+                                            <button type="submit" class="btn-reject">
+                                                <i class="fas fa-times"></i> Reject
+                                            </button>
+                                        </form>
+                                    </div>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <div class="empty-state">
+                    <i class="fas fa-receipt"></i>
+                    <h4>No pending payments to verify</h4>
+                    <p>All payments have been processed or no payments have been made yet.</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Mobile Sidebar Toggle
+        const toggleSidebar = () => {
+            const sidebar = document.querySelector('.sidebar');
+            sidebar.classList.toggle('active');
+        };
+
+        // Close sidebar when clicking outside on mobile
+        document.addEventListener('click', (e) => {
+            const sidebar = document.querySelector('.sidebar');
+            const menuToggle = document.querySelector('.menu-toggle');
+            
+            if (window.innerWidth <= 768 && 
+                !sidebar.contains(e.target) && 
+                !menuToggle.contains(e.target) && 
+                sidebar.classList.contains('active')) {
+                sidebar.classList.remove('active');
+            }
+        });
+    </script>
+</body>
+</html>

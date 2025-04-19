@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Breast Cancer Prediction</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <style>
+        :root {
+            --primary-color: #ff6b8b;
+            --secondary-color: #536dfe;
+            --background-color: #f9f9f9;
+            --card-color: #ffffff;
+            --text-color: #333333;
+            --shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            --border-radius: 8px;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--background-color);
+            margin: 0;
+            padding: 0;
+            color: var(--text-color);
+            line-height: 1.6;
+        }
+        
+        .logo-container {
+            text-align: center;
+            padding: 15px 0;
+            background-color: white;
+            box-shadow: var(--shadow);
+            position: fixed;
+            top: 0;
+            width: 100%;
+            z-index: 100;
+        }
+        
+        .logo {
+            height: 50px;
+            cursor: pointer;
+            transition: transform 0.3s ease;
+        }
+        
+        .logo:hover {
+            transform: scale(1.05);
+        }
+        
+        .container {
+            max-width: 900px;
+            margin: 80px auto 40px;
+            padding: 20px;
+        }
+        
+        h1 {
+            text-align: center;
+            color: var(--primary-color);
+            margin-bottom: 30px;
+            font-weight: 600;
+        }
+        
+        .card {
+            background-color: var(--card-color);
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow);
+            padding: 25px;
+            margin-bottom: 25px;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        
+        .card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 15px rgba(0, 0, 0, 0.1);
+        }
+        
+        h2 {
+            color: var(--secondary-color);
+            margin-top: 0;
+            font-weight: 500;
+            border-bottom: 2px solid #f0f0f0;
+            padding-bottom: 10px;
+            margin-bottom: 20px;
+        }
+        
+        .input-group {
+            margin-bottom: 15px;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 6px;
+            font-weight: 500;
+            color: #555;
+        }
+        
+        input[type="number"], input[type="file"] {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #e0e0e0;
+            border-radius: var(--border-radius);
+            font-size: 16px;
+            transition: border-color 0.3s;
+            box-sizing: border-box;
+        }
+        
+        input[type="number"]:focus, input[type="file"]:focus {
+            border-color: var(--secondary-color);
+            outline: none;
+        }
+        
+        button {
+            background-color: var(--secondary-color);
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            border-radius: var(--border-radius);
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 500;
+            transition: background-color 0.3s, transform 0.3s;
+            display: block;
+            width: 100%;
+            margin-top: 20px;
+        }
+        
+        button:hover {
+            background-color: #3f51b5;
+            transform: translateY(-2px);
+        }
+        
+        .extract-btn {
+            background-color: #4caf50;
+        }
+        
+        .extract-btn:hover {
+            background-color: #388e3c;
+        }
+        
+        .predict-btn {
+            background-color: var(--primary-color);
+        }
+        
+        .predict-btn:hover {
+            background-color: #e91e63;
+        }
+        
+        .result-section {
+            text-align: center;
+        }
+        
+        .prediction {
+            display: inline-block;
+            padding: 15px 30px;
+            border-radius: var(--border-radius);
+            font-size: 20px;
+            font-weight: 600;
+            margin-bottom: 20px;
+        }
+        
+        .benign {
+            background-color: #4caf50;
+            color: white;
+        }
+        
+        .malignant {
+            background-color: #f44336;
+            color: white;
+        }
+        
+        .precautions {
+            text-align: left;
+            background-color: #f8f9fa;
+            padding: 20px;
+            border-radius: var(--border-radius);
+            border-left: 4px solid var(--secondary-color);
+        }
+        
+        .precautions h3 {
+            color: var(--secondary-color);
+            margin-top: 0;
+        }
+        
+        .precautions ul {
+            padding-left: 20px;
+        }
+        
+        .precautions li {
+            margin-bottom: 10px;
+        }
+        
+        input[type="file"] {
+            padding: 10px;
+            background-color: #f7f7f7;
+        }
+        
+        input[type="file"]::file-selector-button {
+            background-color: #4caf50;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-right: 15px;
+            transition: background-color 0.3s;
+        }
+        
+        input[type="file"]::file-selector-button:hover {
+            background-color: #388e3c;
+        }
+        
+        @media (max-width: 768px) {
+            .container {
+                padding: 15px;
+            }
+            
+            .card {
+                padding: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="logo-container">
+        <a href="/">
+            <img src="{{ url_for('static', filename='images/logo.png') }}" alt="HealthPredict Logo" class="logo">
+        </a>
+    </div>
+
+    <div class="container">
+        <h1>Breast Cancer Prediction</h1>
+        
+        <div class="card">
+            <h2>Upload Medical Report</h2>
+            <form action="/breast_cancer_extract" method="post" enctype="multipart/form-data">
+                <input type="file" name="file" accept=".pdf,.docx" required>
+                <button type="submit" class="extract-btn">Extract Data</button>
+            </form>
+        </div>
+        
+        <div class="card">
+            <h2>Tumor Characteristics</h2>
+            <form action="/breast_cancer_predict" method="post">
+                <div class="input-fields">
+                    {% for feature in features %}
+                    <div class="input-group">
+                        <label for="{{ feature }}">{{ feature.replace('_', ' ').title() }}</label>
+                        <input type="number" step="0.0001" id="{{ feature }}" name="{{ feature }}" 
+                               value="{{ extracted_data.get(feature, '') }}" required>
+                    </div>
+                    {% endfor %}
+                </div>
+                <button type="submit" class="predict-btn">Analyze Results</button>
+            </form>
+        </div>
+        
+        {% if prediction_text %}
+        <div class="card result-section">
+            <h2>Analysis Results</h2>
+            <div class="prediction {% if 'Malignant' in prediction_text %}malignant{% else %}benign{% endif %}">
+                {{ prediction_text }}
+            </div>
+            
+            {% if precautions %}
+            <div class="precautions">
+                <h3>Medical Recommendations:</h3>
+                <ul>
+                    {% for precaution in precautions %}
+                    <li>{{ precaution }}</li>
+                    {% endfor %}
+                </ul>
+            </div>
+            {% endif %}
+        </div>
+        {% endif %}
+    </div>
+    
+    <script>
+        // Add any JavaScript functionality here
+        document.addEventListener('DOMContentLoaded', function() {
+            // Form validation or other enhancements can be added here
+        });
+    </script>
+</body>
+</html>

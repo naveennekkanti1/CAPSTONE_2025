@@ -1,0 +1,446 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Parkinson's Disease Prediction</title>
+    <style>
+        :root {
+            --primary: #4a89dc;
+            --primary-light: #6fa2e9;
+            --primary-dark: #3a70c2;
+            --secondary: #f5f7fa;
+            --text: #333;
+            --text-light: #666;
+            --success: #37bc9b;
+            --danger: #da4453;
+            --warning: #f6bb42;
+            --border-radius: 8px;
+            --box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            --transition: all 0.3s ease;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background-color: #f8f9fb;
+            color: var(--text);
+            line-height: 1.6;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+        
+        header {
+            text-align: center;
+            margin-bottom: 3rem;
+            padding-bottom: 1.5rem;
+            border-bottom: 1px solid #e0e6ed;
+        }
+        
+        header h1 {
+            color: var(--primary);
+            font-size: 2.5rem;
+            margin-bottom: 0.5rem;
+        }
+        
+        header p {
+            color: var(--text-light);
+            font-size: 1.1rem;
+        }
+        
+        main {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 2rem;
+        }
+        
+        @media (min-width: 992px) {
+            main {
+                grid-template-columns: 1fr 1fr;
+            }
+            
+            .results {
+                grid-column: 1 / -1;
+            }
+        }
+        
+        section {
+            background: white;
+            border-radius: var(--border-radius);
+            box-shadow: var(--box-shadow);
+            padding: 2rem;
+            transition: var(--transition);
+        }
+        
+        section:hover {
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.15);
+        }
+        
+        h2 {
+            color: var(--primary);
+            margin-bottom: 1.5rem;
+            font-size: 1.5rem;
+            position: relative;
+            padding-bottom: 0.5rem;
+        }
+        
+        h2::after {
+            content: '';
+            position: absolute;
+            left: 0;
+            bottom: 0;
+            height: 3px;
+            width: 60px;
+            background-color: var(--primary-light);
+            border-radius: 3px;
+        }
+        
+        .file-upload {
+            border: 2px dashed #d2d9e4;
+            border-radius: var(--border-radius);
+            padding: 2rem;
+            text-align: center;
+            margin-bottom: 1.5rem;
+            position: relative;
+            transition: var(--transition);
+            cursor: pointer;
+        }
+        
+        .file-upload:hover {
+            border-color: var(--primary-light);
+            background-color: rgba(106, 161, 233, 0.05);
+        }
+        
+        .file-upload input[type="file"] {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            top: 0;
+            left: 0;
+            opacity: 0;
+            cursor: pointer;
+        }
+        
+        .file-upload label {
+            color: var(--primary);
+            font-weight: 500;
+            display: block;
+            margin-bottom: 0.5rem;
+        }
+        
+        .file-upload label::before {
+            content: "📄";
+            display: block;
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+        }
+        
+        .btn {
+            background-color: var(--primary);
+            color: white;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: var(--border-radius);
+            font-size: 1rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: var(--transition);
+            display: inline-block;
+            text-align: center;
+            text-decoration: none;
+            width: 100%;
+        }
+        
+        .btn:hover {
+            background-color: var(--primary-dark);
+            transform: translateY(-2px);
+        }
+        
+        .predict-btn {
+            background-color: var(--success);
+        }
+        
+        .predict-btn:hover {
+            background-color: #2fa789;
+        }
+        
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+        
+        .form-group {
+            margin-bottom: 1rem;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+            color: var(--text);
+            font-size: 0.95rem;
+        }
+        
+        .form-group input {
+            width: 100%;
+            padding: 0.75rem;
+            border: 1px solid #d2d9e4;
+            border-radius: var(--border-radius);
+            font-size: 1rem;
+            transition: var(--transition);
+        }
+        
+        .form-group input:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(74, 137, 220, 0.2);
+        }
+        
+        .form-group input.has-value {
+            background-color: rgba(74, 137, 220, 0.05);
+            border-color: var(--primary);
+        }
+        
+        .error-message {
+            background-color: rgba(218, 68, 83, 0.1);
+            color: var(--danger);
+            padding: 1rem;
+            border-radius: var(--border-radius);
+            margin-top: 1rem;
+        }
+        
+        .status-message {
+            background-color: rgba(74, 137, 220, 0.1); 
+            color: var(--primary); 
+            padding: 1rem; 
+            border-radius: var(--border-radius); 
+            margin-top: 1rem;
+        }
+        
+        .results {
+            background: linear-gradient(to right, #f5f7fa, #e8ecf4);
+        }
+        
+        .result-card {
+            background: white;
+            border-radius: var(--border-radius);
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+            border-left: 4px solid var(--primary);
+        }
+        
+        .result-card.positive {
+            border-left-color: var(--danger);
+        }
+        
+        .result-card.negative {
+            border-left-color: var(--success);
+        }
+        
+        .prediction {
+            font-size: 1.25rem;
+            font-weight: 500;
+            margin-bottom: 1rem;
+        }
+        
+        .precautions {
+            background-color: rgba(246, 187, 66, 0.1);
+            border-radius: var(--border-radius);
+            padding: 1.5rem;
+            margin-top: 1.5rem;
+        }
+        
+        .precautions h3 {
+            color: var(--warning);
+            margin-bottom: 1rem;
+            font-size: 1.2rem;
+        }
+        
+        .precautions ul {
+            list-style-position: inside;
+            color: var(--text);
+        }
+        
+        .precautions li {
+            margin-bottom: 0.5rem;
+        }
+        
+        footer {
+            text-align: center;
+            margin-top: 3rem;
+            padding-top: 1.5rem;
+            border-top: 1px solid #e0e6ed;
+            color: var(--text-light);
+            font-style: italic;
+            font-size: 0.9rem;
+        }
+        
+        .extracted-info {
+            margin-top: 1rem;
+            padding: 1rem;
+            background-color: var(--secondary);
+            border-radius: var(--border-radius);
+        }
+        
+        /* Added animations */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        section {
+            animation: fadeIn 0.5s ease-out forwards;
+        }
+        
+        section:nth-child(2) {
+            animation-delay: 0.1s;
+        }
+        
+        section:nth-child(3) {
+            animation-delay: 0.2s;
+        }
+        
+        /* Make the file input more intuitive */
+        .file-status {
+            margin-top: 1rem;
+            font-size: 0.9rem;
+            color: var(--text-light);
+        }
+        
+        .file-name {
+            font-weight: 500;
+            color: var(--primary);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Parkinson's Disease Prediction</h1>
+            <p>Upload medical data or enter values manually to get a prediction.</p>
+        </header>
+        
+        <main>
+            <!-- File Upload Section -->
+            <section class="upload-section">
+                <h2>Upload Data File</h2>
+                <form action="/extract/parkinsons" method="post" enctype="multipart/form-data">
+                    <div class="file-upload">
+                        <input type="file" name="file" id="file" accept=".pdf,.docx">
+                        <label for="file">Choose a PDF or DOCX file</label>
+                        <div class="file-status">No file selected</div>
+                    </div>
+                    <button type="submit" class="btn">Extract Data</button>
+                </form>
+                
+                {% if status_message %}
+                <div class="status-message">
+                    <p>{{ status_message }}</p>
+                </div>
+                {% endif %}
+                
+                {% if extracted_data %}
+                <div class="extracted-info">
+                    <p>Found {{ extracted_data|length }} values</p>
+                    <button type="button" class="btn" onclick="toggleDebugInfo()" style="background-color: var(--text-light); margin-top: 10px;">
+                        Show/Hide Extraction Details
+                    </button>
+                    <div id="debugInfo" style="display: none; margin-top: 10px; font-size: 0.8rem; max-height: 200px; overflow-y: auto;">
+                        {% for key, value in extracted_data.items() %}
+                        <div>{{ key }}: {{ value }}</div>
+                        {% endfor %}
+                    </div>
+                </div>
+                {% endif %}
+                
+                {% if error %}
+                <div class="error-message">
+                    <p>{{ error }}</p>
+                </div>
+                {% endif %}
+            </section>
+            
+            <!-- Data Entry Form -->
+            <section class="data-form">
+                <h2>Enter Values Manually</h2>
+                <form action="/predict/parkinsons" method="post">
+                    <div class="form-grid">
+                        {% for feature in features_parkinsons %}
+                        <div class="form-group">
+                            <label for="{{ feature }}">{{ feature }}</label>
+                            <input type="number" step="any" name="{{ feature }}" id="{{ feature }}"
+                                   value="{{ extracted_data.get(feature, '') }}" 
+                                   placeholder="Enter value"
+                                   {% if extracted_data.get(feature) %}class="has-value"{% endif %}>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    <button type="submit" class="btn predict-btn">Make Prediction</button>
+                </form>
+            </section>
+            
+            <!-- Results Section -->
+            {% if prediction_text %}
+            <section class="results">
+                <h2>Prediction Results</h2>
+                <div class="result-card {% if 'Positive' in prediction_text %}positive{% else %}negative{% endif %}">
+                    <p class="prediction">{{ prediction_text }}</p>
+                    
+                    {% if precautions %}
+                    <div class="precautions">
+                        <h3>Recommended Precautions</h3>
+                        <ul>
+                            {% for precaution in precautions %}
+                            <li>{{ precaution }}</li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+                    {% endif %}
+                </div>
+            </section>
+            {% endif %}
+        </main>
+        
+        <footer>
+            <p>This is a machine learning tool and should not replace professional medical advice.</p>
+        </footer>
+    </div>
+    
+    <script>
+        // Display filename when selected
+        const fileInput = document.getElementById('file');
+        const fileStatus = document.querySelector('.file-status');
+        
+        fileInput.addEventListener('change', function() {
+            if (this.files.length > 0) {
+                fileStatus.innerHTML = 'Selected: <span class="file-name">' + this.files[0].name + '</span>';
+            } else {
+                fileStatus.textContent = 'No file selected';
+            }
+        });
+        
+        // Make the entire upload area clickable
+        const uploadArea = document.querySelector('.file-upload');
+        uploadArea.addEventListener('click', function() {
+            fileInput.click();
+        });
+        
+        // Function to toggle debug info visibility
+        function toggleDebugInfo() {
+            const debugInfo = document.getElementById('debugInfo');
+            debugInfo.style.display = debugInfo.style.display === 'none' ? 'block' : 'none';
+        }
+    </script>
+</body>
+</html>

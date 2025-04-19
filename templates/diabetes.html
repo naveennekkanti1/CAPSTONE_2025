@@ -1,0 +1,407 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Diabetes Risk Prediction</title>
+    <link rel="icon" type="image/jpg" href="{{ url_for('static', filename='images/logo.jpg') }}" />
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <style>
+        /* Diabetes-specific styling */
+        :root {
+            --diabetes-primary: #3498db;
+            --diabetes-secondary: #5dade2;
+            --diabetes-accent: #f39c12;
+            --diabetes-light: #f7f9f9;
+            --diabetes-dark: #2c3e50;
+        }
+
+        .diabetes-header {
+            background: linear-gradient(135deg, var(--diabetes-primary), var(--diabetes-secondary));
+            color: white;
+            padding: 2rem;
+            text-align: center;
+            border-radius: 10px;
+            margin-bottom: 2rem;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        }
+        .navbar .logo img {
+            height: 50px;
+        }
+        
+        .navbar .links a {
+            color: white;
+            text-decoration: none;
+            margin: 0 15px;
+            transition: color 0.3s ease;
+        }
+        .navbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px 30px;
+            background-color: #2c3e50;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+        .navbar .links a:hover {
+            color: var(--heart-secondary);
+        }
+        .diabetes-header h1 {
+            margin: 0;
+            font-size: 2.5rem;
+        }
+
+        .diabetes-header p {
+            margin: 10px 0 0;
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+
+        .diabetes-container {
+            max-width: 1200px;
+            margin: 2rem auto;
+            padding: 0 20px;
+        }
+
+        .diabetes-panels {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        .diabetes-panel {
+            background-color: white;
+            border-radius: 10px;
+            padding: 2rem;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+            flex: 1;
+            min-width: 300px;
+        }
+
+        .diabetes-panel h2 {
+            color: var(--diabetes-primary);
+            margin-top: 0;
+            border-bottom: 2px solid var(--diabetes-secondary);
+            padding-bottom: 10px;
+        }
+
+        .form-row {
+            display: flex;
+            flex-wrap: wrap;
+            margin-bottom: 15px;
+        }
+
+        .form-group {
+            flex: 1;
+            min-width: 200px;
+            margin-right: 15px;
+            margin-bottom: 15px;
+        }
+
+        .form-group:last-child {
+            margin-right: 0;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 500;
+            color: var(--diabetes-dark);
+        }
+
+        .form-group input, .form-group select {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 1rem;
+        }
+
+        .file-upload {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            border: 2px dashed var(--diabetes-secondary);
+            border-radius: 10px;
+            padding: 2rem;
+            margin-bottom: 1.5rem;
+            transition: all 0.3s ease;
+        }
+
+        .file-upload:hover {
+            border-color: var(--diabetes-primary);
+            background-color: rgba(93, 173, 226, 0.05);
+        }
+
+        .file-upload p {
+            margin: 10px 0;
+            color: #666;
+        }
+
+        .file-input {
+            display: none;
+        }
+
+        .file-label {
+            display: inline-block;
+            padding: 12px 20px;
+            background-color: var(--diabetes-secondary);
+            color: white;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+
+        .file-label:hover {
+            background-color: var(--diabetes-primary);
+        }
+
+        .button-group {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 1.5rem;
+        }
+
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 5px;
+            font-size: 1rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .btn-primary {
+            background-color: var(--diabetes-primary);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background-color: #2980b9;
+        }
+
+        .btn-secondary {
+            background-color: var(--diabetes-secondary);
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            background-color: #3486c9;
+        }
+
+        .result-panel {
+            background-color: white;
+            border-radius: 10px;
+            padding: 2rem;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+            margin-top: 2rem;
+        }
+
+        .result-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 1.5rem;
+        }
+
+        .result-icon {
+            font-size: 2.5rem;
+            margin-right: 15px;
+        }
+
+        .positive-result {
+            color: #e74c3c;
+        }
+
+        .negative-result {
+            color: #2ecc71;
+        }
+
+        .neutral-result {
+            color: #f39c12;
+        }
+
+        .result-content h3 {
+            margin-top: 0;
+            margin-bottom: 5px;
+            color: var(--diabetes-dark);
+        }
+
+        .result-content p {
+            margin-top: 0;
+            color: #666;
+        }
+
+        .precautions-list {
+            margin-top: 1.5rem;
+            padding-left: 20px;
+        }
+
+        .precautions-list li {
+            margin-bottom: 10px;
+            padding-left: 10px;
+        }
+
+        .instructions {
+            background-color: rgba(243, 156, 18, 0.1);
+            border-left: 4px solid var(--diabetes-accent);
+            padding: 15px;
+            margin-bottom: 1.5rem;
+            border-radius: 0 5px 5px 0;
+        }
+
+        .instructions h3 {
+            margin-top: 0;
+            color: var(--diabetes-dark);
+        }
+
+        .instructions ol {
+            margin-bottom: 0;
+            padding-left: 20px;
+        }
+
+        .instructions li {
+            margin-bottom: 8px;
+        }
+
+        .back-link {
+            display: inline-block;
+            margin-top: 1.5rem;
+            color: var(--diabetes-primary);
+            text-decoration: none;
+            font-weight: 500;
+        }
+
+        .back-link:hover {
+            text-decoration: underline;
+        }
+
+        /* Responsive adjustments */
+        @media (max-width: 768px) {
+            .diabetes-panels {
+                flex-direction: column;
+            }
+            
+            .form-row {
+                flex-direction: column;
+            }
+            
+            .form-group {
+                margin-right: 0;
+                margin-bottom: 15px;
+            }
+            
+            .button-group {
+                flex-direction: column;
+                gap: 10px;
+            }
+            
+            .btn {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="navbar">
+        <div class="logo">
+            <a href="/"><img src="{{ url_for('static', filename='images/logo.jpg') }}" alt="Logo" /></a>
+        </div>
+        
+    </div>
+    <div class="diabetes-container">
+        <div class="diabetes-header">
+            <h1>Diabetes Risk Prediction</h1>
+            <p>Early detection through advanced machine learning analysis of medical parameters</p>
+        </div>
+
+        <div class="diabetes-panels">
+            <div class="diabetes-panel">
+                <div class="instructions">
+                    <h3>How to Use This Tool</h3>
+                    <ol>
+                        <li>Enter the required values manually or upload a medical report (PDF)</li>
+                        <li>For best results, ensure all fields are filled accurately</li>
+                        <li>Click "Predict" to get an assessment of diabetes risk</li>
+                    </ol>
+                </div>
+
+                <h2>Upload Medical Report</h2>
+                <form action="{{ url_for('extract') }}" method="post" enctype="multipart/form-data">
+                    <div class="file-upload">
+                        <input type="file" name="file" id="file" class="file-input" accept=".pdf">
+                        <label for="file" class="file-label">Choose File</label>
+                        <p id="file-name">No file chosen</p>
+                        <p>Supported format: PDF</p>
+                    </div>
+                    <div class="button-group">
+                        <button type="submit" class="btn btn-secondary">Extract Data</button>
+                    </div>
+                </form>
+            </div>
+
+            <div class="diabetes-panel">
+                <h2>Enter Medical Parameters</h2>
+                <form action="{{ url_for('predict') }}" method="post">
+                    {% for feature in features %}
+                    <div class="form-group">
+                        <label for="{{ feature }}">{{ feature }}</label>
+                        <input type="number" id="{{ feature }}" name="{{ feature }}" step="0.01" value="{{ extracted_data[feature] if extracted_data else '' }}" required>
+                    </div>
+                    {% endfor %}
+
+                    <div class="button-group">
+                        <button type="reset" class="btn btn-secondary">Reset</button>
+                        <button type="submit" class="btn btn-primary">Predict</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        {% if prediction_text %}
+        <div class="result-panel">
+            <div class="result-header">
+                <div class="result-icon {% if 'Positive' in prediction_text %}positive-result{% elif 'Negative' in prediction_text %}negative-result{% else %}neutral-result{% endif %}">
+                    {% if 'Positive' in prediction_text %}
+                    ⚠️
+                    {% elif 'Negative' in prediction_text %}
+                    ✓
+                    {% else %}
+                    ℹ️
+                    {% endif %}
+                </div>
+                <div class="result-content">
+                    <h3>Prediction Result</h3>
+                    <p>{{ prediction_text }}</p>
+                </div>
+            </div>
+
+            {% if precautions %}
+            <div>
+                <h3>Recommendations & Precautions</h3>
+                <ul class="precautions-list">
+                    {% for precaution in precautions %}
+                    <li>{{ precaution }}</li>
+                    {% endfor %}
+                </ul>
+                <p><strong>Note:</strong> This is a predictive tool only. Please consult a healthcare professional for clinical diagnosis and treatment.</p>
+            </div>
+            {% endif %}
+        </div>
+        {% endif %}
+        
+        <a href="{{ url_for('index') }}" class="back-link">Back to Home</a>
+    </div>
+
+    <script>
+        // Display selected file name
+        document.getElementById('file').addEventListener('change', function() {
+            const fileName = this.files[0] ? this.files[0].name : 'No file chosen';
+            document.getElementById('file-name').textContent = fileName;
+        });
+    </script>
+</body>
+</html>

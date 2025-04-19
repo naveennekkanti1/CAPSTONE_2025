@@ -1,0 +1,417 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Liver Disease Prediction</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <style>
+        /* Liver-specific styling */
+        :root {
+            --liver-primary: #2c7873;
+            --liver-secondary: #6fb98f;
+            --liver-accent: #fdca40;
+            --liver-light: #f7f9f9;
+            --liver-dark: #2b2e4a;
+        }
+
+        .liver-header {
+            background: linear-gradient(135deg, var(--liver-primary), var(--liver-secondary));
+            color: white;
+            padding: 2rem;
+            text-align: center;
+            border-radius: 10px;
+            margin-bottom: 2rem;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .liver-header h1 {
+            margin: 0;
+            font-size: 2.5rem;
+        }
+
+        .liver-header p {
+            margin: 10px 0 0;
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+
+        .liver-container {
+            max-width: 1200px;
+            margin: 2rem auto;
+            padding: 0 20px;
+        }
+
+        .liver-panels {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        .liver-panel {
+            background-color: white;
+            border-radius: 10px;
+            padding: 2rem;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+            flex: 1;
+            min-width: 300px;
+        }
+
+        .liver-panel h2 {
+            color: var(--liver-primary);
+            margin-top: 0;
+            border-bottom: 2px solid var(--liver-secondary);
+            padding-bottom: 10px;
+        }
+
+        .form-row {
+            display: flex;
+            flex-wrap: wrap;
+            margin-bottom: 15px;
+        }
+
+        .form-group {
+            flex: 1;
+            min-width: 200px;
+            margin-right: 15px;
+        }
+
+        .form-group:last-child {
+            margin-right: 0;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 500;
+            color: var(--liver-dark);
+        }
+
+        .form-group input, .form-group select {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 1rem;
+        }
+
+        .file-upload {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            border: 2px dashed var(--liver-secondary);
+            border-radius: 10px;
+            padding: 2rem;
+            margin-bottom: 1.5rem;
+            transition: all 0.3s ease;
+        }
+
+        .file-upload:hover {
+            border-color: var(--liver-primary);
+            background-color: rgba(111, 185, 143, 0.05);
+        }
+
+        .file-upload p {
+            margin: 10px 0;
+            color: #666;
+        }
+
+        .file-input {
+            display: none;
+        }
+
+        .file-label {
+            display: inline-block;
+            padding: 12px 20px;
+            background-color: var(--liver-secondary);
+            color: white;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+
+        .file-label:hover {
+            background-color: var(--liver-primary);
+        }
+
+        .button-group {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 1.5rem;
+        }
+
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 5px;
+            font-size: 1rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .btn-primary {
+            background-color: var(--liver-primary);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background-color: #1a5953;
+        }
+
+        .btn-secondary {
+            background-color: var(--liver-secondary);
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            background-color: #5a9878;
+        }
+
+        .result-panel {
+            background-color: white;
+            border-radius: 10px;
+            padding: 2rem;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+            margin-top: 2rem;
+        }
+
+        .result-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 1.5rem;
+        }
+
+        .result-icon {
+            font-size: 2.5rem;
+            margin-right: 15px;
+        }
+
+        .positive-result {
+            color: #e74c3c;
+        }
+
+        .negative-result {
+            color: #2ecc71;
+        }
+
+        .neutral-result {
+            color: #f39c12;
+        }
+
+        .result-content h3 {
+            margin-top: 0;
+            margin-bottom: 5px;
+            color: var(--liver-dark);
+        }
+
+        .result-content p {
+            margin-top: 0;
+            color: #666;
+        }
+
+        .precautions-list {
+            margin-top: 1.5rem;
+            padding-left: 20px;
+        }
+
+        .precautions-list li {
+            margin-bottom: 10px;
+            padding-left: 10px;
+        }
+
+        .instructions {
+            background-color: rgba(253, 202, 64, 0.1);
+            border-left: 4px solid var(--liver-accent);
+            padding: 15px;
+            margin-bottom: 1.5rem;
+            border-radius: 0 5px 5px 0;
+        }
+
+        .instructions h3 {
+            margin-top: 0;
+            color: var(--liver-dark);
+        }
+
+        .instructions ol {
+            margin-bottom: 0;
+            padding-left: 20px;
+        }
+
+        .instructions li {
+            margin-bottom: 8px;
+        }
+
+        /* Responsive adjustments */
+        @media (max-width: 768px) {
+            .liver-panels {
+                flex-direction: column;
+            }
+            
+            .form-row {
+                flex-direction: column;
+            }
+            
+            .form-group {
+                margin-right: 0;
+                margin-bottom: 15px;
+            }
+            
+            .button-group {
+                flex-direction: column;
+                gap: 10px;
+            }
+            
+            .btn {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="liver-container">
+        <div class="liver-header">
+            <h1>Liver Disease Risk Prediction</h1>
+            <p>Early detection through advanced machine learning analysis of medical parameters</p>
+        </div>
+
+        <div class="liver-panels">
+            <div class="liver-panel">
+                <div class="instructions">
+                    <h3>How to Use This Tool</h3>
+                    <ol>
+                        <li>Enter the required values manually or upload a medical report (PDF/DOCX)</li>
+                        <li>For best results, ensure all fields are filled accurately</li>
+                        <li>Click "Predict" to get an assessment of liver disease risk</li>
+                    </ol>
+                </div>
+
+                <h2>Upload Medical Report</h2>
+                <form action="/extract/liver" method="post" enctype="multipart/form-data">
+                    <div class="file-upload">
+                        <input type="file" name="file" id="file" class="file-input" accept=".pdf,.docx">
+                        <label for="file" class="file-label">Choose File</label>
+                        <p id="file-name">No file chosen</p>
+                        <p>Supported formats: PDF, DOCX</p>
+                    </div>
+                    <div class="button-group">
+                        <button type="submit" class="btn btn-secondary">Extract Data</button>
+                    </div>
+                </form>
+            </div>
+
+            <div class="liver-panel">
+                <h2>Enter Medical Parameters</h2>
+                <form action="/predict/liver" method="post">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="age">Age</label>
+                            <input type="number" id="age" name="age" value="{{ extracted_data.get('age', '') }}" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="gender">Gender</label>
+                            <select id="gender" name="gender" required>
+                                <option value="" disabled {% if not extracted_data.get('gender') %}selected{% endif %}>Select</option>
+                                <option value="Male" {% if extracted_data.get('gender') == 'Male' %}selected{% endif %}>Male</option>
+                                <option value="Female" {% if extracted_data.get('gender') == 'Female' %}selected{% endif %}>Female</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="total_bilirubin">Total Bilirubin (mg/dL)</label>
+                            <input type="number" id="total_bilirubin" name="total_bilirubin" step="0.01" value="{{ extracted_data.get('total_bilirubin', '') }}" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="direct_bilirubin">Direct Bilirubin (mg/dL)</label>
+                            <input type="number" id="direct_bilirubin" name="direct_bilirubin" step="0.01" value="{{ extracted_data.get('direct_bilirubin', '') }}" required>
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="alkaline_phosphotase">Alkaline Phosphatase (IU/L)</label>
+                            <input type="number" id="alkaline_phosphotase" name="alkaline_phosphotase" value="{{ extracted_data.get('alkaline_phosphotase', '') }}" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="alamine_aminotransferase">ALT (IU/L)</label>
+                            <input type="number" id="alamine_aminotransferase" name="alamine_aminotransferase" value="{{ extracted_data.get('alamine_aminotransferase', '') }}" required>
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="aspartate_aminotransferase">AST (IU/L)</label>
+                            <input type="number" id="aspartate_aminotransferase" name="aspartate_aminotransferase" value="{{ extracted_data.get('aspartate_aminotransferase', '') }}" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="total_proteins">Total Proteins (g/dL)</label>
+                            <input type="number" id="total_proteins" name="total_proteins" step="0.01" value="{{ extracted_data.get('total_proteins', '') }}" required>
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="albumin">Albumin (g/dL)</label>
+                            <input type="number" id="albumin" name="albumin" step="0.01" value="{{ extracted_data.get('albumin', '') }}" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="albumin_and_globulin_ratio">Albumin/Globulin Ratio</label>
+                            <input type="number" id="albumin_and_globulin_ratio" name="albumin_and_globulin_ratio" step="0.01" value="{{ extracted_data.get('albumin_and_globulin_ratio', '') }}" required>
+                        </div>
+                    </div>
+
+                    <div class="button-group">
+                        <button type="reset" class="btn btn-secondary">Reset</button>
+                        <button type="submit" class="btn btn-primary">Predict</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        {% if prediction_text %}
+        <div class="result-panel">
+            <div class="result-header">
+                <div class="result-icon {% if 'Positive' in prediction_text %}positive-result{% elif 'Negative' in prediction_text %}negative-result{% else %}neutral-result{% endif %}">
+                    {% if 'Positive' in prediction_text %}
+                    ⚠️
+                    {% elif 'Negative' in prediction_text %}
+                    ✓
+                    {% else %}
+                    ℹ️
+                    {% endif %}
+                </div>
+                <div class="result-content">
+                    <h3>Prediction Result</h3>
+                    <p>{{ prediction_text }}</p>
+                </div>
+            </div>
+
+            {% if precautions %}
+            <div>
+                <h3>Recommendations & Precautions</h3>
+                <ul class="precautions-list">
+                    {% for precaution in precautions %}
+                    <li>{{ precaution }}</li>
+                    {% endfor %}
+                </ul>
+                <p><strong>Note:</strong> This is a predictive tool only. Please consult a healthcare professional for clinical diagnosis and treatment.</p>
+            </div>
+            {% endif %}
+        </div>
+        {% endif %}
+    </div>
+
+    <script>
+        // Display selected file name
+        document.getElementById('file').addEventListener('change', function() {
+            const fileName = this.files[0] ? this.files[0].name : 'No file chosen';
+            document.getElementById('file-name').textContent = fileName;
+        });
+    </script>
+</body>
+</html>

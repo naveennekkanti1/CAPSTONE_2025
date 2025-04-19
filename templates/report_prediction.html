@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>AI Predictions - RapiACT</title>
+    <link
+      rel="icon"
+      type="image/jpg"
+      href="{{ url_for('static', filename='images/logo.jpg') }}"
+    />
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      body {
+        font-family: "Poppins", sans-serif;
+        background-color: #011d1b;
+        color: white;
+        line-height: 1.6;
+      }
+
+      .navbar {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 15px 30px;
+        background-color: #014340;
+      }
+
+      .navbar .logo img {
+        height: 50px;
+      }
+
+      .navbar .links a {
+        color: white;
+        text-decoration: none;
+        margin: 0 15px;
+        transition: color 0.3s ease;
+      }
+
+      .navbar .links a:hover {
+        color: #00d9a6;
+      }
+
+      .predictions-container {
+        text-align: center;
+        padding: 60px 30px;
+      }
+
+      .predictions-container h2 {
+        font-size: 2.5rem;
+        color: #00a6ff;
+        margin-bottom: 20px;
+      }
+
+      .predictions-container p {
+        max-width: 800px;
+        margin: 0 auto 40px;
+        color: #e0e0e0;
+        font-size: 1.1rem;
+      }
+
+      .predictions-grid {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 25px;
+        padding: 20px;
+        max-width: 1200px;
+        margin: 0 auto;
+      }
+
+      .prediction-card {
+        background-color: #014340;
+        border-radius: 10px;
+        padding: 30px 20px;
+        width: 280px;
+        text-align: center;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        transition: transform 0.3s ease, background-color 0.3s ease;
+        cursor: pointer;
+        position: relative;
+        overflow: hidden;
+      }
+
+      .prediction-card:hover {
+        transform: translateY(-10px);
+        background-color: #00a6ff;
+        box-shadow: 0 8px 16px rgba(0, 0, 0, 0.3);
+      }
+
+      .prediction-card img {
+        width: 80px;
+        height: 80px;
+        object-fit: cover;
+        border-radius: 50%;
+        margin-bottom: 15px;
+        border: 3px solid #00d9a6;
+        transition: transform 0.3s ease;
+      }
+
+      .prediction-card:hover img {
+        transform: scale(1.1);
+      }
+
+      .prediction-card h3 {
+        color: white;
+        margin-bottom: 10px;
+        font-size: 1.3rem;
+      }
+
+      .prediction-card p {
+        color: #e0e0e0;
+        margin-bottom: 20px;
+        font-size: 0.9rem;
+      }
+
+      .predict-btn {
+        background-color: #00d9a6;
+        color: #011d1b;
+        padding: 10px 20px;
+        border-radius: 50px;
+        border: none;
+        font-size: 16px;
+        font-weight: bold;
+        transition: background-color 0.3s ease;
+        cursor: pointer;
+        display: inline-block;
+        text-decoration: none;
+      }
+
+      .predict-btn:hover {
+        background-color: #00a6ff;
+        color: white;
+      }
+
+      footer {
+        background-color: #014340;
+        color: white;
+        text-align: center;
+        padding: 20px 0;
+        margin-top: 40px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="navbar">
+      <div class="logo">
+        <img src="static/images/logo.jpg" alt="Logo" />
+      </div>
+      <div class="links">
+        <a href="/">Home</a>
+        <a href="/about">About</a>
+        <a href="/services">Services</a>
+        <a href="/all_doctors">Doctors</a>
+        <a href="/contact">Contact</a>
+      </div>
+    </div>
+
+    <div class="predictions-container">
+      <h2>AI Health Predictions</h2>
+      <p>
+        Use our advanced AI models to analyze your health conditions and receive
+        personalized risk assessments for various diseases. Simply select a
+        prediction model to get started.
+      </p>
+      
+      <div class="predictions-grid">
+        <div class="prediction-card" onclick="location.href='/diabetes';">
+          <img src="static/images/blood.png" alt="Diabetes" />
+          <h3>Diabetes</h3>
+          <p>Predict diabetes risk by analyzing blood sugar levels and lifestyle factors.</p>
+          <a href="/diabetes" class="predict-btn">Predict Now</a>
+        </div>
+
+        <div class="prediction-card" onclick="location.href='/parkinsons';">
+          <img src="static/images/Brain.jpg" alt="Parkinsons" />
+          <h3>Parkinson's Disease</h3>
+          <p>Use machine learning to predict Parkinson's based on speech and motor symptoms.</p>
+          <a href="/parkinsons" class="predict-btn">Predict Now</a>
+        </div>
+
+        <div class="prediction-card" onclick="location.href='/model2';">
+          <img src="static/images/heart.jpg" alt="Heart Disease" />
+          <h3>Heart Disease</h3>
+          <p>Predict heart disease risk based on key symptoms and cardiovascular factors.</p>
+          <a href="/model2" class="predict-btn">Predict Now</a>
+        </div>
+
+        <div class="prediction-card" onclick="location.href='/liver';">
+          <img src="static/images/kidney.jpg" alt="Liver Disease" />
+          <h3>Kidney Disease</h3>
+          <p>Detect kidney disease early: swelling, fatigue, nausea, urine changes, cramps.</p>
+          <a href="/model3" class="predict-btn">Predict Now</a>
+        </div>
+        
+        <div class="prediction-card" onclick="location.href='/lung_cancer';">
+          <img src="static/images/lung.jpg" alt="Lung Cancer" />
+          <h3>Lung Cancer</h3>
+          <p>Assess lung cancer risk based on respiratory symptoms and risk factors.</p>
+          <a href="/lung_cancer" class="predict-btn">Predict Now</a>
+        </div>
+
+        <div class="prediction-card" onclick="location.href='/breast_cancer';">
+          <img src="static/images/breast.jpg" alt="Breast Cancer" />
+          <h3>Breast Cancer Prediction</h3>
+          <p>Analyze tumor characteristics to assess malignancy risk using our enhanced ML model.</p>
+          <a href="/breast_cancer" class="predict-btn">Analyze Now</a>
+        </div>
+
+        <div class="prediction-card" onclick="location.href='/Tyroid';">
+          <img src="static/images/breast.jpg" alt="Thyroid" />
+          <h3>Thyroid Prediction</h3>
+          <p>Analyze tumor characteristics to assess malignancy risk using our enhanced ML model.</p>
+          <a href="/Tyroid" class="predict-btn">Analyze Now</a>
+        </div>
+
+        <div class="prediction-card" onclick="location.href='/liver';">
+          <img src="static/images/liver.jpg" alt="Liver" />
+          <h3>Liver Disease Prediction</h3>
+          <p>Early detection of liver disorders through key biomarkers and patient data analysis.</p>
+          <a href="/liver" class="predict-btn">Analyze Now</a>
+        </div>
+      </div>
+    </div>
+
+    <footer>
+      <p>© 2025 RapiACT. All Rights Reserved.</p>
+    </footer>
+  </body>
+</html>

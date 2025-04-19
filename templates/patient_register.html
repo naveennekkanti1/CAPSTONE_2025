@@ -1,0 +1,389 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Patient Registration</title>
+  <link rel="icon" type="image/jpg" href="{{ url_for('static', filename='images/logo.jpg') }}">
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --primary-color: #0079bc;
+      --primary-dark: #005f93;
+      --primary-light: rgba(0, 121, 188, 0.1);
+      --success-color: #3cb371;
+      --success-dark: #2e8b57;
+      --text-dark: #2c3e50;
+      --text-light: #456;
+      --border-color: #d1dbe3;
+      --background-light: #f7fafd;
+      --disabled-bg: #e9ecef;
+      --disabled-border: #cfd8dc;
+      --shadow-color: rgba(0, 121, 188, 0.2);
+      --white: #ffffff;
+      --animation-speed: 0.3s;
+      --error-color: #e74c3c;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      background: url("static/images/patientbg.jpg");
+      background-size: cover;
+      background-position: center;
+      font-family: 'Poppins', sans-serif;
+      margin: 0;
+      padding: 20px;
+      position: relative;
+    }
+    
+    body::before {
+      content: "";
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(255, 255, 255, 0.8);
+      backdrop-filter: blur(5px);
+      z-index: 0;
+    }
+    
+    .registration_form {
+      background: var(--white);
+      padding: 40px;
+      border-radius: 16px;
+      box-shadow: 0 15px 40px var(--shadow-color);
+      max-width: 550px;
+      width: 100%;
+      text-align: center;
+      position: relative;
+      z-index: 1;
+      border-top: 5px solid var(--primary-color);
+      transform: translateY(0);
+      transition: transform var(--animation-speed) ease;
+      animation: fadeIn 0.6s ease-out;
+    }
+    
+    .registration_form:hover {
+      transform: translateY(-5px);
+    }
+    
+    h3 {
+      margin-bottom: 30px;
+      font-size: 28px;
+      color: var(--text-dark);
+      font-weight: 600;
+      position: relative;
+      padding-bottom: 12px;
+    }
+    
+    h3::after {
+      content: "";
+      position: absolute;
+      bottom: 0;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 60px;
+      height: 4px;
+      background: var(--primary-color);
+      border-radius: 2px;
+    }
+    
+    .input_box {
+      margin-bottom: 24px;
+      text-align: left;
+    }
+    
+    .input_box label {
+      display: block;
+      font-size: 15px;
+      margin-bottom: 10px;
+      color: var(--text-light);
+      font-weight: 500;
+      transition: color var(--animation-speed) ease;
+    }
+    
+    .input_box:focus-within label {
+      color: var(--primary-color);
+    }
+    
+    .required {
+      color: var(--error-color);
+      font-weight: 600;
+      margin-left: 3px;
+    }
+    
+    .input_box input, 
+    .input_box select, 
+    .input_box textarea {
+      width: 100%;
+      height: 52px;
+      padding: 12px 18px;
+      font-size: 16px;
+      border: 2px solid var(--border-color);
+      border-radius: 10px;
+      transition: all var(--animation-speed) ease;
+      background-color: var(--background-light);
+      font-family: 'Poppins', sans-serif;
+    }
+    
+    .input_box input[type="file"] {
+      padding: 10px;
+      height: auto;
+    }
+    
+    .input_box textarea {
+      height: 100px;
+      resize: none;
+    }
+    
+    .input_box input:focus, 
+    .input_box select:focus, 
+    .input_box textarea:focus {
+      outline: none;
+      border-color: var(--primary-color);
+      box-shadow: 0 0 0 4px rgba(0, 121, 188, 0.1);
+      background-color: var(--white);
+    }
+    
+    .phone_input {
+      display: flex;
+      align-items: center;
+    }
+    
+    .phone_input span {
+      background: var(--background-light);
+      padding: 0 18px;
+      height: 52px;
+      line-height: 52px;
+      border-radius: 10px 0 0 10px;
+      border: 2px solid var(--border-color);
+      border-right: none;
+      font-size: 16px;
+      font-weight: 500;
+      color: var(--text-dark);
+      transition: all var(--animation-speed) ease;
+    }
+    
+    .phone_input input {
+      flex: 1;
+      border-radius: 0 10px 10px 0;
+      border-left: none;
+    }
+    
+    .phone_input:focus-within span {
+      border-color: var(--primary-color);
+      background-color: var(--white);
+    }
+    
+    button {
+      width: 100%;
+      padding: 16px;
+      background: var(--primary-color);
+      color: var(--white);
+      border: none;
+      border-radius: 10px;
+      font-size: 16px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all var(--animation-speed);
+      margin-top: 15px;
+      box-shadow: 0 4px 15px rgba(0, 121, 188, 0.3);
+      position: relative;
+      overflow: hidden;
+      letter-spacing: 0.5px;
+      font-family: 'Poppins', sans-serif;
+    }
+    
+    button::after {
+      content: "";
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 100%;
+      height: 100%;
+      background: rgba(255, 255, 255, 0.2);
+      transition: all 0.5s ease;
+    }
+    
+    button:hover {
+      background: var(--primary-dark);
+      transform: translateY(-3px);
+      box-shadow: 0 8px 20px rgba(0, 121, 188, 0.4);
+    }
+    
+    button:hover::after {
+      left: 100%;
+    }
+    
+    button:active {
+      transform: translateY(0);
+      box-shadow: 0 4px 10px rgba(0, 121, 188, 0.2);
+    }
+    
+    button:disabled {
+      background: var(--disabled-bg);
+      color: var(--text-light);
+      cursor: not-allowed;
+      transform: translateY(0);
+      box-shadow: none;
+    }
+    
+    button:disabled::after {
+      display: none;
+    }
+    
+    /* Added animations */
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    
+    /* File input styling */
+    .input_box input[type="file"] {
+      padding: 0;
+      height: auto;
+    }
+    
+    .input_box input[type="file"]::file-selector-button {
+      padding: 10px 16px;
+      border-radius: 8px;
+      border: 2px solid var(--border-color);
+      background: var(--background-light);
+      color: var(--text-dark);
+      font-family: 'Poppins', sans-serif;
+      font-size: 14px;
+      font-weight: 500;
+      margin-right: 15px;
+      cursor: pointer;
+      transition: all var(--animation-speed) ease;
+    }
+    
+    .input_box input[type="file"]::file-selector-button:hover {
+      background: var(--primary-light);
+      border-color: var(--primary-color);
+    }
+    
+    /* Media queries */
+    @media (max-width: 600px) {
+      .registration_form {
+        padding: 30px 25px;
+        max-width: 100%;
+        margin: 0 15px;
+      }
+      
+      h3 {
+        font-size: 24px;
+      }
+      
+      .input_box input, 
+      .input_box select, 
+      .input_box textarea,
+      .phone_input span {
+        height: 48px;
+      }
+      
+      .phone_input span {
+        line-height: 48px;
+        padding: 0 12px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="registration_form">
+    <h3>Patient Registration</h3>
+    <form id="patientForm" onsubmit="return validateForm()">
+      <div class="input_box">
+        <label for="age">Age <span class="required">*</span></label>
+        <input type="number" id="age" name="age" placeholder="Enter your age" required min="1" />
+      </div>
+      <div class="input_box">
+        <label for="gender">Gender <span class="required">*</span></label>
+        <select id="gender" name="gender" required>
+          <option value="" selected disabled>Select your gender</option>
+          <option value="Male">Male</option>
+          <option value="Female">Female</option>
+          <option value="Other">Other</option>
+        </select>
+      </div>
+      <div class="input_box">
+        <label for="photo">Photo <span class="required">*</span></label>
+        <input type="file" id="photo" name="photo" accept="image/png, image/jpeg, image/jpg, image/gif, image/bmp, image/webp" required />
+      </div>
+      <div class="input_box">
+        <label for="phone">Phone No <span class="required">*</span></label>
+        <div class="phone_input">
+          <span>+91</span>
+          <input type="tel" id="phone" name="phone" placeholder="Enter phone number" required pattern="[0-9]{10}" maxlength="10" oninput="validatePhone()"/>
+        </div>
+      </div>
+      <div class="input_box">
+        <label for="address">Address <span class="required">*</span></label>
+        <textarea id="address" name="address" placeholder="Enter your address" required></textarea>
+      </div>
+      <button type="submit">PROCEED</button>
+    </form>
+  </div>
+
+  <script>
+    function validatePhone() {
+      const phoneInput = document.getElementById('phone');
+      if (phoneInput.value.length > 10) {
+        alert("Phone number cannot exceed 10 digits.");
+        phoneInput.value = phoneInput.value.slice(0, 10);
+      }
+    }
+
+    function validateForm() {
+      const age = document.getElementById('age').value;
+      if (age <= 0) {
+        alert("Age must be a positive number.");
+        return false;
+      }
+      return true;
+    }
+
+    document.getElementById("patientForm").addEventListener("submit", function(event) {
+      event.preventDefault();
+      
+      let formData = new FormData(this);
+      let submitButton = document.querySelector("button[type='submit']");
+
+      submitButton.disabled = true;
+      submitButton.innerText = "Processing...";
+  
+      fetch("/patient_register", {
+          method: "POST",
+          body: formData
+      })
+      .then(response => response.json())
+      .then(data => {
+          if (data.error) {
+              alert(data.error);
+              submitButton.disabled = false;  // Re-enable button if error occurs
+              submitButton.innerText = "PROCEED";
+          } else {
+              alert(data.message);
+              window.location.href = data.redirect_url;
+          }
+      })
+      .catch(error => {
+          console.error("Error:", error);
+          alert("An error occurred. Please try again.");
+          submitButton.disabled = false;  // Re-enable button if fetch fails
+          submitButton.innerText = "PROCEED";
+      });
+    });
+  </script>
+</body>
+</html>

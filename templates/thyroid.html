@@ -1,0 +1,442 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Thyroid Cancer Recurrence Prediction</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <style>
+        :root {
+            --primary-color: #4285f4;
+            --secondary-color: #34a853;
+            --accent-color: #fbbc05;
+            --danger-color: #ea4335;
+            --text-color: #333;
+            --light-gray: #f8f9fa;
+            --medium-gray: #e9ecef;
+            --border-radius: 8px;
+            --box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            --transition: all 0.3s ease;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 0;
+            color: var(--text-color);
+            background-color: #f5f7fa;
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        /* Header Styles */
+        header {
+            background-color: white;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px 30px;
+        }
+
+        .logo img {
+            height: 40px;
+        }
+
+        .nav-links {
+            display: flex;
+            list-style: none;
+            margin: 0;
+            padding: 0;
+        }
+
+        .nav-links li {
+            margin-left: 25px;
+        }
+
+        .nav-links a {
+            text-decoration: none;
+            color: var(--text-color);
+            font-weight: 500;
+            transition: var(--transition);
+        }
+
+        .nav-links a:hover {
+            color: var(--primary-color);
+        }
+
+        /* Hero Section */
+        .hero-section {
+            background: linear-gradient(135deg, #6e8efb, #a777e3);
+            color: white;
+            padding: 50px 30px;
+            border-radius: var(--border-radius);
+            margin-bottom: 30px;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+            box-shadow: var(--box-shadow);
+        }
+
+        .hero-section::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: url('{{ url_for('static', filename='images/thyroid-bg.jpg') }}') center/cover;
+            opacity: 0.15;
+            z-index: -1;
+        }
+
+        .hero-section h1 {
+            margin-top: 0;
+            font-size: 2.5rem;
+            letter-spacing: 0.5px;
+            margin-bottom: 15px;
+        }
+
+        .hero-section p {
+            font-size: 1.1rem;
+            max-width: 700px;
+            margin: 0 auto;
+            opacity: 0.9;
+        }
+
+        /* Error Message */
+        .error-message {
+            background-color: #feeaea;
+            border-left: 4px solid var(--danger-color);
+            padding: 15px 20px;
+            margin-bottom: 30px;
+            border-radius: var(--border-radius);
+            color: #d32f2f;
+        }
+
+        /* Forms Container */
+        .forms-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            margin-bottom: 30px;
+        }
+
+        @media (max-width: 768px) {
+            .forms-container {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .form-box {
+            background-color: white;
+            border-radius: var(--border-radius);
+            padding: 30px;
+            box-shadow: var(--box-shadow);
+            transition: var(--transition);
+        }
+
+        .form-box:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+        }
+
+        .form-box h2 {
+            margin-top: 0;
+            color: var(--primary-color);
+            font-size: 1.5rem;
+            margin-bottom: 20px;
+            position: relative;
+            padding-bottom: 10px;
+        }
+
+        .form-box h2::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 50px;
+            height: 3px;
+            background-color: var(--accent-color);
+        }
+
+        /* File Upload */
+        .file-upload {
+            margin-bottom: 20px;
+        }
+
+        .file-upload label {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            background-color: var(--light-gray);
+            padding: 12px 20px;
+            border-radius: var(--border-radius);
+            cursor: pointer;
+            transition: var(--transition);
+            font-weight: 500;
+        }
+
+        .file-upload label:hover {
+            background-color: var(--medium-gray);
+        }
+
+        .file-upload i {
+            color: var(--primary-color);
+            font-size: 1.2rem;
+        }
+
+        .file-upload input[type="file"] {
+            display: none;
+        }
+
+        #file-name {
+            display: block;
+            margin-top: 10px;
+            font-size: 0.9rem;
+            color: #666;
+        }
+
+        /* Form Group */
+        .data-form {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+
+        @media (max-width: 500px) {
+            .data-form {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .form-group {
+            margin-bottom: 5px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 500;
+            font-size: 0.9rem;
+            color: #555;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 10px 12px;
+            border: 1px solid #ddd;
+            border-radius: var(--border-radius);
+            font-size: 0.95rem;
+            transition: var(--transition);
+        }
+
+        .form-group input:focus {
+            border-color: var(--primary-color);
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(66, 133, 244, 0.2);
+        }
+
+        /* Button */
+        .btn {
+            display: inline-block;
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            border-radius: var(--border-radius);
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 1rem;
+            transition: var(--transition);
+            text-align: center;
+            text-decoration: none;
+        }
+
+        .btn:hover {
+            background-color: #3367d6;
+            transform: translateY(-2px);
+        }
+
+        .primary-btn {
+            background-color: var(--primary-color);
+            margin-top: 10px;
+            width: 100%;
+        }
+
+        /* Results Section */
+        .results-section {
+            margin-bottom: 30px;
+        }
+
+        .result-box {
+            background-color: white;
+            border-radius: var(--border-radius);
+            padding: 30px;
+            box-shadow: var(--box-shadow);
+            border-top: 5px solid var(--secondary-color);
+        }
+
+        .result-box h2 {
+            margin-top: 0;
+            color: var(--text-color);
+            margin-bottom: 20px;
+        }
+
+        .prediction-result {
+            background-color: #f0f7ff;
+            padding: 20px;
+            border-radius: var(--border-radius);
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .prediction-result h3 {
+            margin: 0;
+            color: var(--primary-color);
+            font-size: 1.4rem;
+        }
+
+        .recommendations {
+            background-color: #f9f9f9;
+            padding: 20px;
+            border-radius: var(--border-radius);
+        }
+
+        .recommendations h3 {
+            margin-top: 0;
+            color: var(--text-color);
+            font-size: 1.2rem;
+            margin-bottom: 15px;
+        }
+
+        .recommendations ul {
+            margin: 0;
+            padding-left: 20px;
+        }
+
+        .recommendations li {
+            margin-bottom: 10px;
+            line-height: 1.5;
+        }
+
+        /* Footer */
+        footer {
+            background-color: white;
+            padding: 20px 0;
+            text-align: center;
+            box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.05);
+        }
+
+        .footer-bottom {
+            font-size: 0.9rem;
+            color: #666;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <nav>
+            <div class="logo">
+                <a href="/"><img src="{{ url_for('static', filename='images/logo.png') }}" alt="Logo"></a>
+            </div>
+            <ul class="nav-links">
+                <li><a href="/"><i class="fas fa-home"></i> Home</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <main class="container">
+        <section class="hero-section">
+            <h1><i class="fas fa-disease"></i> Thyroid Cancer Recurrence Prediction</h1>
+            <p>Upload medical reports or enter patient data for AI-powered risk assessment</p>
+        </section>
+
+        {% if error %}
+        <div class="error-message">
+            <p><i class="fas fa-exclamation-circle"></i> {{ error }}</p>
+        </div>
+        {% endif %}
+
+        <section class="forms-container">
+            <div class="form-box">
+                <h2><i class="fas fa-file-medical"></i> Upload Medical Report</h2>
+                <form action="/extract/Tyroid" method="post" enctype="multipart/form-data" class="upload-form">
+                    <div class="file-upload">
+                        <label for="file">
+                            <i class="fas fa-file-upload"></i>
+                            <span>Select PDF or DOCX</span>
+                        </label>
+                        <input type="file" id="file" name="file" accept=".pdf,.docx" required>
+                        <span id="file-name">No file selected</span>
+                    </div>
+                    <button type="submit" class="btn primary-btn"><i class="fas fa-magic"></i> Extract Data</button>
+                </form>
+            </div>
+
+            <div class="form-box">
+                <h2><i class="fas fa-clipboard-list"></i> Enter Patient Data</h2>
+                <form action="/predict/Tyroid" method="post" class="data-form">
+                    {% for keyword in keywords %}
+                    <div class="form-group">
+                        <label for="{{ keyword }}">{{ keyword }}:</label>
+                        <input type="text" id="{{ keyword }}" name="{{ keyword }}" value="{{ extracted_data[keyword] if extracted_data and keyword in extracted_data else '' }}" placeholder="Enter value">
+                    </div>
+                    {% endfor %}
+                    <div class="form-group" style="grid-column: span 2;">
+                        <button type="submit" class="btn primary-btn"><i class="fas fa-chart-line"></i> Generate Prediction</button>
+                    </div>
+                </form>
+            </div>
+        </section>
+
+        {% if prediction_text %}
+        <section class="results-section">
+            <div class="result-box">
+                <h2><i class="fas fa-clipboard-check"></i> Prediction Results</h2>
+                <div class="prediction-result">
+                    <h3>{{ prediction_text }}</h3>
+                </div>
+
+                {% if recommendations %}
+                <div class="recommendations">
+                    <h3><i class="fas fa-list-check"></i> Recommendations</h3>
+                    <ul>
+                        {% for recommendation in recommendations %}
+                        <li>{{ recommendation }}</li>
+                        {% endfor %}
+                    </ul>
+                </div>
+                {% endif %}
+            </div>
+        </section>
+        {% endif %}
+    </main>
+
+    <footer>
+        <div class="footer-bottom">
+            <p>&copy; 2025 Medical Prediction System. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <script>
+        // Display file name when a file is selected
+        document.getElementById('file').addEventListener('change', function(e) {
+            const fileName = e.target.files[0] ? e.target.files[0].name : 'No file selected';
+            document.getElementById('file-name').textContent = fileName;
+        });
+    </script>
+</body>
+</html>

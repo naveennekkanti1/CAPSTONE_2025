@@ -1,0 +1,1040 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Add User</title>
+    <link rel="icon" type="image/jpg" href="{{ url_for('static', filename='images/logo.jpg') }}">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        :root {
+    --primary-dark: #1a237e;
+    --primary-light: #5c6bc0;
+    --accent-color: #7c4dff;
+    --transition-speed: 0.3s;
+}
+
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes gradientBG {
+    0% {
+        background-position: 0% 50%;
+    }
+    50% {
+        background-position: 100% 50%;
+    }
+    100% {
+        background-position: 0% 50%;
+    }
+}
+
+html, body {
+    height: 100%;
+    margin: 0;
+    background: linear-gradient(-45deg, #1a237e, #3949ab, #5c6bc0, #7c4dff);
+    background-size: 400% 400%;
+    animation: gradientBG 15s ease infinite;
+    font-family: 'Arial', sans-serif;
+    display: flex;
+    color: white;
+    overflow-x: hidden;
+    width: 100%;
+}
+
+.main-content {
+    padding: 40px;
+    flex-grow: 1;
+    width: 100%;
+    min-height: 100vh;
+    display: flex;
+    justify-content: center; /* Changed from right to center for better positioning */
+    position: relative; /* Added to help with absolute positioning of back button */
+}
+
+.section {
+    background-color: rgba(255, 255, 255, 0.95);
+    padding: 30px;
+    border-radius: 20px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+    color: #333;
+    width: 100%;
+    max-width: 100%;
+    margin: 0 auto;
+    animation: fadeInUp 0.6s ease-out;
+    position: relative; /* Added to help with positioning of back button */
+}
+
+.form-card {
+    background-color: #f8f9fa;
+    border-radius: 15px;
+    padding: 25px;
+    margin-bottom: 25px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    transition: all 0.3s ease;
+    width: 100%;
+}
+
+.form-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 15px rgba(0, 0, 0, 0.1);
+}
+
+.form-header {
+    background: linear-gradient(90deg, var(--primary-dark), var(--primary-light));
+    color: white;
+    padding: 15px 20px;
+    border-radius: 10px;
+    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+    width: 100%;
+}
+
+.form-header i {
+    margin-right: 10px;
+    font-size: 1.5rem;
+}
+
+.form-group {
+    margin-bottom: 20px;
+    position: relative;
+    width: 100%;
+}
+
+.form-group label {
+    font-weight: 600;
+    margin-bottom: 8px;
+    display: block;
+    color: #444;
+}
+
+.form-control {
+    border-radius: 8px;
+    border: 1px solid #ced4da;
+    padding: 12px 15px;
+    transition: all 0.3s;
+    width: 100%;
+}
+
+.form-control:focus {
+    border-color: var(--primary-light);
+    box-shadow: 0 0 0 0.2rem rgba(92, 107, 192, 0.25);
+}
+
+.input-icon {
+    position: absolute;
+    right: 15px;
+    top: 43px;
+    color: #aaa;
+}
+
+.role-selector {
+    display: flex;
+    gap: 15px;
+    margin-bottom: 25px;
+    width: 100%;
+}
+
+.role-option {
+    flex: 1;
+    border: 2px solid #e0e0e0;
+    border-radius: 10px;
+    padding: 15px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.3s;
+}
+
+.role-option:hover {
+    border-color: var(--primary-light);
+    background-color: #f0f4ff;
+}
+
+.role-option.selected {
+    border-color: var(--primary-dark);
+    background-color: #e8eaf6;
+}
+
+.role-option i {
+    font-size: 2rem;
+    color: var(--primary-dark);
+    margin-bottom: 10px;
+    display: block;
+}
+
+.role-title {
+    font-weight: bold;
+    display: block;
+    margin-bottom: 5px;
+}
+
+.role-desc {
+    font-size: 0.85rem;
+    color: #666;
+}
+
+.submit-btn {
+    background: linear-gradient(90deg, #28a745, #20c997);
+    border: none;
+    padding: 12px 25px;
+    border-radius: 8px;
+    font-size: 1rem;
+    font-weight: bold;
+    color: white;
+    width: 100%;
+    transition: all var(--transition-speed) ease;
+    cursor: pointer;
+    margin-top: 10px;
+}
+
+.submit-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(40, 167, 69, 0.3);
+}
+
+.submit-btn:active {
+    transform: translateY(0);
+}
+
+.back-btn {
+    background: var(--primary-dark);
+    color: white;
+    border: 2px solid var(--primary-dark);
+    padding: 10px 20px;
+    border-radius: 8px;
+    font-weight: 600;
+    transition: all 0.3s;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    text-decoration: none;
+    position: absolute; /* Changed from fixed to absolute */
+    top: 15px;
+    right: 15px; /* Changed from left to right */
+    z-index: 100;
+}
+
+.back-btn:hover {
+    background-color: #121858;
+    color: white;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+.photo-upload {
+    border: 2px dashed #ced4da;
+    border-radius: 10px;
+    padding: 20px;
+    text-align: center;
+    transition: all 0.3s;
+    cursor: pointer;
+    position: relative;
+    width: 100%;
+}
+
+.photo-upload:hover {
+    border-color: var(--primary-light);
+    background-color: #f8f9fa;
+}
+
+.upload-icon {
+    font-size: 2rem;
+    color: #aaa;
+    margin-bottom: 10px;
+}
+
+.upload-text {
+    color: #666;
+}
+
+.preview-container {
+    width: 120px;
+    height: 120px;
+    border-radius: 50%;
+    margin: 15px auto;
+    overflow: hidden;
+    display: none;
+    border: 3px solid var(--primary-light);
+}
+
+.preview-image {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+#photo {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    opacity: 0;
+    cursor: pointer;
+}
+
+.required-field::after {
+    content: '*';
+    color: #dc3545;
+    margin-left: 4px;
+}
+
+.form-section {
+    padding: 20px;
+    border-radius: 10px;
+    margin-top: 25px;
+    background-color: white;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+    width: 100%;
+}
+
+.separator {
+    display: flex;
+    align-items: center;
+    margin: 25px 0;
+    width: 100%;
+}
+
+.separator hr {
+    flex: 1;
+    border: none;
+    height: 1px;
+    background-color: #e0e0e0;
+}
+
+.separator-text {
+    padding: 0 15px;
+    color: #777;
+    font-weight: 600;
+}
+
+.password-toggle {
+    position: absolute;
+    right: 15px;
+    top: 42px;
+    cursor: pointer;
+    color: #aaa;
+}
+
+.alert {
+    display: none;
+    border-radius: 8px;
+    margin-bottom: 20px;
+    padding: 15px;
+    width: 100%;
+}
+
+.alert-success {
+    background-color: #d4edda;
+    color: #155724;
+    border: 1px solid #c3e6cb;
+}
+
+.alert-danger {
+    background-color: #f8d7da;
+    color: #721c24;
+    border: 1px solid #f5c6cb;
+}
+
+/* Password strength meter */
+.password-strength-meter {
+    height: 5px;
+    background-color: #e0e0e0;
+    margin-top: 5px;
+    border-radius: 3px;
+    overflow: hidden;
+    width: 100%;
+}
+
+.password-strength-meter div {
+    height: 100%;
+    width: 0;
+    transition: width 0.3s;
+}
+
+.strength-weak {
+    background-color: #ff4d4d;
+}
+
+.strength-medium {
+    background-color: #ffa500;
+}
+
+.strength-strong {
+    background-color: #28a745;
+}
+
+.strength-text {
+    font-size: 0.8rem;
+    margin-top: 5px;
+}
+
+/* Modal Popup */
+.modal {
+    display: none;
+    position: fixed;
+    z-index: 1050;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0,0,0,0.5);
+    overflow: auto;
+}
+
+.modal-content {
+    position: relative;
+    background-color: #fefefe;
+    margin: 10% auto;
+    padding: 0;
+    border-radius: 15px;
+    width: 400px;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+    animation: fadeInUp 0.3s;
+}
+.modal-header {
+    padding: 15px 20px;
+    background: linear-gradient(90deg, #28a745, #20c997);
+    color: white;
+    border-top-left-radius: 15px;
+    border-top-right-radius: 15px;
+}
+.modal-body {
+    padding: 20px;
+    text-align: center;
+}
+/* Added specific color for the paragraphs in modal body */
+.modal-body p {
+    color: #000000;  /* Black text color */
+}
+.modal-footer {
+    padding: 15px 20px;
+    text-align: center;
+    border-top: 1px solid #e0e0e0;
+}
+.modal-btn {
+    background: var(--primary-dark);
+    color: white;
+    border: none;
+    padding: 10px 25px;
+    border-radius: 5px;
+    cursor: pointer;
+    font-weight: 600;
+    transition: all 0.3s;
+}
+.modal-btn:hover {
+    background: #121858;
+    transform: translateY(-2px);
+}
+.success-icon {
+    font-size: 60px;
+    color: #28a745;
+    margin-bottom: 20px;
+}
+
+/* Row and column adjustments */
+.row {
+    display: flex;
+    flex-wrap: wrap;
+    margin-right: -15px;
+    margin-left: -15px;
+    width: 100%;
+}
+
+.col-md-4, .col-md-6, .col-md-8 {
+    position: relative;
+    width: 100%;
+    padding-right: 15px;
+    padding-left: 15px;
+}
+
+@media (min-width: 768px) {
+    .col-md-4 {
+        flex: 0 0 33.333333%;
+        max-width: 33.333333%;
+    }
+    .col-md-6 {
+        flex: 0 0 50%;
+        max-width: 50%;
+    }
+    .col-md-8 {
+        flex: 0 0 66.666667%;
+        max-width: 66.666667%;
+    }
+}
+
+@media (max-width: 1200px) {
+    .section {
+        max-width: 100%;
+        margin: 0 10px;
+    }
+}
+
+@media (max-width: 992px) {
+    .section {
+        padding: 20px;
+        margin: 0 5px;
+    }
+    
+    .form-card {
+        padding: 20px;
+    }
+}
+
+@media (max-width: 768px) {
+    .main-content {
+        padding: 20px 10px;
+    }
+    
+    .role-selector {
+        flex-direction: column;
+    }
+    
+    .role-option {
+        margin-bottom: 10px;
+    }
+
+    .back-btn {
+        position: absolute; /* Changed from relative to absolute */
+        top: 10px;
+        right: 10px; /* Changed position for mobile */
+        margin-bottom: 0;
+    }
+    
+    .section {
+        margin: 0;
+        padding: 15px;
+        margin-top: 40px; /* Added margin to avoid button overlap */
+    }
+    
+    .col-md-4, .col-md-6, .col-md-8 {
+        max-width: 100%;
+        flex: 0 0 100%;
+    }
+}
+
+@media (max-width: 576px) {
+    .section {
+        padding: 15px;
+        border-radius: 15px;
+        margin-top: 50px; /* Increased margin to avoid button overlap */
+    }
+    
+    .form-card {
+        padding: 15px;
+    }
+    
+    .form-header {
+        padding: 12px 15px;
+    }
+    
+    .form-group {
+        margin-bottom: 15px;
+    }
+
+    .modal-content {
+        width: 95%;
+    }
+    
+    .main-content {
+        padding: 10px 5px;
+    }
+}
+
+/* Fix for the mobile dropdown collapse */
+@media (max-width: 768px) {
+    .mobile-row {
+        flex-direction: column;
+    }
+    
+    .mobile-row > div {
+        width: 100%;
+        padding-left: 0;
+        padding-right: 0;
+    }
+}
+    </style>
+</head>
+<body>
+    <!-- Main Content -->
+    <div class="main-content">
+        <div class="section">
+            <!-- Back Button moved to the right side top corner -->
+            <a href="/users" class="back-btn">
+                <i class="fas fa-arrow-left"></i> Back to Users
+            </a>
+            
+            <div class="alert alert-success" id="successAlert">
+                <i class="fas fa-check-circle"></i> User has been successfully registered!
+            </div>
+            
+            <div class="alert alert-danger" id="errorAlert">
+                <i class="fas fa-exclamation-circle"></i> <span id="errorMessage">Error occurred while registering user.</span>
+            </div>
+            
+            <div class="form-card">
+                <div class="form-header">
+                    <i class="fas fa-user-plus"></i>
+                    <h3 class="mb-0">Add New User</h3>
+                </div>
+                
+                <form id="userForm" action="/add_user" method="POST" enctype="multipart/form-data">
+                    <!-- Role Selection -->
+                    <div class="mb-4">
+                        <label class="required-field">Select Role</label>
+                        <div class="role-selector">
+                            <div class="role-option selected" id="patientRole" onclick="selectRole('patient')">
+                                <i class="fas fa-user"></i>
+                                <span class="role-title">Patient</span>
+                                <span class="role-desc">Register as a patient to book appointments</span>
+                            </div>
+                            <div class="role-option" id="doctorRole" onclick="selectRole('doctor')">
+                                <i class="fas fa-user-md"></i>
+                                <span class="role-title">Doctor</span>
+                                <span class="role-desc">Register as a doctor to manage patients</span>
+                            </div>
+                        </div>
+                        <input type="hidden" id="role" name="role" value="patient" required>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-4">
+                            <!-- Photo Upload -->
+                            <div class="form-group">
+                                <label class="required-field">Profile Photo</label>
+                                <div class="photo-upload" id="photoUploadArea">
+                                    <div class="preview-container" id="imagePreview">
+                                        <img id="previewImg" class="preview-image">
+                                    </div>
+                                    <div class="upload-icon">
+                                        <i class="fas fa-cloud-upload-alt"></i>
+                                    </div>
+                                    <div class="upload-text">
+                                        Drop your image here, or <span style="color: var(--primary-dark); font-weight: bold;">browse</span>
+                                    </div>
+                                    <small class="text-muted">Supports: JPG, PNG, GIF (Max 5MB)</small>
+                                    <input type="file" id="photo" name="photo" accept="image/*" required>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-8">
+                            <!-- Basic Information -->
+                            <div class="form-group">
+                                <label for="name" class="required-field">Full Name</label>
+                                <div class="input-group">
+                                    <input type="text" id="name" name="name" class="form-control" required>
+                                    <span class="input-icon"><i class="fas fa-user"></i></span>
+                                </div>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="email" class="required-field">Email</label>
+                                <div class="input-group">
+                                    <input type="email" id="email" name="email" class="form-control" required>
+                                    <span class="input-icon"><i class="fas fa-envelope"></i></span>
+                                </div>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="password" class="required-field">Password</label>
+                                <div class="input-group">
+                                    <input type="password" id="password" name="password" class="form-control" required>
+                                    <span class="password-toggle" onclick="togglePassword()">
+                                        <i class="fas fa-eye" id="toggleIcon"></i>
+                                    </span>
+                                </div>
+                                <div class="password-strength-meter">
+                                    <div id="passwordStrength"></div>
+                                </div>
+                                <small class="text-muted strength-text" id="passwordStrengthText">Password must be at least 8 characters with numbers and symbols</small>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="confirm_password" class="required-field">Confirm Password</label>
+                                <div class="input-group">
+                                    <input type="password" id="confirm_password" name="confirm_password" class="form-control" required>
+                                    <span class="password-toggle" onclick="toggleConfirmPassword()">
+                                        <i class="fas fa-eye" id="toggleConfirmIcon"></i>
+                                    </span>
+                                </div>
+                                <small class="text-muted" id="passwordMatchText"></small>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Common Fields Section -->
+                    <div id="common-fields" class="form-section">
+                        <h4><i class="fas fa-user-circle"></i> Personal Information</h4>
+                        <div class="separator">
+                            <hr><span class="separator-text">Contact Details</span><hr>
+                        </div>
+                        
+                        <div class="row mobile-row">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="phone" class="required-field">Phone Number</label>
+                                    <div class="input-group">
+                                        <input type="text" id="phone" name="phone" class="form-control" required>
+                                        <span class="input-icon"><i class="fas fa-phone"></i></span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="age" class="required-field">Age</label>
+                                    <input type="number" id="age" name="age" class="form-control" required>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="row mobile-row">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="gender" class="required-field">Gender</label>
+                                    <select id="gender" name="gender" class="form-control" required>
+                                        <option value="">Select Gender</option>
+                                        <option value="Male">Male</option>
+                                        <option value="Female">Female</option>
+                                        <option value="Other">Other</option>
+                                        <option value="Prefer not to say">Prefer not to say</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="address">Address</label>
+                                    <textarea id="address" name="address" class="form-control" rows="2"></textarea>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Doctor Fields -->
+                    <div id="doctor-fields" class="form-section" style="display: none;">
+                        <h4><i class="fas fa-user-md"></i> Professional Details</h4>
+                        <div class="separator">
+                            <hr><span class="separator-text">Qualifications</span><hr>
+                        </div>
+                        
+                        <div class="row mobile-row">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="specialization" class="required-field">Specialization</label>
+                                    <select id="specialization" name="specialization" class="form-control">
+                                        <option value="">Select Specialization</option>
+                                        <option value="Cardiology">Cardiology</option>
+                                        <option value="Dermatology">Dermatology</option>
+                                        <option value="Neurology">Neurology</option>
+                                        <option value="Orthopedics">Orthopedics</option>
+                                        <option value="Pediatrics">Pediatrics</option>
+                                        <option value="Psychiatry">Psychiatry</option>
+                                        <option value="General Medicine">General Medicine</option>
+                                        <option value="Other">Other</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="years_experience" class="required-field">Years of Experience</label>
+                                    <input type="number" id="years_experience" name="years_experience" class="form-control">
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="professional_experience" class="required-field">Professional Bio</label>
+                            <textarea id="professional_experience" name="professional_experience" class="form-control" rows="3" placeholder="Brief professional summary"></textarea>
+                        </div>
+                    </div>
+                    
+                    <button type="submit" class="submit-btn">
+                        <i class="fas fa-user-plus"></i> Register User
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Success Modal -->
+    <div id="successModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4>Registration Successful</h4>
+            </div>
+            <div class="modal-body">
+                <div class="success-icon">
+                    <i class="fas fa-check-circle"></i>
+                </div>
+                <p id="modalMessage">User has been successfully registered!</p>
+                <p>A welcome email with login credentials has been sent to the user.</p>
+            </div>
+            <div class="modal-footer">
+                <button class="modal-btn" id="redirectBtn">Go to Users</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+    // Password strength meter
+    const passwordInput = document.getElementById('password');
+    const confirmPasswordInput = document.getElementById('confirm_password');
+    const passwordStrength = document.getElementById('passwordStrength');
+    const passwordStrengthText = document.getElementById('passwordStrengthText');
+    const passwordMatchText = document.getElementById('passwordMatchText');
+    
+    passwordInput.addEventListener('input', function() {
+        const password = this.value;
+        let strength = 0;
+        let strengthClass = '';
+        let strengthText = '';
+        
+        if (password.length >= 8) strength += 1;
+        if (password.match(/[0-9]/)) strength += 1;
+        if (password.match(/[a-z]/)) strength += 1;
+        if (password.match(/[A-Z]/)) strength += 1;
+        if (password.match(/[^a-zA-Z0-9]/)) strength += 1;
+        
+        switch (strength) {
+            case 0:
+            case 1:
+                strengthClass = 'strength-weak';
+                strengthText = 'Weak - Password must be at least 8 characters';
+                passwordStrength.style.width = '20%';
+                break;
+            case 2:
+            case 3:
+                strengthClass = 'strength-medium';
+                strengthText = 'Medium - Add numbers or symbols for stronger password';
+                passwordStrength.style.width = '60%';
+                break;
+            case 4:
+            case 5:
+                strengthClass = 'strength-strong';
+                strengthText = 'Strong - Good job!';
+                passwordStrength.style.width = '100%';
+                break;
+        }
+        
+        passwordStrength.className = '';
+        passwordStrength.classList.add(strengthClass);
+        passwordStrengthText.textContent = strengthText;
+        
+        // Check if passwords match
+        checkPasswordsMatch();
+    });
+    
+    confirmPasswordInput.addEventListener('input', checkPasswordsMatch);
+    
+    function checkPasswordsMatch() {
+        const password = passwordInput.value;
+        const confirmPassword = confirmPasswordInput.value;
+        
+        if (confirmPassword === '') {
+            passwordMatchText.textContent = '';
+            passwordMatchText.className = 'text-muted';
+        } else if (password === confirmPassword) {
+            passwordMatchText.textContent = 'Passwords match!';
+            passwordMatchText.className = 'text-success';
+        } else {
+            passwordMatchText.textContent = 'Passwords do not match!';
+            passwordMatchText.className = 'text-danger';
+        }
+    }
+    
+    // Image preview
+    const photoInput = document.getElementById('photo');
+    const previewContainer = document.getElementById('imagePreview');
+    const previewImage = document.getElementById('previewImg');
+    
+    photoInput.addEventListener('change', function() {
+        const file = this.files[0];
+        
+        if (file) {
+            const reader = new FileReader();
+            
+            reader.addEventListener('load', function() {
+                previewImage.setAttribute('src', this.result);
+                previewContainer.style.display = 'block';
+            });
+            
+            reader.readAsDataURL(file);
+        } else {
+            previewContainer.style.display = 'none';
+            previewImage.setAttribute('src', '');
+        }
+    });
+    
+    // Modal functionality
+    const successModal = document.getElementById('successModal');
+    const redirectBtn = document.getElementById('redirectBtn');
+    const modalMessage = document.getElementById('modalMessage');
+    
+    redirectBtn.addEventListener('click', function() {
+        window.location.href = '/users';
+    });
+    
+    // Form submission
+    const userForm = document.getElementById('userForm');
+    const successAlert = document.getElementById('successAlert');
+    const errorAlert = document.getElementById('errorAlert');
+    const errorMessage = document.getElementById('errorMessage');
+    
+    userForm.addEventListener('submit', function(e) {
+        e.preventDefault();
+        
+        // Basic validation
+        const name = document.getElementById('name').value;
+        const email = document.getElementById('email').value;
+        const password = passwordInput.value;
+        const confirmPassword = confirmPasswordInput.value;
+        const photo = photoInput.files[0];
+        const phone = document.getElementById('phone').value;
+        const age = document.getElementById('age').value;
+        const gender = document.getElementById('gender').value;
+        const role = document.getElementById('role').value;
+        
+        if (!name || !email || !password || !confirmPassword || !photo || !phone || !age || !gender) {
+            errorMessage.textContent = 'Please fill in all required fields.';
+            errorAlert.style.display = 'block';
+            successAlert.style.display = 'none';
+            return;
+        }
+        if (password !== confirmPassword) {
+            errorMessage.textContent = 'Passwords do not match.';
+            errorAlert.style.display = 'block';
+            successAlert.style.display = 'none';
+            return;
+        }
+        
+        // Additional validation for doctors
+        if (role === 'doctor') {
+            const specialization = document.getElementById('specialization').value;
+            const years_experience = document.getElementById('years_experience').value;
+            const professional_experience = document.getElementById('professional_experience').value;
+            
+            if (!specialization || !years_experience || !professional_experience) {
+                errorMessage.textContent = 'Please fill in all required doctor fields.';
+                errorAlert.style.display = 'block';
+                successAlert.style.display = 'none';
+                return;
+            }
+        }
+        
+        // If validation passes, submit the form
+        const formData = new FormData(this);
+        
+        fetch('/add_user', {
+            method: 'POST',
+            body: formData
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                // Show success modal instead of alert
+                modalMessage.textContent = data.message || 'User has been successfully registered!';
+                successModal.style.display = 'block';
+                
+                // Reset form
+                userForm.reset();
+                previewContainer.style.display = 'none';
+                
+                // Hide any previous alerts
+                errorAlert.style.display = 'none';
+            } else {
+                errorMessage.textContent = data.message || 'Error occurred while registering user.';
+                errorAlert.style.display = 'block';
+                successAlert.style.display = 'none';
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            errorMessage.textContent = 'An unexpected error occurred. Please try again.';
+            errorAlert.style.display = 'block';
+            successAlert.style.display = 'none';
+        });
+    });
+    
+    // Hide modal when clicking outside
+    window.addEventListener('click', function(event) {
+        if (event.target === successModal) {
+            successModal.style.display = 'none';
+        }
+    });
+});
+
+// Toggle password visibility
+function togglePassword() {
+    const passwordInput = document.getElementById('password');
+    const toggleIcon = document.getElementById('toggleIcon');
+    
+    if (passwordInput.type === 'password') {
+        passwordInput.type = 'text';
+        toggleIcon.classList.remove('fa-eye');
+        toggleIcon.classList.add('fa-eye-slash');
+    } else {
+        passwordInput.type = 'password';
+        toggleIcon.classList.remove('fa-eye-slash');
+        toggleIcon.classList.add('fa-eye');
+    }
+}
+
+// Toggle confirm password visibility
+function toggleConfirmPassword() {
+    const confirmPasswordInput = document.getElementById('confirm_password');
+    const toggleConfirmIcon = document.getElementById('toggleConfirmIcon');
+    
+    if (confirmPasswordInput.type === 'password') {
+        confirmPasswordInput.type = 'text';
+        toggleConfirmIcon.classList.remove('fa-eye');
+        toggleConfirmIcon.classList.add('fa-eye-slash');
+    } else {
+        confirmPasswordInput.type = 'password';
+        toggleConfirmIcon.classList.remove('fa-eye-slash');
+        toggleConfirmIcon.classList.add('fa-eye');
+    }
+}
+
+// Role selection
+function selectRole(role) {
+    const patientRole = document.getElementById('patientRole');
+    const doctorRole = document.getElementById('doctorRole');
+    const doctorFields = document.getElementById('doctor-fields');
+    const roleInput = document.getElementById('role');
+    
+    // Update role input value
+    roleInput.value = role;
+    
+    // Toggle selected classes
+    if (role === 'patient') {
+        patientRole.classList.add('selected');
+        doctorRole.classList.remove('selected');
+        doctorFields.style.display = 'none';
+        
+        // Remove required attribute from doctor fields
+        document.getElementById('specialization').removeAttribute('required');
+        document.getElementById('years_experience').removeAttribute('required');
+        document.getElementById('professional_experience').removeAttribute('required');
+    } else {
+        doctorRole.classList.add('selected');
+        patientRole.classList.remove('selected');
+        doctorFields.style.display = 'block';
+        
+        // Add required attribute to doctor fields
+        document.getElementById('specialization').setAttribute('required', '');
+        document.getElementById('years_experience').setAttribute('required', '');
+        document.getElementById('professional_experience').setAttribute('required', '');
+    }
+}</script>
+</body></html>

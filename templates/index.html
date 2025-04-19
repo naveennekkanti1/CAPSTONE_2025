@@ -1,0 +1,1141 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RapiACT</title>
+    <link rel="icon" type="image/jpg" href="{{ url_for('static', filename='images/logo.jpg') }}">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Poppins', sans-serif;
+        }
+
+        body {
+            background-color: #011d1b;
+            color: white;
+            line-height: 1.6;
+            overflow-x: hidden;
+        }
+
+        /* Navbar Styles - Updated with more modern look */
+        .navbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px 50px;
+            background-color: #014340;
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            border-radius: 0 0 15px 15px;
+        }
+
+        .navbar .logo img {
+            height: 40px;
+        }
+
+        .navbar .links {
+            display: flex;
+            align-items: center;
+        }
+
+        .navbar .links a {
+            color: white;
+            text-decoration: none;
+            margin: 0 15px;
+            font-size: 16px;
+            transition: all 0.3s ease;
+            padding: 8px 12px;
+            border-radius: 6px;
+        }
+
+        .navbar .links a:hover {
+            color: #00d9a6;
+            background-color: rgba(255, 255, 255, 0.1);
+        }
+
+        /* Language Dropdown Styles */
+        .language-container {
+            display: flex;
+            align-items: center;
+            margin-left: 15px;
+        }
+        
+        .language-icon {
+            width: 24px;
+            height: 24px;
+            margin-right: 5px;
+        }
+        
+        #google_translate_element {
+            display: none;
+        }
+        
+        /* Fix for Google Translate styling issues */
+        .goog-te-banner-frame {
+            display: none !important;
+        }
+        
+        body {
+            top: 0 !important;
+        }
+        
+        /* Hide Google Translate attribution and original elements */
+        .goog-te-gadget {
+            font-family: 'Poppins', sans-serif !important;
+            font-size: 14px !important;
+            color: #e0e0e0 !important;
+        }
+        
+        .goog-te-gadget-simple {
+            background-color: transparent !important;
+            border: none !important;
+            padding: 0 !important;
+        }
+        
+        .goog-te-gadget-simple .goog-te-menu-value span:first-child {
+            display: inline-block;
+            color: #e0e0e0 !important;
+        }
+        
+        .goog-te-gadget-simple .goog-te-menu-value span:not(:first-child),
+        .goog-te-gadget-icon,
+        .goog-te-banner-frame,
+        .goog-te-gadget span:not(.goog-te-menu-value span:first-child) {
+            display: none !important;
+        }
+        
+        .goog-te-menu-frame {
+            box-shadow: 0 0 8px rgba(0,0,0,0.3) !important;
+        }
+        
+        /* Language selection modal */
+        .language-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.8);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 10000;
+        }
+        
+        .language-selection {
+            background-color: #014340;
+            border-radius: 12px;
+            padding: 30px;
+            text-align: center;
+            max-width: 500px;
+            width: 90%;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+        }
+        
+        .language-selection h2 {
+            color: #00a6ff;
+            margin-bottom: 20px;
+        }
+        
+        .language-selection p {
+            color: white;
+            margin-bottom: 20px;
+        }
+        
+        .language-buttons {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 12px;
+        }
+        
+        .language-button {
+            background-color: #00a6ff;
+            color: white;
+            border: none;
+            padding: 12px 18px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        
+        .language-button:hover {
+            background-color: #0080c4;
+        }
+        
+        .language-selector {
+            color: white;
+            background-color: transparent;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            padding: 8px 12px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+        }
+        
+        .language-selector:hover {
+            color: #00d9a6;
+            border-color: #00d9a6;
+        }
+
+        /* Hero Section - Updated with cleaner look */
+        .hero {
+            height: 90vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            background: linear-gradient(to bottom right, #014340, #011d1b);
+            padding: 20px;
+        }
+
+        .hero h1 {
+            font-size: 4rem;
+            color: #00a6ff;
+            margin-bottom: 20px;
+            font-weight: 700;
+            line-height: 1.2;
+        }
+
+        .hero p {
+            font-size: 1.5rem;
+            color: #e0e0e0;
+            margin-bottom: 30px;
+            max-width: 800px;
+        }
+
+        /* Announcement Bar - Inspired by JusPay */
+        .announcement-bar {
+            background-color: #f5f9ff;
+            color: #333;
+            text-align: center;
+            padding: 15px;
+            border-radius: 12px;
+            margin: 20px auto;
+            max-width: 900px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .announcement-bar a {
+            color: #00a6ff;
+            text-decoration: none;
+            font-weight: 500;
+        }
+
+        .hero .button a {
+            text-decoration: none;
+            padding: 15px 30px;
+            background-color: #00a6ff;
+            color: white;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: background-color 0.3s ease;
+            font-weight: 600;
+            display: inline-block;
+            margin-top: 10px;
+        }
+
+        .hero .button a:hover {
+            background-color: #0080c4;
+        }
+
+        /* Section Styles - Updated for better spacing */
+        section {
+            padding: 80px 50px;
+            text-align: center;
+        }
+
+        section h2 {
+            font-size: 3rem;
+            color: #00a6ff;
+            margin-bottom: 30px;
+            font-weight: 700;
+        }
+
+        section p {
+            max-width: 800px;
+            margin: 0 auto;
+            margin-bottom: 40px;
+            font-size: 1.1rem;
+        }
+
+        .icon-section {
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+            gap: 25px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .icon-box {
+            background-color: whitesmoke;
+            border-radius: 12px;
+            padding: 25px;
+            width: 200px;
+            text-align: center;
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+            transition: transform 0.3s ease, background-color 0.3s ease;
+        }
+
+        .icon-box:hover {
+            transform: translateY(-10px);
+            background-color: #87CEEB;
+        }
+
+        .icon-box img {
+            width: 70px;
+            margin-bottom: 15px;
+        }
+
+        .icon-box p {
+            color: #014340;
+            font-weight: bold;
+            font-size: 1.1rem;
+            margin-bottom: 0;
+        }
+
+        /* About Section */
+        #about {
+            background: linear-gradient(to bottom right, #014340, #011d1b);
+            color: white;
+            text-align: center;
+            padding: 80px 50px;
+            border-radius: 16px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        #about h2 {
+            color: #00a6ff;
+            margin-bottom: 30px;
+        }
+
+        #about p {
+            font-size: 1.1rem;
+            color: #fff;
+            margin-bottom: 25px;
+        }
+
+        #about ul {
+            list-style: none;
+            padding: 0;
+            max-width: 800px;
+            margin: 30px auto;
+        }
+
+        #about ul li {
+            font-size: 1.1rem;
+            color: #e0e0e0;
+            margin: 15px 0;
+            text-align: left;
+            padding-left: 30px;
+            position: relative;
+        }
+
+        #about ul li strong {
+            color: #00a6ff;
+        }
+
+        /* Services Section */
+        #services {
+            background-color: rgba(1, 29, 27, 0.8);
+            border-radius: 16px;
+            max-width: 1200px;
+            margin: 40px auto;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+        }
+
+        #services ul {
+            list-style: none;
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 0;
+        }
+
+        #services ul li {
+            font-size: 1.2rem;
+            margin: 18px 0;
+            position: relative;
+            padding-left: 30px;
+            color: #e0e0e0;
+            text-align: left;
+        }
+
+        #services ul li::before {
+            content: "✔";
+            position: absolute;
+            left: 0;
+            color: #00d9a6;
+        }
+
+        /* Doctors Section */
+        #doctors {
+            background: #014340;
+            color: white;
+            border-radius: 16px;
+            max-width: 1200px;
+            margin: 40px auto;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+        }
+
+        #doctors .doctor {
+            margin: 20px 0;
+        }
+
+        #doctors .doctor h3 {
+            color: #00d9a6;
+            margin-bottom: 10px;
+        }
+
+        /* Pharmacy Section */
+        #pharmacy {
+            background: linear-gradient(to bottom right, #011d1b, #014340);
+            color: white;
+            padding: 80px 50px;
+            border-radius: 16px;
+            max-width: 1200px;
+            margin: 40px auto;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+        }
+
+        #pharmacy h2 {
+            color: #00a6ff;
+            margin-bottom: 30px;
+        }
+
+        .pharmacy-features {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 30px;
+            margin-bottom: 40px;
+        }
+
+        .pharmacy-feature {
+            background-color: rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            padding: 30px;
+            width: 300px;
+            text-align: center;
+            transition: transform 0.3s ease;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        .pharmacy-feature:hover {
+            transform: translateY(-10px);
+            background-color: rgba(0, 166, 255, 0.1);
+        }
+
+        .pharmacy-feature img {
+            width: 60px;
+            height: 60px;
+            margin-bottom: 20px;
+        }
+
+        .pharmacy-feature h3 {
+            color: #00d9a6;
+            margin-bottom: 15px;
+        }
+
+        .pharmacy-feature p {
+            color: #e0e0e0;
+            font-size: 1rem;
+            margin-bottom: 0;
+        }
+
+        .pharmacy-cta {
+            margin-top: 40px;
+        }
+
+        .pharmacy-button {
+            display: inline-block;
+            padding: 15px 30px;
+            background-color: #00a6ff;
+            color: white;
+            text-decoration: none;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: background-color 0.3s ease;
+            font-weight: 600;
+        }
+
+        .pharmacy-button:hover {
+            background-color: #0080c4;
+        }
+
+        /* Contact Section */
+        #contact {
+            background-color: rgba(1, 29, 27, 0.8);
+            border-radius: 16px;
+            max-width: 1200px;
+            margin: 40px auto;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+        }
+
+        #contact form {
+            max-width: 600px;
+            margin: 0 auto;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        #contact form input, #contact form textarea {
+            width: 100%;
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 8px;
+            border: none;
+            font-size: 1rem;
+            background-color: rgba(255, 255, 255, 0.9);
+        }
+
+        #contact form button {
+            background-color: #00a6ff;
+            color: white;
+            padding: 15px 30px;
+            border-radius: 8px;
+            border: none;
+            font-size: 16px;
+            transition: background-color 0.3s ease;
+            font-weight: 600;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+
+        #contact form button:hover {
+            background-color: #0080c4;
+        }
+
+        /* Footer */
+        footer {
+            background-color: #014340;
+            color: white;
+            text-align: center;
+            padding: 30px 0;
+            margin-top: 50px;
+        }
+
+        /* Scroll Indicator */
+        .scroll-indicator {
+            position: fixed;
+            left: 0;
+            top: 0;
+            width: 5px;
+            height: 0;
+            background: linear-gradient(to bottom, #00a6ff, #0080c4);
+            z-index: 9999;
+        }
+
+        /* Doctor Slider */
+        .doctor-slider {
+            width: 80%;
+            margin: auto;
+            overflow: hidden;
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px 0;
+        }
+
+        .slides {
+            display: flex;
+            transition: transform 0.5s linear;
+            animation: scroll 20s linear infinite; /* Slower continuous scrolling */
+        }
+
+        .doctor-card {
+            width: 100%;
+            max-width: 280px;
+            padding: 25px;
+            background: #022f2c;
+            border-radius: 12px;
+            color: #00d9a6;
+            text-align: center;
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+            margin: 15px;
+            flex-shrink: 0;
+        }
+
+        .doctor-card img {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            object-fit: cover;
+            margin-bottom: 15px;
+            border: 3px solid #00a6ff;
+        }
+
+        .doctor-card h3 {
+            margin: 10px 0 5px;
+            color: #00d9a6;
+            font-size: 1.2rem;
+        }
+
+        .doctor-card p {
+            margin: 8px 0;
+            font-size: 1rem;
+            color: #e0e0e0;
+        }
+
+        /* Keyframes for infinite sliding effect */
+        @keyframes scroll {
+            0% { transform: translateX(0); }
+            100% { transform: translateX(-100%); }
+        }
+
+
+        /* See All Doctors Button */
+        .see-all-btn {
+            margin-top: 30px;
+        }
+
+        .see-all-btn a {
+            display: inline-block;
+            padding: 12px 24px;
+            background-color: #00a6ff;
+            color: white;
+            text-decoration: none;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: background-color 0.3s ease;
+            font-weight: 600;
+        }
+
+        .see-all-btn a:hover {
+            background-color: #0080c4;
+        }
+
+        /* Loading Screen */
+        .loading-screen {
+            position: fixed;
+            width: 100%;
+            height: 100%;
+            background-color: #011d1b;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+        }
+
+        .loading-circle {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            background-color: #011d1b;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+            animation: growLogo 2s linear forwards;
+        }
+
+        /* Rotating border animation */
+        .loading-circle::before {
+            content: "";
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            border: 4px solid transparent;
+            border-top-color: #00a6ff;
+            animation: spin 1s linear infinite;
+        }
+
+        .loading-logo {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            object-fit: cover;
+        }
+
+        /* Keyframes for growing effect */
+        @keyframes growLogo {
+            0% { width: 80px; height: 80px; }
+            50% { width: 120px; height: 120px; }
+            100% { width: 160px; height: 160px; }
+        }
+
+        /* Keyframes for rotating effect */
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* Visitor Counter */
+        .visitor-counter {
+            position: fixed;
+            bottom: 20px;
+            left: 20px;
+            background: rgba(255, 255, 255, 0.1);
+            padding: 10px 20px;
+            border-radius: 8px;
+            font-size: 14px;
+            color: #00d9a6;
+        }
+
+        /* Chatbot Button */
+        .chatbot-container {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background-color: #00a6ff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+            transition: transform 0.3s ease;
+        }
+
+        .chatbot-container:hover {
+            transform: scale(1.1);
+        }
+
+        .chatbot-container img {
+            width: 35px;
+        }
+
+        /* Chatbase Iframe */
+        #chatbase-widget {
+            display: none;
+            position: fixed;
+            bottom: 90px;
+            right: 20px;
+            width: 350px;
+            height: 500px;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+        }
+
+        /* Main heading style inspired by JusPay */
+        .main-heading {
+            text-align: center;
+            padding: 60px 20px;
+        }
+
+        .main-heading h1 {
+            font-size: 3.5rem;
+            font-weight: 700;
+            color: #00a6ff;
+            margin-bottom: 20px;
+            line-height: 1.2;
+        }
+
+        .main-heading p {
+            font-size: 1.2rem;
+            color: #e0e0e0;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        /* Media queries for responsiveness */
+        @media (max-width: 768px) {
+            .navbar {
+                padding: 15px 20px;
+            }
+            
+            .navbar .links {
+                display: none;
+            }
+            
+            .hero h1 {
+                font-size: 2.5rem;
+            }
+            
+            .hero p {
+                font-size: 1.2rem;
+            }
+            
+            section {
+                padding: 50px 20px;
+            }
+            
+            section h2 {
+                font-size: 2.2rem;
+            }
+            
+            .doctor-slider {
+                width: 95%;
+            }
+            
+            .pharmacy-feature {
+                width: 100%;
+                max-width: 350px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Loading Screen -->
+    <div class="loading-screen">
+        <div class="loading-circle">
+            <img src="static/images/logo.jpg" alt="Logo" class="loading-logo">
+        </div>
+    </div>
+
+    <!-- Scroll Indicator -->
+    <div class="scroll-indicator"></div>
+
+    <!-- Navbar -->
+    <div class="navbar">
+        <div class="logo">
+            <img src="static/images/logo.jpg" alt="Logo">
+        </div>
+        <div class="links">
+            <a href="/">Home</a>
+            <a href="#about">About</a>
+            <a href="/services">Services</a>
+            <a href="#pharmacy">Pharmacy</a>
+            <a href="#doctors">Doctors</a>
+            <a href="#contact">Contact</a>
+            <a href="/login">Login</a>
+            <a href="/register">Signup</a>
+            <a href="/all_doctors">Find Doctor</a>
+            <!-- Language Selector Button -->
+            <div class="language-container">
+                <img src="https://cdn-icons-png.flaticon.com/512/5754/5754941.png" alt="Language" class="language-icon">
+                <button id="language-selector" class="language-selector">Change Language</button>
+                <div id="google_translate_element" style="display: none;"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Announcement Bar -->
+    <div class="announcement-bar">
+        RapiACT provides AI-powered healthcare services in India!
+        <a href="#about">Click here</a> to learn more. Explore our services <a href="#services">here</a>.
+    </div>
+
+    <!-- Hero Section -->
+    <div class="hero">
+        <h1>Welcome to <span>RapiACT!</span></h1>
+        <p>Your one-stop digital healthcare destination</p>
+        <div class="button">
+            <a href="#services">Get Started</a>
+        </div>
+    </div>
+
+    <!-- Main Heading -->
+    <div class="main-heading">
+        <h1>Healthcare Operating System</h1>
+        <p>Superior UX, Higher conversions, and Minimal healthcare operations</p>
+    </div>
+
+    <!-- About Section -->
+    <section id="about" class="about-section">
+        <h2>About Us</h2>
+        <p><strong>RapiACT!</strong> is a cutting-edge healthcare platform that redefines the way you access medical services. From <strong>smart diagnosis</strong> and <strong>AI-powered report predictions</strong> to virtual consultations and seamless doctor appointments, we bring healthcare to your fingertips.</p>
+        
+        <h3>Why Choose RapiACT!?</h3>
+        <ul>
+            <li><strong>✅ Smart Diagnosis:</strong> Get instant health insights based on symptoms.</li>
+            <li><strong>✅ Online Consultation:</strong> Connect with expert doctors anytime, anywhere.</li>
+            <li><strong>✅ AI-Powered Report Analysis:</strong> Advanced technology predicts health risks early.</li>
+            <li><strong>✅ Seamless Appointments:</strong> Easily book, reschedule, or cancel consultations.</li>
+            <li><strong>✅ Secure & Reliable:</strong> Your health data is encrypted and protected.</li>
+            <li><strong>✅ Online Pharmacy:</strong> Order medications and healthcare products with doorstep delivery.</li>
+        </ul>
+        
+        <p>We are committed to technology-driven, patient-focused healthcare, ensuring that expert medical guidance is always within your reach. With RapiACT!, managing your health is simpler, faster, and more reliable than ever before.</p>
+        
+        <div class="button">
+            <a href="#services">Learn More</a>
+        </div>
+    </section>
+
+    <!-- Services Section -->
+    <section id="services">
+        <h2>Our Services</h2>
+        <p>Comprehensive healthcare solutions designed for your convenience and wellbeing</p>
+        <ul>
+            <li>Online Doctor Consultations</li>
+            <li>Diagnostic Test Bookings</li>
+            <li>Personalized Health Reports</li>
+            <li>Emergency Assistance</li>
+            <li>Online Pharmacy & Medication Delivery</li>
+        </ul>
+        <div class="button" style="margin-top: 30px;">
+            <a href="/services">View All Services</a>
+        </div>
+    </section>
+
+    <!-- Pharmacy Section -->
+    <section id="pharmacy">
+        <h2>Online Pharmacy</h2>
+        <p>Get your prescribed medications and healthcare essentials delivered to your doorstep with our secure and convenient online pharmacy service.</p>
+        
+        <div class="pharmacy-features">
+            <div class="pharmacy-feature">
+                <img src="https://cdn-icons-png.flaticon.com/512/3140/3140343.png" alt="Prescription">
+                <h3>Digital Prescriptions</h3>
+                <p>Upload prescriptions directly from your doctor consultations or scan and upload your physical prescriptions.</p>
+            </div>
+            
+            <div class="pharmacy-feature">
+                <img src="https://cdn-icons-png.flaticon.com/512/2982/2982226.png" alt="Medicine">
+                <h3>Wide Range of Products</h3>
+                <p>Access prescription medications, over-the-counter drugs, wellness products, and healthcare equipment.</p>
+            </div>
+            
+            <div class="pharmacy-feature">
+                <img src="https://cdn-icons-png.flaticon.com/512/2203/2203138.png" alt="Delivery">
+                <h3>Express Delivery</h3>
+                <p>Get essential medications delivered within hours and regular orders within 24-48 hours.</p>
+            </div>
+        </div>
+        
+        <div class="pharmacy-cta">
+            <a href="/pharmacy" class="pharmacy-button">Visit Pharmacy</a>
+        </div>
+    </section>
+
+    <!-- Doctors Section -->
+    <section id="doctors">
+        <h2>Meet Our Doctors</h2>
+        <p>Connect with our team of experienced and qualified healthcare professionals</p>
+        <div class="doctor-slider">
+            <div class="slides">
+                <!-- Doctors will be dynamically added here -->
+            </div>
+        </div>
+        <div class="see-all-btn">
+            <a href="/all_doctors">See All Doctors</a>
+        </div>
+    </section>
+
+    <!-- Contact Section -->
+    <section id="contact">
+        <h2>Contact Us</h2>
+        <p>Have questions or need assistance? We're here to help!</p>
+        <form class="contact-form" action="/submit_enquiry" method="POST">
+            <input type="text" name="name" placeholder="Your Name" required />
+            <input type="email" name="email" placeholder="Your Email" required />
+            <textarea name="message" placeholder="Your Message" rows="5" required></textarea>
+            <button type="submit">Send Message</button>
+        </form>
+    </section>
+    
+    <div class="visitor-counter">Visitors: <span id="visitor-count">0</span></div>
+
+    <!-- Chatbot Button -->
+    <div class="chatbot-container" onclick="toggleChatbot()">
+        <img src="https://cdn-icons-png.flaticon.com/512/2950/2950707.png" alt="Chatbot">
+    </div>
+
+    <!-- Chatbase Chatbot -->
+    <iframe id="chatbase-widget" src="https://www.chatbase.co/chatbot-iframe/fSiObHG0hl0I5oV-SEFiZ"></iframe>
+
+    <!-- Footer -->
+    <footer>
+        <p>© 2025 RapiACT. All Rights Reserved.</p>
+    </footer>
+
+<!-- Google Translate Script -->
+    <script type="text/javascript">
+        // Language codes and names
+        const languages = [
+            { code: 'en', name: 'English' },
+            { code: 'hi', name: 'हिन्दी (Hindi)' },
+            { code: 'te', name: 'తెలుగు (Telugu)' },
+            { code: 'kn', name: 'ಕನ್ನಡ (Kannada)' },
+            { code: 'ta', name: 'தமிழ் (Tamil)' }
+        ];
+        
+        // Function to initialize Google Translate
+        function googleTranslateElementInit() {
+            new google.translate.TranslateElement({
+                pageLanguage: 'en',
+                includedLanguages: 'en,hi,te,kn,ta',
+                autoDisplay: false,
+                layout: google.translate.TranslateElement.InlineLayout.HORIZONTAL
+            }, 'google_translate_element');
+            
+            // Hide Google Translate UI elements after initialization
+            setTimeout(() => {
+                const googleElements = document.querySelectorAll('.goog-te-gadget-icon, .goog-te-gadget span:not(.goog-te-menu-value span:first-child)');
+                googleElements.forEach(el => {
+                    el.style.display = 'none';
+                });
+            }, 1000);
+        }
+        
+        // Function to translate the page
+        function translatePage(langCode) {
+            // Save the language preference with a timestamp
+            const now = new Date().getTime();
+            localStorage.setItem('preferredLanguage', langCode);
+            localStorage.setItem('languageTimestamp', now);
+            
+            // If it's the default language, reload without translation
+            if (langCode === 'en') {
+                location.reload();
+                return;
+            }
+            
+            // Use Google's translation method
+            const iframe = document.querySelector('.goog-te-menu-frame');
+            if (iframe) {
+                const iframeDoc = iframe.contentDocument || iframe.contentWindow.document;
+                const elements = iframeDoc.querySelectorAll('a.goog-te-menu2-item');
+                
+                for (let i = 0; i < elements.length; i++) {
+                    const element = elements[i];
+                    if (element.textContent.includes(getLangName(langCode))) {
+                        element.click();
+                        break;
+                    }
+                }
+            } else {
+                // Fallback method if iframe not available
+                const select = document.querySelector('.goog-te-combo');
+                if (select) {
+                    select.value = langCode;
+                    select.dispatchEvent(new Event('change'));
+                }
+            }
+        }
+        
+        // Helper function to get language name from code
+        function getLangName(code) {
+            const lang = languages.find(l => l.code === code);
+            return lang ? lang.name : 'English';
+        }
+        
+        // Function to show the language selection modal
+        function showLanguageModal() {
+            // Create modal elements
+            const modal = document.createElement('div');
+            modal.className = 'language-modal';
+            
+            const modalContent = document.createElement('div');
+            modalContent.className = 'language-selection';
+            
+            const heading = document.createElement('h2');
+            heading.textContent = 'Choose Your Language';
+            
+            const description = document.createElement('p');
+            description.textContent = 'Please select your preferred language to continue:';
+            
+            const buttonsContainer = document.createElement('div');
+            buttonsContainer.className = 'language-buttons';
+            
+            // Add language buttons
+            languages.forEach(lang => {
+                const button = document.createElement('button');
+                button.className = 'language-button';
+                button.textContent = lang.name;
+                button.addEventListener('click', () => {
+                    translatePage(lang.code);
+                    modal.remove();
+                });
+                buttonsContainer.appendChild(button);
+            });
+            
+            // Assemble and show the modal
+            modalContent.appendChild(heading);
+            modalContent.appendChild(description);
+            modalContent.appendChild(buttonsContainer);
+            modal.appendChild(modalContent);
+            document.body.appendChild(modal);
+        }
+        
+        // Set up event listeners when document is loaded
+        document.addEventListener('DOMContentLoaded', function () {
+            // Handle language selector button click
+            const languageSelector = document.getElementById('language-selector');
+            if (languageSelector) {
+                languageSelector.addEventListener('click', showLanguageModal);
+            }
+            
+            // Original scroll indicator code
+            window.addEventListener('scroll', () => {
+                const scrollTop = window.scrollY;
+                const windowHeight = document.documentElement.scrollHeight - window.innerHeight;
+                const scrollPercentage = (scrollTop / windowHeight) * 100;
+                document.querySelector('.scroll-indicator').style.height = scrollPercentage + '%';
+            });
+            
+            // Original doctors loading code
+            fetch("/get_doctors")
+                .then(response => response.json())
+                .then(doctors => {
+                    const slidesContainer = document.querySelector(".slides");
+
+                    doctors.forEach(doctor => {
+                        let photoSrc = 'static/images/logo.jpg'; // Default image
+
+                        // Ensure the doctor._id is a string
+                        if (doctor._id && typeof doctor._id === "object" && "$oid" in doctor._id) {
+                            photoSrc = `/user_photo/${doctor._id.$oid}`;
+                        } else if (doctor._id && typeof doctor._id === "string") {
+                            photoSrc = `/user_photo/${doctor._id}`;
+                        }
+
+                        const doctorCard = document.createElement("div");
+                        doctorCard.classList.add("doctor-card");
+                        doctorCard.innerHTML = `
+                            <img src="${photoSrc}" alt="Doctor">
+                            <h3>${doctor.name}</h3>
+                            <p>Specialization: ${doctor.specialization}</p>
+                            <p>Experience: ${doctor.years_experience} years</p>
+                        `;
+                        slidesContainer.appendChild(doctorCard);
+                    });
+                })
+                .catch(error => console.error("Error fetching doctors:", error));
+            
+            // Original loading screen code
+            setTimeout(() => {
+                document.querySelector('.loading-screen').style.display = 'none';
+            }, 2000); // 2 second delay before hiding the loading screen
+            
+            // Visitor counter
+            let count = localStorage.getItem('visitorCount') || 0;
+            count = parseInt(count) + 1;
+            localStorage.setItem('visitorCount', count);
+            document.getElementById('visitor-count').textContent = count;
+            
+            // Check for saved language preference
+            const savedLanguage = localStorage.getItem('preferredLanguage');
+            const timestamp = localStorage.getItem('languageTimestamp');
+            const now = new Date().getTime();
+            const oneDay = 24 * 60 * 60 * 1000; // One day in milliseconds
+            
+            // Apply saved language if it's less than a day old
+            if (savedLanguage && timestamp && (now - timestamp < oneDay)) {
+                translatePage(savedLanguage);
+            }
+        });
+        
+        // Chatbot toggle function
+        function toggleChatbot() {
+            const chatbotWidget = document.getElementById('chatbase-widget');
+            if (chatbotWidget.style.display === 'none' || chatbotWidget.style.display === '') {
+                chatbotWidget.style.display = 'block';
+            } else {
+                chatbotWidget.style.display = 'none';
+            }
+        }
+    </script>
+    
+    <!-- Google Translate API -->
+    <script type="text/javascript" src="//translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script>
+</body>
+</html>

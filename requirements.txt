@@ -1,0 +1,16 @@
+﻿Flask
+flask-pymongo
+pymongo
+werkzeug
+datetime
+gunicorn
+google-auth
+google-auth-oauthlib
+google-auth-httplib2
+google-api-python-client
+flask-mail
+PyPDF2
+joblib
+scikit-learn
+python-docx
+qrcode
