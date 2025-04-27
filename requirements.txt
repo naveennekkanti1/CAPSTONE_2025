@@ -15,3 +15,5 @@ scikit-learn
 python-docx
 qrcode
 pdfplumber
+pandas
+numpy
