@@ -3,15 +3,18 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Kidney Disease Predictor - RapiACT</title>
-    <link rel="icon" type="image/jpg" href="{{ url_for('static', filename='images/logo.jpg') }}" />
+    <title>Kidney Disease Prediction</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
+        /* Kidney-specific styling */
+        :root {
+            --kidney-primary: #3a5683;
+            --kidney-secondary: #5d87bb;
+            --kidney-accent: #8eb8e5;
+            --kidney-light: #f7f9f9;
+            --kidney-dark: #2c394b;
         }
 
         body {
@@ -22,295 +25,249 @@
             position: relative;
             min-height: 100vh;
             padding-bottom: 70px;
+            margin: 0;
         }
 
-        .navbar {
-            display: flex;
-            justify-content: flex-start;
-            align-items: center;
-            padding: 12px 30px;
-            background-color: #0c5a56;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-            position: sticky;
-            top: 0;
-            z-index: 100;
-        }
-
-        .navbar .logo {
-            display: block;
-        }
-
-        .navbar .logo img {
-            height: 50px;
-            border-radius: 10px;
-            cursor: pointer;
-            transition: transform 0.3s ease;
-        }
-
-        .navbar .logo img:hover {
-            transform: scale(1.05);
-        }
-
-        .prediction-container {
-            text-align: center;
-            padding: 40px 20px;
-            max-width: 1000px;
-            margin: 0 auto;
-        }
-
-        .prediction-container h1 {
-            font-size: 2.5rem;
-            color: #0c5a56;
-            margin-bottom: 10px;
-            font-weight: 600;
-        }
-
-        .prediction-subtitle {
-            color: #666;
-            margin-bottom: 30px;
-            font-size: 1.1rem;
-        }
-
-        .form-container {
-            background-color: white;
-            border-radius: 15px;
-            padding: 30px;
-            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.05);
-            margin-top: 20px;
-        }
-
-        .tabs {
-            display: flex;
-            gap: 10px;
-            margin-bottom: 30px;
-            justify-content: center;
-            position: relative;
-        }
-
-        .tab {
-            padding: 12px 25px;
-            background-color: #f9f9f9;
-            border: none;
-            border-radius: 8px;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            font-weight: 500;
-            color: #555;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-
-        .tab i {
-            font-size: 1.1rem;
-        }
-
-        .tab.active {
-            background-color: #0c5a56;
+        .kidney-header {
+            background: linear-gradient(135deg, var(--kidney-primary), var(--kidney-secondary));
             color: white;
-            box-shadow: 0 3px 10px rgba(12, 90, 86, 0.2);
-        }
-
-        .tab:hover:not(.active) {
-            background-color: #eaeaea;
-        }
-
-        .tab-content {
-            display: none;
-            opacity: 0;
-            transform: translateY(10px);
-            transition: all 0.3s ease;
-        }
-
-        .tab-content.active {
-            display: block;
-            opacity: 1;
-            transform: translateY(0);
-        }
-
-        .file-upload {
-            margin-bottom: 30px;
+            padding: 2rem;
             text-align: center;
-            padding: 30px;
-            border: 2px dashed #ddd;
-            border-radius: 12px;
-            transition: all 0.3s ease;
-            background-color: #f9f9f9;
+            border-radius: 10px;
+            margin-bottom: 2rem;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
         }
 
-        .file-upload:hover {
-            border-color: #0c5a56;
+        .kidney-header h1 {
+            margin: 0;
+            font-size: 2.5rem;
         }
 
-        .file-upload label {
-            display: block;
-            margin-bottom: 15px;
+        .kidney-header p {
+            margin: 10px 0 0;
             font-size: 1.1rem;
-            color: #0c5a56;
-            font-weight: 500;
+            opacity: 0.9;
         }
 
-        .file-upload p {
-            color: #777;
+        .kidney-container {
+            max-width: 1200px;
+            margin: 2rem auto;
+            padding: 0 20px;
+        }
+
+        .kidney-panels {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        .kidney-panel {
+            background-color: white;
+            border-radius: 10px;
+            padding: 2rem;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+            flex: 1;
+            min-width: 300px;
+        }
+
+        .kidney-panel h2 {
+            color: var(--kidney-primary);
+            margin-top: 0;
+            border-bottom: 2px solid var(--kidney-secondary);
+            padding-bottom: 10px;
+        }
+
+        .form-row {
+            display: flex;
+            flex-wrap: wrap;
             margin-bottom: 15px;
         }
 
-        .file-upload-btn {
-            background-color: #f5f5f5;
-            border: 1px solid #ddd;
-            border-radius: 8px;
-            padding: 12px 20px;
-            display: inline-block;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            color: #555;
+        .form-group {
+            flex: 1;
+            min-width: 200px;
+            margin-right: 15px;
+            margin-bottom: 15px;
+        }
+
+        .form-group:last-child {
+            margin-right: 0;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
             font-weight: 500;
+            color: var(--kidney-dark);
         }
 
-        .file-upload-btn:hover {
-            background-color: #eaeaea;
-        }
-
-        .file-upload input[type="file"] {
-            display: none;
-        }
-
-        .selected-file {
-            margin-top: 15px;
-            color: #555;
-            font-size: 0.9rem;
+        .form-group input, .form-group select {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 1rem;
         }
 
         .form-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
             gap: 20px;
             margin-bottom: 30px;
         }
 
-        .form-item {
-            text-align: left;
-        }
-
-        .form-item label {
-            display: block;
-            margin-bottom: 8px;
-            color: #0c5a56;
-            font-weight: 500;
-            font-size: 0.95rem;
-        }
-
-        .form-item input, .form-item select {
-            width: 100%;
-            padding: 12px 15px;
-            border-radius: 8px;
-            border: 1px solid #ddd;
-            font-size: 1rem;
-            background-color: #f9f9f9;
-            color: #333;
+        .file-upload {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            border: 2px dashed var(--kidney-secondary);
+            border-radius: 10px;
+            padding: 2rem;
+            margin-bottom: 1.5rem;
             transition: all 0.3s ease;
         }
 
-        .form-item input:focus, .form-item select:focus {
-            border-color: #0c5a56;
-            outline: none;
-            box-shadow: 0 0 0 3px rgba(12, 90, 86, 0.1);
+        .file-upload:hover {
+            border-color: var(--kidney-primary);
+            background-color: rgba(93, 135, 187, 0.05);
         }
 
-        button[type="submit"] {
-            background-color: #0c5a56;
+        .file-upload p {
+            margin: 10px 0;
+            color: #666;
+        }
+
+        .file-input {
+            display: none;
+        }
+
+        .file-label {
+            display: inline-block;
+            padding: 12px 20px;
+            background-color: var(--kidney-secondary);
             color: white;
-            padding: 14px 30px;
-            border-radius: 8px;
-            border: none;
-            font-size: 1rem;
-            transition: all 0.3s ease;
+            border-radius: 5px;
             cursor: pointer;
             font-weight: 500;
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-        }
-
-        button[type="submit"]:hover {
-            background-color: #094440;
-            transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(12, 90, 86, 0.2);
-        }
-
-        .result {
-            margin-top: 30px;
-            padding: 25px;
-            border-radius: 10px;
-            text-align: left;
             transition: all 0.3s ease;
-            animation: fadeIn 0.5s ease;
         }
 
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(10px); }
-            to { opacity: 1; transform: translateY(0); }
+        .file-label:hover {
+            background-color: var(--kidney-primary);
         }
 
-        .high-risk {
-            background-color: #fff5f5;
-            border-left: 4px solid #ff4d4d;
-        }
-
-        .low-risk {
-            background-color: #f0fff4;
-            border-left: 4px solid #00d9a6;
-        }
-
-        .result h2 {
-            margin-bottom: 15px;
-            color: #333;
-            font-weight: 600;
+        .button-group {
             display: flex;
-            align-items: center;
-            gap: 10px;
+            justify-content: space-between;
+            margin-top: 1.5rem;
         }
 
-        .high-risk h2 i {
-            color: #ff4d4d;
-        }
-
-        .low-risk h2 i {
-            color: #00d9a6;
-        }
-
-        .precautions {
-            margin-top: 20px;
-            background-color: #f9f9f9;
-            padding: 20px;
-            border-radius: 8px;
-        }
-
-        .precautions h3 {
-            color: #0c5a56;
-            margin-bottom: 15px;
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 5px;
+            font-size: 1rem;
             font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .btn-primary {
+            background-color: var(--kidney-primary);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background-color: #2a4163;
+        }
+
+        .btn-secondary {
+            background-color: var(--kidney-secondary);
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            background-color: #4b6e9a;
+        }
+
+        .result-panel {
+            background-color: white;
+            border-radius: 10px;
+            padding: 2rem;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+            margin-top: 2rem;
+        }
+
+        .result-header {
             display: flex;
             align-items: center;
-            gap: 8px;
+            margin-bottom: 1.5rem;
         }
 
-        .precautions ul {
-            padding-left: 25px;
+        .result-icon {
+            font-size: 2.5rem;
+            margin-right: 15px;
         }
 
-        .precautions li {
+        .positive-result {
+            color: #e74c3c;
+        }
+
+        .negative-result {
+            color: #2ecc71;
+        }
+
+        .neutral-result {
+            color: #f39c12;
+        }
+
+        .result-content h3 {
+            margin-top: 0;
+            margin-bottom: 5px;
+            color: var(--kidney-dark);
+        }
+
+        .result-content p {
+            margin-top: 0;
+            color: #666;
+        }
+
+        .precautions-list {
+            margin-top: 1.5rem;
+            padding-left: 20px;
+        }
+
+        .precautions-list li {
             margin-bottom: 10px;
-            position: relative;
-            padding-left: 5px;
+            padding-left: 10px;
         }
 
-        .precautions li::marker {
-            color: #0c5a56;
+        .instructions {
+            background-color: rgba(142, 184, 229, 0.1);
+            border-left: 4px solid var(--kidney-accent);
+            padding: 15px;
+            margin-bottom: 1.5rem;
+            border-radius: 0 5px 5px 0;
+        }
+
+        .instructions h3 {
+            margin-top: 0;
+            color: var(--kidney-dark);
+        }
+
+        .instructions ol {
+            margin-bottom: 0;
+            padding-left: 20px;
+        }
+
+        .instructions li {
+            margin-bottom: 8px;
         }
 
         footer {
-            background-color: #0c5a56;
+            background-color: var(--kidney-primary);
             color: white;
             text-align: center;
             padding: 15px 0;
@@ -322,163 +279,165 @@
 
         /* Responsive adjustments */
         @media (max-width: 768px) {
-            .prediction-container {
-                padding: 30px 15px;
+            .kidney-panels {
+                flex-direction: column;
             }
             
-            .form-container {
-                padding: 20px;
+            .form-row {
+                flex-direction: column;
             }
             
-            .navbar {
-                padding: 10px 15px;
+            .form-group {
+                margin-right: 0;
+                margin-bottom: 15px;
             }
             
-            .tabs {
+            .button-group {
                 flex-direction: column;
                 gap: 10px;
             }
             
-            .form-grid {
-                grid-template-columns: 1fr;
+            .btn {
+                width: 100%;
             }
         }
     </style>
 </head>
 <body>
-    <div class="navbar">
-        <a href="/" class="logo">
-            <img src="{{ url_for('static', filename='images/logo.jpg') }}" alt="RapiACT Logo" />
-        </a>
-    </div>
+    <div class="kidney-container">
+        <div class="kidney-header">
+            <h1>Kidney Disease Risk Prediction</h1>
+            <p>Early detection through advanced machine learning analysis of kidney health parameters</p>
+        </div>
 
-    <div class="prediction-container">
-        <h1>Kidney Disease Predictor</h1>
-        <p class="prediction-subtitle">Early detection for better kidney health management</p>
-        
-        <div class="form-container">
-            <div class="tab-container">
-                <div class="tabs">
-                    <div class="tab active" onclick="openTab('upload-tab')">
-                        <i class="fas fa-file-upload"></i> Upload Reports
+        <div class="instructions">
+            <h3>How to Use This Tool</h3>
+            <ol>
+                <li>Enter the required values manually or upload a medical report (PDF/DOCX)</li>
+                <li>For best results, ensure all fields are filled accurately</li>
+                <li>Click "Predict Risk" to get an assessment of kidney disease risk</li>
+            </ol>
+        </div>
+
+        <div class="kidney-panels">
+            <div class="kidney-panel">
+                <h2>Upload Medical Report</h2>
+                <form action="/extract/kidney" method="post" enctype="multipart/form-data">
+                    <div class="file-upload">
+                        <input type="file" name="file" id="file" class="file-input" accept=".pdf,.docx">
+                        <label for="file" class="file-label">Choose File</label>
+                        <p id="file-name">No file chosen</p>
+                        <p>Supported formats: PDF, DOCX</p>
                     </div>
-                    <div class="tab" onclick="openTab('manual-tab')">
-                        <i class="fas fa-keyboard"></i> Manual Entry
+                    <div class="button-group">
+                        <button type="submit" class="btn btn-secondary">Extract Data</button>
                     </div>
-                </div>
-                
-                <div id="upload-tab" class="tab-content active">
-                    <!-- PDF Upload Form -->
-                    <form action="/extract/kidney" method="POST" enctype="multipart/form-data" class="file-upload">
-                        <label for="file"><i class="fas fa-file-medical"></i> Upload Medical Report</label>
-                        <p>Upload your medical report in PDF or DOCX format to automatically extract values</p>
-                        
-                        <label for="file" class="file-upload-btn">
-                            <i class="fas fa-cloud-upload-alt"></i> Choose File
-                        </label>
-                        <input type="file" name="file" id="file" onchange="updateFileName()" required>
-                        
-                        <div class="selected-file" id="file-name">No file selected</div>
-                        
-                        <button type="submit" style="margin-top: 20px;">
-                            <i class="fas fa-magic"></i> Extract & Autofill
-                        </button>
-                    </form>
-                </div>
-                
-                <div id="manual-tab" class="tab-content">
-                    <!-- Input Form -->
-                    <form action="/predict/kidney" method="POST">
-                        <div class="form-grid">
-                            {% for feature in features %}
-                            <div class="form-item">
-                                <label for="{{ feature }}">
-                                    {% if feature == 'age' %}
-                                        <i class="fas fa-user"></i>
-                                    {% elif feature == 'bp' %}
-                                        <i class="fas fa-heartbeat"></i>
-                                    {% elif feature == 'sg' %}
-                                        <i class="fas fa-flask"></i>
-                                    {% elif feature == 'al' %}
-                                        <i class="fas fa-vial"></i>
-                                    {% elif feature == 'su' %}
-                                        <i class="fas fa-chart-line"></i>
-                                    {% elif feature == 'rbc' %}
-                                        <i class="fas fa-tint"></i>
-                                    {% elif feature == 'pc' %}
-                                        <i class="fas fa-microscope"></i>
-                                    {% elif feature in ['pcc', 'ba'] %}
-                                        <i class="fas fa-search"></i>
-                                    {% elif feature in ['bgr', 'bu', 'sc', 'sod', 'pot', 'hemo', 'pcv', 'wc', 'rc'] %}
-                                        <i class="fas fa-chart-bar"></i>
-                                    {% elif feature in ['htn', 'dm', 'cad', 'pe', 'ane'] %}
-                                        <i class="fas fa-notes-medical"></i>
-                                    {% elif feature == 'appet' %}
-                                        <i class="fas fa-utensils"></i>
-                                    {% else %}
-                                        <i class="fas fa-file-medical-alt"></i>
-                                    {% endif %}
-                                    {{ feature }}
-                                </label>
-                                {% if feature in ['rbc', 'pc'] %}
-                                <select name="{{ feature }}" id="{{ feature }}">
-                                    <option value="normal" {% if extracted_data.get(feature) == 'normal' %}selected{% endif %}>Normal</option>
-                                    <option value="abnormal" {% if extracted_data.get(feature) == 'abnormal' %}selected{% endif %}>Abnormal</option>
-                                </select>
-                                {% elif feature in ['pcc', 'ba', 'htn', 'dm', 'cad', 'pe', 'ane'] %}
-                                <select name="{{ feature }}" id="{{ feature }}">
-                                    <option value="yes" {% if extracted_data.get(feature) == 'yes' %}selected{% endif %}>Yes</option>
-                                    <option value="no" {% if extracted_data.get(feature) == 'no' %}selected{% endif %}>No</option>
-                                </select>
+                </form>
+            </div>
+
+            <div class="kidney-panel">
+                <h2>Enter Medical Parameters</h2>
+                <form action="/predict/kidney" method="POST">
+                    <div class="form-grid">
+                        {% for feature in features %}
+                        <div class="form-group">
+                            <label for="{{ feature }}">
+                                {% if feature == 'age' %}
+                                    <i class="fas fa-user"></i>
+                                {% elif feature == 'bp' %}
+                                    <i class="fas fa-heartbeat"></i>
+                                {% elif feature == 'sg' %}
+                                    <i class="fas fa-flask"></i>
+                                {% elif feature == 'al' %}
+                                    <i class="fas fa-vial"></i>
+                                {% elif feature == 'su' %}
+                                    <i class="fas fa-chart-line"></i>
+                                {% elif feature == 'rbc' %}
+                                    <i class="fas fa-tint"></i>
+                                {% elif feature == 'pc' %}
+                                    <i class="fas fa-microscope"></i>
+                                {% elif feature in ['pcc', 'ba'] %}
+                                    <i class="fas fa-search"></i>
+                                {% elif feature in ['bgr', 'bu', 'sc', 'sod', 'pot', 'hemo', 'pcv', 'wc', 'rc'] %}
+                                    <i class="fas fa-chart-bar"></i>
+                                {% elif feature in ['htn', 'dm', 'cad', 'pe', 'ane'] %}
+                                    <i class="fas fa-notes-medical"></i>
                                 {% elif feature == 'appet' %}
-                                <select name="{{ feature }}" id="{{ feature }}">
-                                    <option value="good" {% if extracted_data.get(feature) == 'good' %}selected{% endif %}>Good</option>
-                                    <option value="poor" {% if extracted_data.get(feature) == 'poor' %}selected{% endif %}>Poor</option>
-                                </select>
+                                    <i class="fas fa-utensils"></i>
                                 {% else %}
-                                <input
-                                    type="text"
-                                    name="{{ feature }}"
-                                    id="{{ feature }}"
-                                    value="{{ extracted_data.get(feature, '') }}"
-                                    placeholder="Enter {{ feature }}"
-                                    required
-                                >
+                                    <i class="fas fa-file-medical-alt"></i>
                                 {% endif %}
-                            </div>
-                            {% endfor %}
+                                {{ feature }}
+                            </label>
+                            {% if feature in ['rbc', 'pc'] %}
+                            <select name="{{ feature }}" id="{{ feature }}">
+                                <option value="normal" {% if extracted_data.get(feature) == 'normal' %}selected{% endif %}>Normal</option>
+                                <option value="abnormal" {% if extracted_data.get(feature) == 'abnormal' %}selected{% endif %}>Abnormal</option>
+                            </select>
+                            {% elif feature in ['pcc', 'ba', 'htn', 'dm', 'cad', 'pe', 'ane'] %}
+                            <select name="{{ feature }}" id="{{ feature }}">
+                                <option value="yes" {% if extracted_data.get(feature) == 'yes' %}selected{% endif %}>Yes</option>
+                                <option value="no" {% if extracted_data.get(feature) == 'no' %}selected{% endif %}>No</option>
+                            </select>
+                            {% elif feature == 'appet' %}
+                            <select name="{{ feature }}" id="{{ feature }}">
+                                <option value="good" {% if extracted_data.get(feature) == 'good' %}selected{% endif %}>Good</option>
+                                <option value="poor" {% if extracted_data.get(feature) == 'poor' %}selected{% endif %}>Poor</option>
+                            </select>
+                            {% else %}
+                            <input
+                                type="text"
+                                name="{{ feature }}"
+                                id="{{ feature }}"
+                                value="{{ extracted_data.get(feature, '') }}"
+                                placeholder="Enter {{ feature }}"
+                                required
+                            >
+                            {% endif %}
                         </div>
-                        <button type="submit">
+                        {% endfor %}
+                    </div>
+                    <div class="button-group">
+                        <button type="reset" class="btn btn-secondary">Reset</button>
+                        <button type="submit" class="btn btn-primary">
                             <i class="fas fa-calculator"></i> Predict Risk
                         </button>
-                    </form>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        {% if prediction_text %}
+        <div class="result-panel">
+            <div class="result-header">
+                <div class="result-icon {% if 'high risk' in prediction_text.lower() or 'positive' in prediction_text.lower() %}positive-result{% elif 'Negative' in prediction_text %}negative-result{% else %}neutral-result{% endif %}">
+                    {% if 'high risk' in prediction_text.lower() or 'positive' in prediction_text.lower() %}
+                    ⚠️
+                    {% elif 'Negative' in prediction_text %}
+                    ✓
+                    {% else %}
+                    ℹ️
+                    {% endif %}
+                </div>
+                <div class="result-content">
+                    <h3>Prediction Result</h3>
+                    <p>{{ prediction_text }}</p>
                 </div>
             </div>
 
-            <!-- Prediction Result -->
-            {% if prediction_text %}
-            <div class="result {{ 'high-risk' if 'high risk' in prediction_text.lower() or 'positive' in prediction_text.lower() else 'low-risk' }}">
-                <h2>
-                    {% if 'high risk' in prediction_text.lower() or 'positive' in prediction_text.lower() %}
-                        <i class="fas fa-exclamation-triangle"></i>
-                    {% else %}
-                        <i class="fas fa-check-circle"></i>
-                    {% endif %}
-                    {{ prediction_text }}
-                </h2>
-                {% if precautions %}
-                <div class="precautions">
-                    <h3><i class="fas fa-shield-alt"></i> Recommended Precautions:</h3>
-                    <ul>
-                        {% for item in precautions %}
-                        <li>{{ item }}</li>
-                        {% endfor %}
-                    </ul>
-                </div>
-                {% endif %}
+            {% if precautions %}
+            <div>
+                <h3>Recommendations & Precautions</h3>
+                <ul class="precautions-list">
+                    {% for item in precautions %}
+                    <li>{{ item }}</li>
+                    {% endfor %}
+                </ul>
+                <p><strong>Note:</strong> This is a predictive tool only. Please consult a healthcare professional for clinical diagnosis and treatment.</p>
             </div>
             {% endif %}
         </div>
+        {% endif %}
     </div>
 
     <footer>
@@ -486,35 +445,11 @@
     </footer>
 
     <script>
-        function openTab(tabId) {
-            // Hide all tab contents
-            const tabContents = document.getElementsByClassName("tab-content");
-            for (let i = 0; i < tabContents.length; i++) {
-                tabContents[i].classList.remove("active");
-            }
-            
-            // Deactivate all tabs
-            const tabs = document.getElementsByClassName("tab");
-            for (let i = 0; i < tabs.length; i++) {
-                tabs[i].classList.remove("active");
-            }
-            
-            // Activate the selected tab and content
-            document.getElementById(tabId).classList.add("active");
-            const activeTab = document.querySelector(`[onclick="openTab('${tabId}')"]`);
-            activeTab.classList.add("active");
-        }
-        
-        function updateFileName() {
-            const fileInput = document.getElementById('file');
-            const fileNameDisplay = document.getElementById('file-name');
-            
-            if (fileInput.files.length > 0) {
-                fileNameDisplay.textContent = fileInput.files[0].name;
-            } else {
-                fileNameDisplay.textContent = 'No file selected';
-            }
-        }
+        // Display selected file name
+        document.getElementById('file').addEventListener('change', function() {
+            const fileName = this.files[0] ? this.files[0].name : 'No file chosen';
+            document.getElementById('file-name').textContent = fileName;
+        });
     </script>
 </body>
 </html>

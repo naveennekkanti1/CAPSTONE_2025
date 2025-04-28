@@ -5,109 +5,112 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Lung Cancer Risk Assessment</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
+        /* Lung-specific styling */
         :root {
-            --primary-color: #3f88c5;
-            --secondary-color: #536dfe;
-            --background-color: #f9f9f9;
-            --card-color: #ffffff;
-            --text-color: #333333;
-            --shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-            --border-radius: 8px;
+            --lung-primary: #3f88c5;
+            --lung-secondary: #536dfe;
+            --lung-accent: #90caf9;
+            --lung-light: #f9f9f9;
+            --lung-dark: #333333;
         }
-        
+
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: var(--background-color);
-            margin: 0;
-            padding: 0;
-            color: var(--text-color);
+            font-family: "Poppins", sans-serif;
+            background-color: #f5f7fa;
+            color: var(--lung-dark);
             line-height: 1.6;
+            position: relative;
+            min-height: 100vh;
+            padding-bottom: 70px;
+            margin: 0;
         }
-        
-        .logo-container {
+
+        .lung-header {
+            background: linear-gradient(135deg, var(--lung-primary), var(--lung-secondary));
+            color: white;
+            padding: 2rem;
             text-align: center;
-            padding: 15px 0;
+            border-radius: 10px;
+            margin-bottom: 2rem;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .lung-header h1 {
+            margin: 0;
+            font-size: 2.5rem;
+        }
+
+        .lung-header p {
+            margin: 10px 0 0;
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+
+        .lung-container {
+            max-width: 1200px;
+            margin: 2rem auto;
+            padding: 0 20px;
+        }
+
+        .lung-panels {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        .lung-panel {
             background-color: white;
-            box-shadow: var(--shadow);
-            position: fixed;
-            top: 0;
-            width: 100%;
-            z-index: 100;
+            border-radius: 10px;
+            padding: 2rem;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+            flex: 1;
+            min-width: 300px;
         }
-        
-        .logo {
-            height: 50px;
-            cursor: pointer;
-            transition: transform 0.3s ease;
-        }
-        
-        .logo:hover {
-            transform: scale(1.05);
-        }
-        
-        .container {
-            max-width: 900px;
-            margin: 80px auto 40px;
-            padding: 20px;
-        }
-        
-        h1 {
-            text-align: center;
-            color: var(--primary-color);
-            margin-bottom: 30px;
-            font-weight: 600;
-        }
-        
-        .card {
-            background-color: var(--card-color);
-            border-radius: var(--border-radius);
-            box-shadow: var(--shadow);
-            padding: 25px;
-            margin-bottom: 25px;
-            transition: transform 0.3s ease, box-shadow 0.3s ease;
-        }
-        
-        .card:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 8px 15px rgba(0, 0, 0, 0.1);
-        }
-        
-        h2 {
-            color: var(--secondary-color);
+
+        .lung-panel h2 {
+            color: var(--lung-primary);
             margin-top: 0;
-            font-weight: 500;
-            border-bottom: 2px solid #f0f0f0;
+            border-bottom: 2px solid var(--lung-secondary);
             padding-bottom: 10px;
             margin-bottom: 20px;
         }
-        
-        .input-group {
+
+        .form-row {
+            display: flex;
+            flex-wrap: wrap;
             margin-bottom: 15px;
         }
-        
-        label {
-            display: block;
-            margin-bottom: 6px;
-            font-weight: 500;
-            color: #555;
+
+        .form-group {
+            flex: 1;
+            min-width: 200px;
+            margin-right: 15px;
+            margin-bottom: 15px;
         }
-        
-        input[type="number"] {
+
+        .form-group:last-child {
+            margin-right: 0;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 500;
+            color: var(--lung-dark);
+        }
+
+        .form-group input, .form-group select {
             width: 100%;
             padding: 10px;
-            border: 1px solid #e0e0e0;
-            border-radius: var(--border-radius);
-            font-size: 16px;
-            transition: border-color 0.3s;
-            box-sizing: border-box;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 1rem;
         }
-        
-        input[type="number"]:focus {
-            border-color: var(--secondary-color);
-            outline: none;
-        }
-        
+
         .radio-group {
             display: flex;
             gap: 20px;
@@ -123,60 +126,184 @@
             margin: 0 0 0 8px;
             font-weight: normal;
         }
-        
-        button {
-            background-color: var(--primary-color);
-            color: white;
-            border: none;
-            padding: 12px 20px;
-            border-radius: var(--border-radius);
-            cursor: pointer;
-            font-size: 16px;
-            font-weight: 500;
-            transition: background-color 0.3s, transform 0.3s;
-            display: block;
-            width: 100%;
-            margin-top: 20px;
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
         }
-        
-        button:hover {
+
+        .file-upload {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            border: 2px dashed var(--lung-secondary);
+            border-radius: 10px;
+            padding: 2rem;
+            margin-bottom: 1.5rem;
+            transition: all 0.3s ease;
+        }
+
+        .file-upload:hover {
+            border-color: var(--lung-primary);
+            background-color: rgba(83, 109, 254, 0.05);
+        }
+
+        .file-upload p {
+            margin: 10px 0;
+            color: #666;
+        }
+
+        .file-input {
+            display: none;
+        }
+
+        .file-label {
+            display: inline-block;
+            padding: 12px 20px;
+            background-color: var(--lung-secondary);
+            color: white;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+
+        .file-label:hover {
+            background-color: var(--lung-primary);
+        }
+
+        .button-group {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 1.5rem;
+        }
+
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 5px;
+            font-size: 1rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            width: 100%;
+        }
+
+        .btn-primary {
+            background-color: var(--lung-primary);
+            color: white;
+        }
+
+        .btn-primary:hover {
             background-color: #2979c0;
             transform: translateY(-2px);
         }
-        
-        .result-section {
-            text-align: center;
+
+        .btn-secondary {
+            background-color: var(--lung-secondary);
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            background-color: #4051c4;
+        }
+
+        .result-panel {
+            background-color: white;
+            border-radius: 10px;
+            padding: 2rem;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+            margin-top: 2rem;
+        }
+
+        .result-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 1.5rem;
+        }
+
+        .result-icon {
+            font-size: 2.5rem;
+            margin-right: 15px;
+        }
+
+        .positive-result {
+            color: #e74c3c;
+        }
+
+        .negative-result {
+            color: #2ecc71;
+        }
+
+        .neutral-result {
+            color: #f39c12;
+        }
+
+        .result-content h3 {
+            margin-top: 0;
+            margin-bottom: 5px;
+            color: var(--lung-dark);
+        }
+
+        .result-content p {
+            margin-top: 0;
+            color: #666;
+        }
+
+        .precautions-list {
+            margin-top: 1.5rem;
+            padding-left: 20px;
+        }
+
+        .precautions-list li {
+            margin-bottom: 10px;
+            padding-left: 10px;
+        }
+
+        .instructions {
+            background-color: rgba(144, 202, 249, 0.1);
+            border-left: 4px solid var(--lung-accent);
+            padding: 15px;
+            margin-bottom: 1.5rem;
+            border-radius: 0 5px 5px 0;
+        }
+
+        .instructions h3 {
+            margin-top: 0;
+            color: var(--lung-dark);
+        }
+
+        .instructions ol {
+            margin-bottom: 0;
+            padding-left: 20px;
+        }
+
+        .instructions li {
+            margin-bottom: 8px;
         }
         
         .prediction {
             display: inline-block;
             padding: 15px 30px;
-            border-radius: var(--border-radius);
+            border-radius: 5px;
             font-size: 20px;
             font-weight: 600;
             margin-bottom: 20px;
-        }
-        
-        .negative {
-            background-color: #4caf50;
-            color: white;
-        }
-        
-        .positive {
-            background-color: #f44336;
-            color: white;
         }
         
         .recommendations {
             text-align: left;
             background-color: #f8f9fa;
             padding: 20px;
-            border-radius: var(--border-radius);
-            border-left: 4px solid var(--secondary-color);
+            border-radius: 5px;
+            border-left: 4px solid var(--lung-secondary);
         }
         
         .recommendations h3 {
-            color: var(--secondary-color);
+            color: var(--lung-secondary);
             margin-top: 0;
         }
         
@@ -198,111 +325,205 @@
             background-color: #ffebee;
             color: #c62828;
             padding: 15px;
-            border-radius: var(--border-radius);
+            border-radius: 5px;
             margin-bottom: 20px;
             border-left: 4px solid #c62828;
         }
+
+        footer {
+            background-color: var(--lung-primary);
+            color: white;
+            text-align: center;
+            padding: 15px 0;
+            position: absolute;
+            bottom: 0;
+            width: 100%;
+            font-size: 0.9rem;
+        }
+
+        .logo-container {
+            text-align: center;
+            padding: 15px 0;
+            background-color: white;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            margin-bottom: 20px;
+        }
         
+        .logo {
+            height: 50px;
+            cursor: pointer;
+            transition: transform 0.3s ease;
+        }
+        
+        .logo:hover {
+            transform: scale(1.05);
+        }
+
+        /* Responsive adjustments */
         @media (max-width: 768px) {
-            .container {
-                padding: 15px;
+            .lung-panels {
+                flex-direction: column;
             }
             
-            .card {
-                padding: 20px;
+            .form-row {
+                flex-direction: column;
+            }
+            
+            .form-group {
+                margin-right: 0;
+                margin-bottom: 15px;
+            }
+            
+            .button-group {
+                flex-direction: column;
+                gap: 10px;
+            }
+            
+            .btn {
+                width: 100%;
             }
             
             .column-grid {
                 grid-template-columns: 1fr;
             }
         }
-        
-        .age-input {
-            width: 100%;
-            padding: 10px;
-            border: 1px solid #e0e0e0;
-            border-radius: var(--border-radius);
-            font-size: 16px;
-            transition: border-color 0.3s;
-            box-sizing: border-box;
-        }
-        
-        .age-input:focus {
-            border-color: var(--secondary-color);
-            outline: none;
-        }
     </style>
 </head>
 <body>
     <div class="logo-container">
         <a href="/">
-            <img src="{{ url_for('static', filename='images/logo.png') }}" alt="HealthPredict Logo" class="logo">
+            <img src="{{ url_for('static', filename='static\images\logo.jpg') }}" alt="RapiACT Logo" class="logo">
         </a>
     </div>
 
-    <div class="container">
-        <h1>Lung Cancer Risk Assessment</h1>
-        
+    <div class="lung-container">
+        <div class="lung-header">
+            <h1>Lung Cancer Risk Assessment</h1>
+            <p>Early detection through advanced machine learning analysis of risk factors</p>
+        </div>
+
+        <div class="instructions">
+            <h3>How to Use This Tool</h3>
+            <ol>
+                <li>Enter your details and risk factors in the form below</li>
+                <li>For best results, ensure all fields are filled accurately</li>
+                <li>Click "Analyze Risk" to get an assessment of lung cancer risk</li>
+            </ol>
+        </div>
+
         {% if error %}
         <div class="error">
             <p><strong>Error:</strong> {{ error }}</p>
         </div>
         {% endif %}
-        
-        <div class="card">
-            <h2>Patient Information & Risk Factors</h2>
-            <form action="/lung_cancer" method="post">
-                <div class="column-grid">
-                    {% for col in columns %}
-                        <div class="input-group">
-                            <label>{{ col.replace('_', ' ').title() }}</label>
-                            {% if col == "AGE" %}
-                                <input type="number" name="{{ col }}" class="age-input" min="1" max="120" value="{{ form_data[col] if form_data else '' }}" required>
-                            {% else %}
-                                <div class="radio-group">
-                                    <!-- Using 0 and 1 explicitly instead of enumerate -->
-                                    <div class="radio-option">
-                                        <input type="radio" id="{{ col }}_0" name="{{ col }}" value="0" 
-                                            {% if form_data and form_data[col]|int == 0 %}checked{% endif %}
-                                            required>
-                                        <label for="{{ col }}_0">{{ binary_labels[col][0] }}</label>
+
+        <div class="lung-panels">
+            <div class="lung-panel">
+                <h2>Patient Information & Risk Factors</h2>
+                <form action="/lung_cancer" method="post">
+                    <div class="column-grid">
+                        {% for col in columns %}
+                            <div class="form-group">
+                                <label for="{{ col }}">
+                                    {% if col == "AGE" %}
+                                        <i class="fas fa-user"></i>
+                                    {% elif col == "SMOKING" %}
+                                        <i class="fas fa-smoking"></i>
+                                    {% elif col == "YELLOW_FINGERS" %}
+                                        <i class="fas fa-hand-point-up"></i>
+                                    {% elif col == "ANXIETY" %}
+                                        <i class="fas fa-brain"></i>
+                                    {% elif col == "PEER_PRESSURE" %}
+                                        <i class="fas fa-users"></i>
+                                    {% elif col == "CHRONIC_DISEASE" %}
+                                        <i class="fas fa-procedures"></i>
+                                    {% elif col == "FATIGUE" %}
+                                        <i class="fas fa-bed"></i>
+                                    {% elif col == "ALLERGY" %}
+                                        <i class="fas fa-allergies"></i>
+                                    {% elif col == "WHEEZING" %}
+                                        <i class="fas fa-lungs"></i>
+                                    {% elif col == "ALCOHOL_CONSUMING" %}
+                                        <i class="fas fa-wine-glass-alt"></i>
+                                    {% elif col == "COUGHING" %}
+                                        <i class="fas fa-head-side-cough"></i>
+                                    {% elif col == "SHORTNESS_OF_BREATH" %}
+                                        <i class="fas fa-wind"></i>
+                                    {% elif col == "SWALLOWING_DIFFICULTY" %}
+                                        <i class="fas fa-utensils"></i>
+                                    {% elif col == "CHEST_PAIN" %}
+                                        <i class="fas fa-heartbeat"></i>
+                                    {% else %}
+                                        <i class="fas fa-file-medical-alt"></i>
+                                    {% endif %}
+                                    {{ col.replace('_', ' ').title() }}
+                                </label>
+                                {% if col == "AGE" %}
+                                    <input type="number" name="{{ col }}" id="{{ col }}" min="1" max="120" value="{{ form_data[col] if form_data else '' }}" required>
+                                {% else %}
+                                    <div class="radio-group">
+                                        <div class="radio-option">
+                                            <input type="radio" id="{{ col }}_0" name="{{ col }}" value="0" 
+                                                {% if form_data and form_data[col]|int == 0 %}checked{% endif %}
+                                                required>
+                                            <label for="{{ col }}_0">{{ binary_labels[col][0] }}</label>
+                                        </div>
+                                        <div class="radio-option">
+                                            <input type="radio" id="{{ col }}_1" name="{{ col }}" value="1" 
+                                                {% if form_data and form_data[col]|int == 1 %}checked{% endif %}
+                                                required>
+                                            <label for="{{ col }}_1">{{ binary_labels[col][1] }}</label>
+                                        </div>
                                     </div>
-                                    <div class="radio-option">
-                                        <input type="radio" id="{{ col }}_1" name="{{ col }}" value="1" 
-                                            {% if form_data and form_data[col]|int == 1 %}checked{% endif %}
-                                            required>
-                                        <label for="{{ col }}_1">{{ binary_labels[col][1] }}</label>
-                                    </div>
-                                </div>
-                            {% endif %}
-                        </div>
-                    {% endfor %}
-                </div>
-                <button type="submit">Analyze Risk</button>
-            </form>
+                                {% endif %}
+                            </div>
+                        {% endfor %}
+                    </div>
+                    <div class="button-group">
+                        <button type="reset" class="btn btn-secondary">Reset</button>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-calculator"></i> Analyze Risk
+                        </button>
+                    </div>
+                </form>
+            </div>
         </div>
         
         {% if prediction %}
-        <div class="card result-section">
-            <h2>Analysis Results</h2>
-            <div class="prediction {% if 'Positive' in prediction %}positive{% else %}negative{% endif %}">
-                {{ prediction }}
+        <div class="result-panel">
+            <div class="result-header">
+                <div class="result-icon {% if 'Positive' in prediction %}positive-result{% else %}negative-result{% endif %}">
+                    {% if 'Positive' in prediction %}
+                    ⚠️
+                    {% else %}
+                    ✓
+                    {% endif %}
+                </div>
+                <div class="result-content">
+                    <h3>Analysis Results</h3>
+                    <p>{{ prediction }}</p>
+                </div>
             </div>
             
             {% if recommendations %}
             <div class="recommendations">
                 <h3>Medical Recommendations:</h3>
-                <ul>
+                <ul class="precautions-list">
                     {% for recommendation in recommendations %}
                     <li>{{ recommendation }}</li>
                     {% endfor %}
                 </ul>
+                <p><strong>Note:</strong> This is a predictive tool only. Please consult a healthcare professional for clinical diagnosis and treatment.</p>
             </div>
             {% endif %}
         </div>
         {% endif %}
     </div>
-    
+
+    <footer>
+        <p>© 2025 RapiACT. All Rights Reserved.</p>
+    </footer>
+
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             // Any JavaScript functionality can go here
