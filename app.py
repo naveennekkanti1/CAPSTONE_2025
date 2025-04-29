@@ -57,6 +57,11 @@ def home():
     user_logged_in = 'user_id' in session
     return render_template('index.html', user_logged_in=user_logged_in)
 
+# About route
+@app.route('/about')
+def about():
+    return render_template('about.html')
+    
 @app.route('/services')
 def services():
     return render_template('services.html')
