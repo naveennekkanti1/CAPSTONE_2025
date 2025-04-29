@@ -57,6 +57,11 @@ def home():
 def services():
     return render_template('services.html')
 
+# About route
+@app.route('/about')
+def about():
+    return render_template('about.html')
+
 @app.route('/predictions')
 def predictions():
     return render_template('report_prediction.html')
@@ -4089,6 +4094,7 @@ def extract_data_from_kidney(text):
         extracted_data[feature] = match.group(1) if match else None
 
     return extracted_data
+
 
 # Home Route
 @app.route('/model3', methods=['GET'])
