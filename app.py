@@ -2152,6 +2152,9 @@ def create_appointment():
             doctor_name = f"{doctor['name']}"
             doctor_email = doctor['email']
 
+            # Format datetime for display
+            formatted_datetime = datetime.strptime(appointment_datetime, "%Y-%m-%dT%H:%M").strftime("%A, %B %d, %Y at %I:%M %p")
+
             # Insert appointment into DB
             appointment_id = mongo.db.appointments.insert_one({
                 'patient_name': patient_name,
@@ -2167,21 +2170,369 @@ def create_appointment():
                 'patient_id': ObjectId(session['user_id']),
             }).inserted_id
 
-            # Email content
-            subject = "Appointment Confirmation"
-            body_patient = f"Dear {patient_name},\n\nYour appointment with Dr. {doctor_name} is confirmed on {appointment_datetime}.\n\nThank you!\n RapiACT!"
-            body_doctor = f"Dear Dr. {doctor_name},\n\nYou have a new appointment with {patient_name} on {appointment_datetime}.\n\nThank you!\n RapiACT!"
+            # Generate dashboard URLs for email templates
+            dashboard_url = request.host_url.rstrip('/') + url_for('patient_dashboard')
+            doctor_dashboard_url = request.host_url.rstrip('/') + url_for('doctor_dashboard')
 
-            # Send emails
-            send_email(subject, [email], body_patient)
-            send_email(subject, [doctor_email], body_doctor)
+            # HTML Email Template for Patient
+            patient_email_html = f"""
+            <!DOCTYPE html>
+            <html>
+            <head>
+                <meta charset="UTF-8">
+                <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                <title>Appointment Confirmation</title>
+                <style>
+                    body {{
+                        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+                        line-height: 1.6;
+                        color: #333;
+                        margin: 0;
+                        padding: 0;
+                    }}
+                    .email-container {{
+                        max-width: 600px;
+                        margin: 0 auto;
+                        padding: 20px;
+                    }}
+                    .header {{
+                        background-color: #4285f4;
+                        color: white;
+                        padding: 20px;
+                        text-align: center;
+                        border-radius: 5px 5px 0 0;
+                    }}
+                    .content {{
+                        background-color: #ffffff;
+                        padding: 20px;
+                        border-left: 1px solid #e0e0e0;
+                        border-right: 1px solid #e0e0e0;
+                    }}
+                    .appointment-details {{
+                        background-color: #f9f9f9;
+                        padding: 15px;
+                        border-radius: 5px;
+                        margin: 15px 0;
+                    }}
+                    .appointment-item {{
+                        margin-bottom: 10px;
+                    }}
+                    .appointment-label {{
+                        font-weight: bold;
+                        color: #4285f4;
+                    }}
+                    .footer {{
+                        background-color: #f5f5f5;
+                        padding: 15px;
+                        text-align: center;
+                        font-size: 12px;
+                        color: #757575;
+                        border-radius: 0 0 5px 5px;
+                        border: 1px solid #e0e0e0;
+                    }}
+                    .button {{
+                        display: inline-block;
+                        background-color: #4285f4;
+                        color: white;
+                        padding: 10px 20px;
+                        text-decoration: none;
+                        border-radius: 5px;
+                        margin-top: 15px;
+                    }}
+                    .logo {{
+                        font-size: 24px;
+                        font-weight: bold;
+                        color: white;
+                    }}
+                </style>
+            </head>
+            <body>
+                <div class="email-container">
+                    <div class="header">
+                        <div class="logo">RapiACT!</div>
+                        <h2>Appointment Confirmation</h2>
+                    </div>
+                    <div class="content">
+                        <p>Dear {patient_name},</p>
+                        <p>Your appointment with Dr. {doctor_name} has been successfully scheduled.</p>
+                        
+                        <div class="appointment-details">
+                            <div class="appointment-item">
+                                <span class="appointment-label">Date & Time:</span> {formatted_datetime}
+                            </div>
+                            <div class="appointment-item">
+                                <span class="appointment-label">Doctor:</span> Dr. {doctor_name}
+                            </div>
+                            <div class="appointment-item">
+                                <span class="appointment-label">Reason:</span> {cause}
+                            </div>
+                        </div>
+                        
+                        <p>Please arrive 15 minutes before your scheduled appointment time.</p>
+                        <p>You can view or manage your appointments from your patient dashboard.</p>
+                        
+                        <center>
+                            <a href="{dashboard_url}" class="button">Access Dashboard</a>
+                        </center>
+                    </div>
+                    <div class="footer">
+                        <p>© 2025 RapiACT! Healthcare Services</p>
+                        <p>This is an automated email. Please do not reply to this message.</p>
+                    </div>
+                </div>
+            </body>
+            </html>
+            """
+
+            # HTML Email Template for Doctor
+            doctor_email_html = f"""
+            <!DOCTYPE html>
+            <html>
+            <head>
+                <meta charset="UTF-8">
+                <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                <title>New Appointment Notification</title>
+                <style>
+                    body {{
+                        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+                        line-height: 1.6;
+                        color: #333;
+                        margin: 0;
+                        padding: 0;
+                    }}
+                    .email-container {{
+                        max-width: 600px;
+                        margin: 0 auto;
+                        padding: 20px;
+                    }}
+                    .header {{
+                        background-color: #34a853;
+                        color: white;
+                        padding: 20px;
+                        text-align: center;
+                        border-radius: 5px 5px 0 0;
+                    }}
+                    .content {{
+                        background-color: #ffffff;
+                        padding: 20px;
+                        border-left: 1px solid #e0e0e0;
+                        border-right: 1px solid #e0e0e0;
+                    }}
+                    .patient-details {{
+                        background-color: #f9f9f9;
+                        padding: 15px;
+                        border-radius: 5px;
+                        margin: 15px 0;
+                    }}
+                    .patient-item {{
+                        margin-bottom: 10px;
+                    }}
+                    .patient-label {{
+                        font-weight: bold;
+                        color: #34a853;
+                    }}
+                    .footer {{
+                        background-color: #f5f5f5;
+                        padding: 15px;
+                        text-align: center;
+                        font-size: 12px;
+                        color: #757575;
+                        border-radius: 0 0 5px 5px;
+                        border: 1px solid #e0e0e0;
+                    }}
+                    .button {{
+                        display: inline-block;
+                        background-color: #34a853;
+                        color: white;
+                        padding: 10px 20px;
+                        text-decoration: none;
+                        border-radius: 5px;
+                        margin-top: 15px;
+                    }}
+                    .logo {{
+                        font-size: 24px;
+                        font-weight: bold;
+                        color: white;
+                    }}
+                </style>
+            </head>
+            <body>
+                <div class="email-container">
+                    <div class="header">
+                        <div class="logo">RapiACT!</div>
+                        <h2>New Appointment Notification</h2>
+                    </div>
+                    <div class="content">
+                        <p>Dear Dr. {doctor_name},</p>
+                        <p>You have a new appointment scheduled with a patient.</p>
+                        
+                        <div class="patient-details">
+                            <div class="patient-item">
+                                <span class="patient-label">Patient:</span> {patient_name}
+                            </div>
+                            <div class="patient-item">
+                                <span class="patient-label">Date & Time:</span> {formatted_datetime}
+                            </div>
+                            <div class="patient-item">
+                                <span class="patient-label">Age:</span> {age}
+                            </div>
+                            <div class="patient-item">
+                                <span class="patient-label">Height:</span> {height}
+                            </div>
+                            <div class="patient-item">
+                                <span class="patient-label">Weight:</span> {weight}
+                            </div>
+                            <div class="patient-item">
+                                <span class="patient-label">Reason:</span> {cause}
+                            </div>
+                            <div class="patient-item">
+                                <span class="patient-label">Contact:</span> {phone}
+                            </div>
+                            <div class="patient-item">
+                                <span class="patient-label">Email:</span> {email}
+                            </div>
+                        </div>
+                        
+                        <p>Please review the appointment details and be prepared for the consultation.</p>
+                        
+                        <center>
+                            <a href="{doctor_dashboard_url}" class="button">View Your Schedule</a>
+                        </center>
+                    </div>
+                    <div class="footer">
+                        <p>© 2025 RapiACT! Healthcare Services</p>
+                        <p>This is an automated email. Please do not reply to this message.</p>
+                    </div>
+                </div>
+            </body>
+            </html>
+            """
+
+            # HTML Email Template for Reminder
+            reminder_email_html = f"""
+            <!DOCTYPE html>
+            <html>
+            <head>
+                <meta charset="UTF-8">
+                <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                <title>Appointment Reminder</title>
+                <style>
+                    body {{
+                        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+                        line-height: 1.6;
+                        color: #333;
+                        margin: 0;
+                        padding: 0;
+                    }}
+                    .email-container {{
+                        max-width: 600px;
+                        margin: 0 auto;
+                        padding: 20px;
+                    }}
+                    .header {{
+                        background-color: #fbbc05;
+                        color: white;
+                        padding: 20px;
+                        text-align: center;
+                        border-radius: 5px 5px 0 0;
+                    }}
+                    .content {{
+                        background-color: #ffffff;
+                        padding: 20px;
+                        border-left: 1px solid #e0e0e0;
+                        border-right: 1px solid #e0e0e0;
+                    }}
+                    .reminder-details {{
+                        background-color: #fffde7;
+                        padding: 15px;
+                        border-radius: 5px;
+                        margin: 15px 0;
+                        border-left: 4px solid #fbbc05;
+                    }}
+                    .reminder-item {{
+                        margin-bottom: 10px;
+                    }}
+                    .reminder-label {{
+                        font-weight: bold;
+                        color: #fbbc05;
+                    }}
+                    .footer {{
+                        background-color: #f5f5f5;
+                        padding: 15px;
+                        text-align: center;
+                        font-size: 12px;
+                        color: #757575;
+                        border-radius: 0 0 5px 5px;
+                        border: 1px solid #e0e0e0;
+                    }}
+                    .button {{
+                        display: inline-block;
+                        background-color: #fbbc05;
+                        color: white;
+                        padding: 10px 20px;
+                        text-decoration: none;
+                        border-radius: 5px;
+                        margin-top: 15px;
+                    }}
+                    .logo {{
+                        font-size: 24px;
+                        font-weight: bold;
+                        color: white;
+                    }}
+                    .countdown {{
+                        font-size: 18px;
+                        font-weight: bold;
+                        color: #fbbc05;
+                    }}
+                </style>
+            </head>
+            <body>
+                <div class="email-container">
+                    <div class="header">
+                        <div class="logo">RapiACT!</div>
+                        <h2>Appointment Reminder</h2>
+                    </div>
+                    <div class="content">
+                        <p>Dear {patient_name},</p>
+                        <p><span class="countdown">Your appointment is in 5 minutes!</span></p>
+                        
+                        <div class="reminder-details">
+                            <div class="reminder-item">
+                                <span class="reminder-label">Date & Time:</span> {formatted_datetime}
+                            </div>
+                            <div class="reminder-item">
+                                <span class="reminder-label">Doctor:</span> Dr. {doctor_name}
+                            </div>
+                            <div class="reminder-item">
+                                <span class="reminder-label">Reason:</span> {cause}
+                            </div>
+                        </div>
+                        
+                        <p>Please ensure you're ready for your appointment.</p>
+                        
+                        <center>
+                            <a href="{dashboard_url}" class="button">Access Dashboard</a>
+                        </center>
+                    </div>
+                    <div class="footer">
+                        <p>© 2025 RapiACT! Healthcare Services</p>
+                        <p>This is an automated email. Please do not reply to this message.</p>
+                    </div>
+                </div>
+            </body>
+            </html>
+            """
+
+            # Send HTML emails
+            subject = "Appointment Confirmation"
+            send_email1(subject, [email], None, patient_email_html)
+            send_email1(subject, [doctor_email], None, doctor_email_html)
 
             # Schedule reminder email
             appointment_time = datetime.strptime(appointment_datetime, "%Y-%m-%dT%H:%M")
             reminder_time = appointment_time - timedelta(minutes=5)
             reminder_subject = "Appointment Reminder"
-            reminder_body = f"Dear {patient_name},\n\nThis is a reminder that your appointment with Dr. {doctor_name} is in 5 minutes."
-            schedule_email(reminder_subject, [email], reminder_body, reminder_time)
+            schedule_email1(reminder_subject, [email], None, reminder_email_html, reminder_time)
 
             flash(f"Appointment created successfully with Dr. {doctor_name}!", "success")
             return redirect(url_for('patient_dashboard'))
@@ -2191,6 +2542,40 @@ def create_appointment():
 
     flash("Unauthorized access.", "danger")
     return redirect(url_for('login'))
+
+# Update send_email function to support HTML emails
+def send_email1(subject, recipients, text_body=None, html_body=None):
+    msg = Message(subject=subject, recipients=recipients)
+    if text_body:
+        msg.body = text_body
+    if html_body:
+        msg.html = html_body
+    mail.send(msg)
+
+# Update schedule_email function to support HTML emails
+def schedule_email1(subject, recipients, text_body=None, html_body=None, scheduled_time=None):
+    # This is a placeholder for scheduling emails
+    # In a production app, you'd use a task queue like Celery with Redis/RabbitMQ
+    # For simplicity, we'll simulate scheduling with a background thread
+    
+    def send_scheduled_email():
+        # Calculate sleep time
+        now = datetime.now()
+        if scheduled_time > now:
+            sleep_seconds = (scheduled_time - now).total_seconds()
+            time.sleep(sleep_seconds)
+        
+        # Send email after sleeping
+        send_email(subject, recipients, text_body, html_body)
+    
+    if scheduled_time:
+        # Run in background thread
+        email_thread = threading.Thread(target=send_scheduled_email)
+        email_thread.daemon = True
+        email_thread.start()
+    else:
+        # Send immediately if no scheduled time
+        send_email(subject, recipients, text_body, html_body)
 
 @app.route('/add_user', methods=['POST'])
 def add_user():
