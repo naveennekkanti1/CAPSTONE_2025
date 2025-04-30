@@ -904,20 +904,7 @@
                                             <strong>Payment Rejected</strong><br>
                                             <span class="status-label status-rejected">Please contact support</span>
                                         </div>
-                                    {% else %}
-                                        <div class="tracking-icon">
-                                            <i class="fas fa-clock"></i>
-                                        </div>
-                                        <div>
-                                            <strong>Status:</strong> 
-                                            {% if order.payment_status == 'paid' %}
-                                                Payment Verification Pending
-                                            {% elif order.payment_status == 'verified' and order.delivery_status == 'processing' %}
-                                                Order Processing
-                                            {% elif order.delivery_status == 'packed' %}
-                                                Order Packed
-                                            {% endif %}
-                                        </div>
+                                
                                     {% endif %}
                                 </div>
                             </div>

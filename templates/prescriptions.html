@@ -624,7 +624,7 @@
             <a href="/doctor/appointments"><i class="fas fa-calendar-check"></i>Appointments</a>
         {% elif session.get('role') == 'patient' %}
             <a href="/patient_dashboard"><i class="fas fa-home"></i>Dashboard</a>
-            <a href="/patient/appointments"><i class="fas fa-calendar-check"></i>Appointments</a>
+            <a href="/create_appointment"><i class="fas fa-calendar-plus"></i>Appointment</a>
             <a href="/patient/prescriptions" class="active"><i class="fas fa-prescription-bottle-alt"></i>Prescriptions</a>
             <a href="/patient/orders"><i class="fas fa-box"></i>My Orders</a>
         {% endif %}

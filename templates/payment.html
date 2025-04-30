@@ -17,49 +17,28 @@
             --transition-speed: 0.3s;
         }
 
-        @keyframes gradientBG {
-            0% { background-position: 0% 50%; }
-            50% { background-position: 100% 50%; }
-            100% { background-position: 0% 50%; }
-        }
-
-        @keyframes fadeInUp {
-            from {
-                opacity: 0;
-                transform: translateY(20px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-
         html, body {
             height: 100%;
             margin: 0;
-            background: linear-gradient(-45deg, #1a237e, #3949ab, #5c6bc0, #7c4dff);
-            background-size: 400% 400%;
-            animation: gradientBG 15s ease infinite;
+            background-color: #3949ab;
             font-family: 'Arial', sans-serif;
-            display: flex;
             color: white;
             overflow-x: hidden;
         }
 
+        /* Sidebar styles */
         .sidebar {
             width: var(--sidebar-width);
-            background: rgba(26, 35, 126, 0.9);
+            background: #1a237e;
             color: white;
-            padding: 20px;
+            padding: 20px 0;
             position: fixed;
             height: 100vh;
             display: flex;
             flex-direction: column;
-            gap: 15px;
             text-align: center;
-            backdrop-filter: blur(10px);
-            transition: transform var(--transition-speed) ease;
             z-index: 1000;
+            box-shadow: 4px 0 15px rgba(0, 0, 0, 0.1);
         }
 
         .logo-container {
@@ -67,6 +46,7 @@
             flex-direction: column;
             align-items: center;
             padding: 20px 0;
+            margin-bottom: 20px;
         }
 
         .logo {
@@ -75,11 +55,7 @@
             border-radius: 50%;
             object-fit: cover;
             box-shadow: 0 0 20px rgba(255, 255, 255, 0.2);
-            transition: transform var(--transition-speed) ease;
-        }
-
-        .logo:hover {
-            transform: scale(1.1);
+            margin-bottom: 10px;
         }
 
         .sidebar a {
@@ -87,54 +63,35 @@
             align-items: center;
             color: white;
             text-decoration: none;
-            padding: 12px 20px;
+            padding: 12px 30px;
             font-weight: bold;
-            border-radius: 10px;
             transition: all var(--transition-speed) ease;
-            position: relative;
-            overflow: hidden;
         }
 
         .sidebar a i {
-            margin-right: 10px;
+            margin-right: 15px;
             width: 20px;
             text-align: center;
         }
 
-        .sidebar a::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: -100%;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
-            transition: left 0.5s ease;
-        }
-
-        .sidebar a:hover::before {
-            left: 100%;
-        }
-
         .sidebar a:hover {
             background: rgba(255, 255, 255, 0.1);
-            transform: translateX(5px);
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
         }
 
+        .sidebar hr {
+            border-color: rgba(255, 255, 255, 0.1);
+            width: 80%;
+            margin: 15px auto;
+        }
+
+        /* Main content area */
         .main-content {
             margin-left: var(--sidebar-width);
-            padding: 40px;
+            padding: 20px;
             flex-grow: 1;
             width: calc(100% - var(--sidebar-width));
-            min-height: 100vh;
-        }
-
-        .main-content-wrapper {
-            width: 100%;
-            max-width: 100%;
-            margin: 0 auto;
-            animation: fadeInUp 0.6s ease-out;
+            height: 100vh;
+            overflow-y: auto;
         }
 
         .dashboard-header {
@@ -144,8 +101,7 @@
             padding: 20px;
             background: rgba(255, 255, 255, 0.1);
             border-radius: 15px;
-            backdrop-filter: blur(10px);
-            animation: fadeInUp 0.6s ease-out;
+            backdrop-filter: blur(5px);
         }
 
         .dashboard-header h2 {
@@ -153,61 +109,36 @@
             font-size: 2.5rem;
             font-weight: 600;
             color: white;
-            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2);
+        }
+
+        /* Two-column layout container */
+        .two-column-container {
+            display: flex;
+            gap: 30px;
+            margin-bottom: 30px;
+        }
+
+        /* Column styles */
+        .column {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
         }
 
         .section {
-            background-color: rgba(255, 255, 255, 0.95);
+            background-color: #fff;
             padding: 30px;
             border-radius: 20px;
-            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
             color: #333;
             margin-bottom: 30px;
-            width: 100%;
-            max-width: 800px;
-            margin-left: auto;
-            margin-right: auto;
-            animation: fadeInUp 0.6s ease-out;
         }
 
-        .form-group {
+        .section h4 {
             margin-bottom: 20px;
-        }
-
-        .form-label {
-            font-weight: bold;
-            margin-bottom: 8px;
             color: var(--primary-dark);
-        }
-
-        .form-control {
-            border-radius: 8px;
-            padding: 10px 15px;
-            border: 1px solid #ddd;
-            transition: all 0.3s ease;
-        }
-
-        .form-control:focus {
-            border-color: var(--primary-light);
-            box-shadow: 0 0 0 0.25rem rgba(92, 107, 192, 0.25);
-        }
-
-        .btn-submit {
-            background: linear-gradient(90deg, var(--primary-dark), var(--accent-color));
-            color: white;
-            border: none;
-            padding: 12px 30px;
-            border-radius: 8px;
-            font-weight: bold;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            width: 100%;
-            margin-top: 10px;
-        }
-
-        .btn-submit:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 5px 15px rgba(124, 77, 255, 0.4);
+            font-weight: 600;
+            text-align: center;
         }
 
         .qr-code-container {
@@ -228,15 +159,16 @@
         }
 
         .payment-instructions {
-            background-color: rgba(255, 255, 255, 0.1);
+            background-color: #f8f9fa;
             padding: 20px;
             border-radius: 10px;
             margin-bottom: 30px;
-            backdrop-filter: blur(10px);
+            border-left: 4px solid var(--primary-light);
         }
 
         .payment-instructions ol {
             padding-left: 20px;
+            color: #444;
         }
 
         .payment-instructions li {
@@ -254,29 +186,19 @@
             padding: 10px;
             border-radius: 5px;
             cursor: pointer;
-            backdrop-filter: blur(10px);
         }
 
         .product-details {
             margin-bottom: 30px;
-            background-color: rgba(255, 255, 255, 0.1);
-            padding: 20px;
-            border-radius: 10px;
-            backdrop-filter: blur(10px);
-        }
-
-        .product-details h4 {
-            margin-bottom: 15px;
-            color: var(--primary-dark);
         }
 
         .product-card {
             display: flex;
             align-items: center;
-            background-color: white;
+            background-color: #f8f9fa;
             border-radius: 10px;
             overflow: hidden;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
             margin-bottom: 15px;
         }
 
@@ -309,7 +231,7 @@
             font-size: 14px;
             margin-top: 5px;
         }
-        
+
         .product-quantity {
             color: #555;
             font-size: 14px;
@@ -317,8 +239,8 @@
         }
 
         .total-section {
-            background-color: rgba(124, 77, 255, 0.1);
-            padding: 20px;
+            background-color: #f0f0ff;
+            padding: 15px 20px;
             border-radius: 10px;
             margin-top: 20px;
             margin-bottom: 20px;
@@ -361,6 +283,55 @@
             color: var(--primary-dark);
         }
 
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-label {
+            font-weight: bold;
+            margin-bottom: 8px;
+            color: var(--primary-dark);
+        }
+
+        .form-control {
+            border-radius: 8px;
+            padding: 12px 15px;
+            border: 1px solid #ddd;
+            transition: all 0.3s ease;
+            width: 100%;
+        }
+
+        .form-control:focus {
+            border-color: var(--primary-light);
+            box-shadow: 0 0 0 0.25rem rgba(92, 107, 192, 0.25);
+            outline: none;
+        }
+
+        .btn-submit {
+            background: linear-gradient(90deg, var(--primary-dark), var(--accent-color));
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 8px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            width: 100%;
+            margin-top: 10px;
+        }
+
+        .btn-submit:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(124, 77, 255, 0.4);
+        }
+
+        /* Responsive design */
+        @media (max-width: 1024px) {
+            .two-column-container {
+                flex-direction: column;
+            }
+        }
+
         @media (max-width: 768px) {
             .menu-toggle {
                 display: block;
@@ -368,6 +339,7 @@
 
             .sidebar {
                 transform: translateX(-100%);
+                transition: transform 0.3s ease;
             }
 
             .sidebar.active {
@@ -378,10 +350,6 @@
                 margin-left: 0;
                 width: 100%;
                 padding: 20px;
-            }
-
-            .section {
-                width: 100%;
             }
             
             .product-card {
@@ -409,123 +377,131 @@
         <hr>
         <a href="/dashboard"><i class="fas fa-home"></i>Dashboard</a>
         <a href="/pharmacy"><i class="fas fa-pills"></i>Pharmacy</a>
-        <a href="/prescriptions"><i class="fas fa-prescription"></i>My Prescriptions</a>
+        <a href="/patient/prescriptions"><i class="fas fa-prescription"></i>My Prescriptions</a>
         <hr>
         <a href="/logout"><i class="fas fa-sign-out-alt"></i>Logout</a>
     </div>
     
     <div class="main-content">
-        <div class="main-content-wrapper">
-            <div class="dashboard-header">
-                <h2>Payment</h2>
+        <div class="dashboard-header">
+            <h2>Payment</h2>
+        </div>
+        
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+                        {{ message }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+        
+        <div class="two-column-container">
+            <!-- Left Column -->
+            <div class="column">
+                <div class="section">
+                    <h4>Scan the QR Code to Pay</h4>
+                    <div class="qr-code-container">
+                        <div class="qr-code">
+                            <img src="{{ qr_code }}" alt="Payment QR Code" style="width: 100%; height: 100%;">
+                        </div>
+                    </div>
+                    
+                    <div class="payment-instructions">
+                        <h4>Payment Instructions:</h4>
+                        <ol>
+                            <li>Open your UPI app (GPay, PhonePe, BHIM, etc.)</li>
+                            <li>Scan the QR code shown above</li>
+                            <li>Complete the payment for</li>
+                            <li>Note down the UTR/Transaction ID</li>
+                            <li>Submit the UTR/Transaction ID below</li>
+                        </ol>
+                    </div>
+                </div>
             </div>
             
-            {% with messages = get_flashed_messages(with_categories=true) %}
-                {% if messages %}
-                    {% for category, message in messages %}
-                        <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
-                            {{ message }}
-                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            <!-- Right Column -->
+            <div class="column">
+                <div class="section">
+                    {% if products %}
+                    <div class="product-details">
+                        <h4>Order Details</h4>
+                        {% for product in products %}
+                        <div class="product-card">
+                            {% if product.image %}
+                            <img src="data:image/jpeg;base64,{{ product.image }}" alt="{{ product.name }}" class="product-image">
+                            {% else %}
+                            <img src="{{ url_for('static', filename='images/medicine-placeholder.jpg') }}" alt="Product Image" class="product-image">
+                            {% endif %}
+                            <div class="product-info">
+                                <div class="product-title">{{ product.name }}</div>
+                                <div class="product-price">₹{{ product.price }}</div>
+                                <div class="product-description">{{ product.description }}</div>
+                                <div class="product-quantity">Quantity: {{ product.quantity }}</div>
+                            </div>
                         </div>
-                    {% endfor %}
-                {% endif %}
-            {% endwith %}
-            
-            <div class="section">
-                {% if products %}
-                <div class="product-details">
-                    <h4>Order Details</h4>
-                    {% for product in products %}
-                    <div class="product-card">
-                        {% if product.image %}
-                        <img src="data:image/jpeg;base64,{{ product.image }}" alt="{{ product.name }}" class="product-image">
-                        {% else %}
-                        <img src="{{ url_for('static', filename='images/medicine-placeholder.jpg') }}" alt="Product Image" class="product-image">
-                        {% endif %}
-                        <div class="product-info">
-                            <div class="product-title">{{ product.name }}</div>
-                            <div class="product-price">₹{{ product.price }}</div>
-                            <div class="product-description">{{ product.description }}</div>
-                            <div class="product-quantity">Quantity: {{ product.quantity }}</div>
+                        {% endfor %}
+                        
+                        <div class="order-summary">
+                            <div class="summary-item">
+                                <span class="summary-label">Subtotal:</span>
+                                <span class="summary-value">₹{{ subtotal }}</span>
+                            </div>
+                            <div class="summary-item">
+                                <span class="summary-label">Shipping:</span>
+                                <span class="summary-value">₹{{ shipping_fee }}</span>
+                            </div>
+                            <div class="summary-item">
+                                <span class="summary-label">Tax:</span>
+                                <span class="summary-value">₹{{ tax }}</span>
+                            </div>
+                        </div>
+                        
+                        <div class="total-section">
+                            <span class="total-label">Total Amount:</span>
+                            <span class="total-amount">₹{{ total_amount }}</span>
                         </div>
                     </div>
-                    {% endfor %}
+                    {% elif product %}
+                    <div class="product-details">
+                        <h4>Product Details</h4>
+                        <div class="product-card">
+                            {% if product.image %}
+                            <img src="data:image/jpeg;base64,{{ product.image }}" alt="{{ product.name }}" class="product-image">
+                            {% else %}
+                            <img src="{{ url_for('static', filename='images/medicine-placeholder.jpg') }}" alt="Product Image" class="product-image">
+                            {% endif %}
+                            <div class="product-info">
+                                <div class="product-title">{{ product.name }}</div>
+                                <div class="product-price">₹{{ product.price }}</div>
+                                <div class="product-description">{{ product.description }}</div>
+                                <div class="product-quantity">Quantity: 1</div>
+                            </div>
+                        </div>
+                        
+                        <div class="total-section">
+                            <span class="total-label">Total Amount:</span>
+                            <span class="total-amount">₹{{ product.price }}</span>
+                        </div>
+                    </div>
+                    {% endif %}
                     
-                    <div class="order-summary">
-                        <div class="summary-item">
-                            <span class="summary-label">Subtotal:</span>
-                            <span class="summary-value">₹{{ subtotal }}</span>
+                    <form action="{{ url_for('submit_payment') }}" method="POST">
+                        <input type="hidden" name="prescription_id" value="{{ prescription_id }}">
+                        
+                        <div class="form-group">
+                            <label for="utr_id" class="form-label">UTR/Transaction ID</label>
+                            <input type="text" class="form-control" id="utr_id" name="utr_id" required>
+                            <small class="text-muted">Enter the UTR/Transaction ID you received after making the payment</small>
                         </div>
-                        <div class="summary-item">
-                            <span class="summary-label">Shipping:</span>
-                            <span class="summary-value">₹{{ shipping_fee }}</span>
-                        </div>
-                        <div class="summary-item">
-                            <span class="summary-label">Tax:</span>
-                            <span class="summary-value">₹{{ tax }}</span>
-                        </div>
-                    </div>
-                    
-                    <div class="total-section">
-                        <span class="total-label">Total Amount:</span>
-                        <span class="total-amount">₹{{ total_amount }}</span>
-                    </div>
+                        
+                        <button type="submit" class="btn-submit">
+                            <i class="fas fa-check-circle"></i> Submit Payment
+                        </button>
+                    </form>
                 </div>
-                {% elif product %}
-                <div class="product-details">
-                    <h4>Product Details</h4>
-                    <div class="product-card">
-                        {% if product.image %}
-                        <img src="data:image/jpeg;base64,{{ product.image }}" alt="{{ product.name }}" class="product-image">
-                        {% else %}
-                        <img src="{{ url_for('static', filename='images/medicine-placeholder.jpg') }}" alt="Product Image" class="product-image">
-                        {% endif %}
-                        <div class="product-info">
-                            <div class="product-title">{{ product.name }}</div>
-                            <div class="product-price">₹{{ product.price }}</div>
-                            <div class="product-description">{{ product.description }}</div>
-                            <div class="product-quantity">Quantity: 1</div>
-                        </div>
-                    </div>
-                    
-                    <div class="total-section">
-                        <span class="total-label">Total Amount:</span>
-                        <span class="total-amount">₹{{ product.price }}</span>
-                    </div>
-                </div>
-                {% endif %}
-                
-                <div class="qr-code-container">
-                    <h4>Scan the QR Code to Pay</h4>
-                    <div class="qr-code">
-                        <img src="{{ qr_code }}" alt="Payment QR Code" style="width: 100%; height: 100%;">
-                    </div>
-                </div>
-                
-                <div class="payment-instructions">
-                    <h4>Payment Instructions:</h4>
-                    <ol>
-                        <li>Open your UPI app (GPay, PhonePe, BHIM, etc.)</li>
-                        <li>Scan the QR code shown above</li>
-                        <li>Complete the payment for </li>
-                        <li>Note down the UTR/Transaction ID</li>
-                        <li>Submit the UTR/Transaction ID below</li>
-                    </ol>
-                </div>
-                
-                <form action="{{ url_for('submit_payment') }}" method="POST">
-                    <input type="hidden" name="prescription_id" value="{{ prescription_id }}">
-                    
-                    <div class="form-group">
-                        <label for="utr_id" class="form-label">UTR/Transaction ID</label>
-                        <input type="text" class="form-control" id="utr_id" name="utr_id" required>
-                        <small class="text-muted">Enter the UTR/Transaction ID you received after making the payment</small>
-                    </div>
-                    
-                    <button type="submit" class="btn-submit">
-                        <i class="fas fa-check-circle"></i> Submit Payment
-                    </button>
-                </form>
             </div>
         </div>
     </div>

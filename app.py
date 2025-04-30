@@ -1940,20 +1940,266 @@ def doctor_dashboard(appointment_type=None):
 def cancel_appointment(appointment_id):
     if 'user_id' in session:
         appointment = mongo.db.appointments.find_one({'_id': ObjectId(appointment_id)})
-        if appointment and appointment['patient_id'] == ObjectId(session['user_id']):
+        
+        if appointment and str(appointment['patient_id']) == session['user_id']:
+            # Get doctor information
+            doctor = mongo.db.users.find_one({'_id': appointment['doctor_id']})
+            doctor_name = doctor['name'] if doctor else "your doctor"
+            doctor_email = doctor['email'] if doctor else None
+            
+            # Format datetime for display
+            appointment_datetime = appointment.get('appointment_datetime')
+            formatted_datetime = ""
+            if appointment_datetime:
+                try:
+                    formatted_datetime = datetime.strptime(
+                        appointment_datetime, "%Y-%m-%dT%H:%M"
+                    ).strftime("%A, %B %d, %Y at %I:%M %p")
+                except ValueError:
+                    formatted_datetime = appointment_datetime  # Use as is if format is different
+            
+            # Delete the appointment
             mongo.db.appointments.delete_one({'_id': ObjectId(appointment_id)})
+            
+            # Generate dashboard URL for email template
+            dashboard_url = request.host_url.rstrip('/') + url_for('patient_dashboard')
+            doctor_dashboard_url = request.host_url.rstrip('/') + url_for('doctor_dashboard')
+            
+            # HTML Email Template for Patient Cancellation
+            patient_email_html = f"""
+            <!DOCTYPE html>
+            <html>
+            <head>
+                <meta charset="UTF-8">
+                <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                <title>Appointment Cancellation</title>
+                <style>
+                    body {{
+                        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+                        line-height: 1.6;
+                        color: #333;
+                        margin: 0;
+                        padding: 0;
+                    }}
+                    .email-container {{
+                        max-width: 600px;
+                        margin: 0 auto;
+                        padding: 20px;
+                    }}
+                    .header {{
+                        background-color: #ea4335;
+                        color: white;
+                        padding: 20px;
+                        text-align: center;
+                        border-radius: 5px 5px 0 0;
+                    }}
+                    .content {{
+                        background-color: #ffffff;
+                        padding: 20px;
+                        border-left: 1px solid #e0e0e0;
+                        border-right: 1px solid #e0e0e0;
+                    }}
+                    .cancellation-details {{
+                        background-color: #fef8f8;
+                        padding: 15px;
+                        border-radius: 5px;
+                        margin: 15px 0;
+                        border-left: 4px solid #ea4335;
+                    }}
+                    .cancellation-item {{
+                        margin-bottom: 10px;
+                    }}
+                    .cancellation-label {{
+                        font-weight: bold;
+                        color: #ea4335;
+                    }}
+                    .footer {{
+                        background-color: #f5f5f5;
+                        padding: 15px;
+                        text-align: center;
+                        font-size: 12px;
+                        color: #757575;
+                        border-radius: 0 0 5px 5px;
+                        border: 1px solid #e0e0e0;
+                    }}
+                    .button {{
+                        display: inline-block;
+                        background-color: #4285f4;
+                        color: white;
+                        padding: 10px 20px;
+                        text-decoration: none;
+                        border-radius: 5px;
+                        margin-top: 15px;
+                    }}
+                    .logo {{
+                        font-size: 24px;
+                        font-weight: bold;
+                        color: white;
+                    }}
+                </style>
+            </head>
+            <body>
+                <div class="email-container">
+                    <div class="header">
+                        <div class="logo">RapiACT!</div>
+                        <h2>Appointment Cancellation</h2>
+                    </div>
+                    <div class="content">
+                        <p>Dear {appointment['patient_name']},</p>
+                        <p>Your appointment has been successfully canceled.</p>
+                        
+                        <div class="cancellation-details">
+                            <div class="cancellation-item">
+                                <span class="cancellation-label">Canceled Appointment:</span> {formatted_datetime}
+                            </div>
+                            <div class="cancellation-item">
+                                <span class="cancellation-label">Doctor:</span> Dr. {doctor_name}
+                            </div>
+                            <div class="cancellation-item">
+                                <span class="cancellation-label">Reason for Visit:</span> {appointment.get('cause', 'Not specified')}
+                            </div>
+                        </div>
+                        
+                        <p>If you would like to schedule a new appointment, please visit your dashboard.</p>
+                        
+                        <center>
+                            <a href="{dashboard_url}" class="button">Schedule New Appointment</a>
+                        </center>
+                    </div>
+                    <div class="footer">
+                        <p>© 2025 RapiACT! Healthcare Services</p>
+                        <p>This is an automated email. Please do not reply to this message.</p>
+                    </div>
+                </div>
+            </body>
+            </html>
+            """
+            
+            # HTML Email Template for Doctor Cancellation Notification
+            doctor_email_html = f"""
+            <!DOCTYPE html>
+            <html>
+            <head>
+                <meta charset="UTF-8">
+                <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                <title>Appointment Cancellation Notice</title>
+                <style>
+                    body {{
+                        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+                        line-height: 1.6;
+                        color: #333;
+                        margin: 0;
+                        padding: 0;
+                    }}
+                    .email-container {{
+                        max-width: 600px;
+                        margin: 0 auto;
+                        padding: 20px;
+                    }}
+                    .header {{
+                        background-color: #ea4335;
+                        color: white;
+                        padding: 20px;
+                        text-align: center;
+                        border-radius: 5px 5px 0 0;
+                    }}
+                    .content {{
+                        background-color: #ffffff;
+                        padding: 20px;
+                        border-left: 1px solid #e0e0e0;
+                        border-right: 1px solid #e0e0e0;
+                    }}
+                    .cancellation-details {{
+                        background-color: #fef8f8;
+                        padding: 15px;
+                        border-radius: 5px;
+                        margin: 15px 0;
+                        border-left: 4px solid #ea4335;
+                    }}
+                    .cancellation-item {{
+                        margin-bottom: 10px;
+                    }}
+                    .cancellation-label {{
+                        font-weight: bold;
+                        color: #ea4335;
+                    }}
+                    .footer {{
+                        background-color: #f5f5f5;
+                        padding: 15px;
+                        text-align: center;
+                        font-size: 12px;
+                        color: #757575;
+                        border-radius: 0 0 5px 5px;
+                        border: 1px solid #e0e0e0;
+                    }}
+                    .button {{
+                        display: inline-block;
+                        background-color: #34a853;
+                        color: white;
+                        padding: 10px 20px;
+                        text-decoration: none;
+                        border-radius: 5px;
+                        margin-top: 15px;
+                    }}
+                    .logo {{
+                        font-size: 24px;
+                        font-weight: bold;
+                        color: white;
+                    }}
+                </style>
+            </head>
+            <body>
+                <div class="email-container">
+                    <div class="header">
+                        <div class="logo">RapiACT!</div>
+                        <h2>Appointment Cancellation Notice</h2>
+                    </div>
+                    <div class="content">
+                        <p>Dear Dr. {doctor_name},</p>
+                        <p>An appointment has been canceled.</p>
+                        
+                        <div class="cancellation-details">
+                            <div class="cancellation-item">
+                                <span class="cancellation-label">Patient:</span> {appointment['patient_name']}
+                            </div>
+                            <div class="cancellation-item">
+                                <span class="cancellation-label">Canceled Appointment:</span> {formatted_datetime}
+                            </div>
+                            <div class="cancellation-item">
+                                <span class="cancellation-label">Reason for Visit:</span> {appointment.get('cause', 'Not specified')}
+                            </div>
+                        </div>
+                        
+                        <p>Your schedule has been updated accordingly.</p>
+                        
+                        <center>
+                            <a href="{doctor_dashboard_url}" class="button">View Updated Schedule</a>
+                        </center>
+                    </div>
+                    <div class="footer">
+                        <p>© 2025 RapiACT! Healthcare Services</p>
+                        <p>This is an automated email. Please do not reply to this message.</p>
+                    </div>
+                </div>
+            </body>
+            </html>
+            """
 
-            # Send cancellation email to patient
+            # Send HTML emails
             email = appointment['email']
             subject = "Appointment Cancellation"
-            body = f"Dear {appointment['patient_name']},\n\nYour appointment has been canceled.\n\nThank you!"
-            send_email(subject, [email], body)
+            send_email1(subject, [email], None, patient_email_html)
+            
+            # Also notify the doctor if email is available
+            if doctor_email:
+                send_email1("Appointment Cancellation Notice", [doctor_email], None, doctor_email_html)
 
             flash("Appointment canceled successfully.", "success")
         else:
             flash("Unauthorized action.", "danger")
-
+        
         return redirect(url_for('patient_dashboard'))
+    
     return redirect(url_for('login'))
 from bson.binary import Binary
 def get_content_type(file_ext):
@@ -4084,6 +4330,149 @@ def patient_orders():
                 product["image"] = base64.b64encode(product["image"]).decode('utf-8')
 
     return render_template('patient_orders.html', orders=orders)
+
+@app.route('/cart/checkout', methods=['POST'])
+def cart_checkout():
+    if not session.get('logged_in') or session.get('role') != 'patient':
+        return jsonify({'success': False, 'message': 'Please log in as a patient to checkout'}), 401
+    
+    # Get the cart items from the request
+    data = request.json
+    items = data.get('items', [])
+    
+    if not items:
+        return jsonify({'success': False, 'message': 'Your cart is empty'}), 400
+    
+    try:
+        # Calculate order details
+        subtotal = sum(item['price'] * item['quantity'] for item in items)
+        shipping_fee = 40.00  # Fixed shipping fee
+        tax = subtotal * 0.05  # 5% GST
+        total_amount = subtotal + shipping_fee + tax
+        
+        # Create order in database
+        order_id = str(ObjectId())  # Generate a new ObjectId
+        
+        # Get the patient information
+        patient_id = session.get('user_id')
+        
+        # Save order to database
+        db.orders.insert_one({
+            '_id': ObjectId(order_id),
+            'patient_id': ObjectId(patient_id),
+            'items': items,
+            'subtotal': subtotal,
+            'shipping_fee': shipping_fee,
+            'tax': tax,
+            'total_amount': total_amount,
+            'status': 'pending_payment',
+            'created_at': datetime.datetime.now(),
+            'payment_details': {
+                'status': 'pending'
+            }
+        })
+        
+        return jsonify({
+            'success': True,
+            'order_id': order_id,
+            'message': 'Order created successfully'
+        })
+        
+    except Exception as e:
+        print(f"Error during checkout: {str(e)}")
+        return jsonify({'success': False, 'message': 'An error occurred during checkout'}), 500
+
+
+@app.route('/payment_cart/<order_id>')
+def payment_cart(order_id):
+    if not session.get('logged_in') or session.get('role') != 'patient':
+        flash('Please log in as a patient to view this page', 'danger')
+        return redirect(url_for('login'))
+    
+    try:
+        # Get the order details from database
+        order = db.orders.find_one({'_id': ObjectId(order_id)})
+        
+        if not order:
+            flash('Order not found', 'danger')
+            return redirect(url_for('pharmacy'))
+        
+        # Get patient details
+        patient_id = session.get('user_id')
+        patient = db.users.find_one({'_id': ObjectId(patient_id)})
+        
+        if not patient or str(order['patient_id']) != patient_id:
+            flash('Unauthorized access', 'danger')
+            return redirect(url_for('pharmacy'))
+        
+        # Generate a QR code for payment
+        # This is a placeholder - you would typically generate this using a payment gateway
+        qr_code_data = f"upi://pay?pa=merchant@upi&pn=RapiACT&am={order['total_amount']}&tr={order_id}&cu=INR"
+        qr = qrcode.make(qr_code_data)
+        
+        # Create a BytesIO object to store the QR code
+        qr_io = BytesIO()
+        qr.save(qr_io)
+        qr_io.seek(0)
+        
+        # Convert to base64 for displaying in HTML
+        qr_base64 = base64.b64encode(qr_io.getvalue()).decode('utf-8')
+        qr_code = f"data:image/png;base64,{qr_base64}"
+        
+        return render_template(
+            'payment_cart.html',
+            order=order,
+            order_id=order_id,
+            subtotal=order['subtotal'],
+            shipping_fee=order['shipping_fee'],
+            tax=order['tax'],
+            total_amount=order['total_amount'],
+            qr_code=qr_code
+        )
+        
+    except Exception as e:
+        print(f"Error during payment page loading: {str(e)}")
+        flash('An error occurred while loading the payment page', 'danger')
+        return redirect(url_for('pharmacy'))
+
+
+@app.route('/submit_cart_payment', methods=['POST'])
+def submit_cart_payment():
+    if not session.get('logged_in') or session.get('role') != 'patient':
+        return jsonify({'success': False, 'message': 'Please log in as a patient'}), 401
+    
+    data = request.json
+    order_id = data.get('order_id')
+    utr_id = data.get('utr_id')
+    
+    if not order_id or not utr_id:
+        return jsonify({'success': False, 'message': 'Missing required fields'}), 400
+    
+    try:
+        # Update the order with payment details
+        result = db.orders.update_one(
+            {'_id': ObjectId(order_id)},
+            {'$set': {
+                'payment_details': {
+                    'utr_id': utr_id,
+                    'status': 'verification_pending',
+                    'submitted_at': datetime.datetime.now()
+                },
+                'status': 'payment_verification_pending'
+            }}
+        )
+        
+        if result.modified_count == 0:
+            return jsonify({'success': False, 'message': 'Order not found or payment already submitted'}), 404
+        
+        return jsonify({
+            'success': True,
+            'message': 'Payment submitted successfully'
+        })
+        
+    except Exception as e:
+        print(f"Error during payment submission: {str(e)}")
+        return jsonify({'success': False, 'message': 'An error occurred during payment submission'}), 500
 
 import traceback
 @app.route('/patient/prescriptions')

@@ -792,7 +792,7 @@
                 <span>Total Amount:</span>
                 <span id="cart-total">₹0</span>
             </div>
-            <button class="btn-confirm-payment" onclick="proceedToPayment()">
+            <button class="btn-confirm-payment" onclick="location.href='/buy_product/67e66c7b357e1c397d5d884f'">
                 <i class="fas fa-credit-card"></i> Proceed to Payment
             </button>
         </div>
@@ -1061,7 +1061,7 @@
             }));
             
             // Send cart data to server
-            fetch('/patient_dashboard/proceed_payment', {
+            fetch('/cart/checkout', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -1077,16 +1077,11 @@
             .then(data => {
                 hideSpinner();
                 if (data.success) {
-                    // Clear cart
-                    cart = [];
-                    saveCart();
-                    updateCartCount();
-                    
-                    // Close checkout
+                    // Close checkout popup
                     closeCheckout();
                     
-                    // Redirect to payment page
-                    window.location.href = data.redirect_url;
+                    // Redirect to payment cart page
+                    window.location.href = '/payment_cart/' + data.order_id;
                 } else {
                     alert(data.message || 'Something went wrong. Please try again.');
                 }
