@@ -79,7 +79,7 @@ npm start
 
 - **Preetham Reddy**
 - **Abhiram Maddukuri**
-- **Naveen Nekkanti**
+- **Nekkanti Durga Naveen**
 - **Manisaran Puvvada**
 
 ---
