@@ -27,12 +27,12 @@ fs = gridfs.GridFS(db)
 SCOPES = ["https://www.googleapis.com/auth/calendar"]
 
 #Flask-Mail Sending
-app.config['MAIL_SERVER'] = 'smtp.mailersend.net'
+app.config['MAIL_SERVER'] = 'smtp.gmail.com'
 app.config['MAIL_PORT'] = 587
 app.config['MAIL_USE_TLS'] = True
-app.config['MAIL_USERNAME'] = 'MS_BypJLu@test-dnvo4d908x6g5r86.mlsender.net'
-app.config['MAIL_PASSWORD'] = 'mssp.chAJA8Z.yzkq340739kld796.pxkYUxp'
-app.config['MAIL_DEFAULT_SENDER'] = 'MS_BypJLu@test-dnvo4d908x6g5r86.mlsender.net'
+app.config['MAIL_USERNAME'] = 'srmcorporationservices@gmail.com'
+app.config['MAIL_PASSWORD'] = 'bxxo qcvd njfj kcsa'
+app.config['MAIL_DEFAULT_SENDER'] = 'srmcorporationservices@gmail.com'
 otp_store = {}  
 mail = Mail(app)
 
