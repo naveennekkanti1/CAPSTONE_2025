@@ -4672,41 +4672,6 @@ def predict():
     
     return render_template('diabetes.html', features=features, extracted_data=None, prediction_text=prediction_text, precautions=precautions)
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 #Heart Disease
 model2 = joblib.load('templates/heart.pkl')
 
@@ -5662,4 +5627,5 @@ def predict_liver():
 if __name__ == '__main__':
     if not os.path.exists('uploads'):
         os.makedirs('uploads')
-    app.run(debug=True)
+    app.run(host="0.0.0.0", port=5000, debug=True)
+
