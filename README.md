@@ -91,6 +91,13 @@ Visit the live project here: 👉 **[https://capstone-2025-37jt.onrender.com/](h
 
 ---
 
+
+## Docker Commands
+docker tag healthcare_app_project your-dockerhub-username/healthcare_app_project:latest
+docker push/pull your-dockerhub-username/healthcare_app_project:latest
+
+---
+
 ## 📄 License
 
 This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for more details.

@@ -57,6 +57,11 @@ def home():
 def services():
     return render_template('services.html')
 
+# About route
+@app.route('/about')
+def about():
+    return render_template('about.html')
+
 @app.route('/predictions')
 def predictions():
     return render_template('report_prediction.html')
@@ -1935,20 +1940,266 @@ def doctor_dashboard(appointment_type=None):
 def cancel_appointment(appointment_id):
     if 'user_id' in session:
         appointment = mongo.db.appointments.find_one({'_id': ObjectId(appointment_id)})
-        if appointment and appointment['patient_id'] == ObjectId(session['user_id']):
+        
+        if appointment and str(appointment['patient_id']) == session['user_id']:
+            # Get doctor information
+            doctor = mongo.db.users.find_one({'_id': appointment['doctor_id']})
+            doctor_name = doctor['name'] if doctor else "your doctor"
+            doctor_email = doctor['email'] if doctor else None
+            
+            # Format datetime for display
+            appointment_datetime = appointment.get('appointment_datetime')
+            formatted_datetime = ""
+            if appointment_datetime:
+                try:
+                    formatted_datetime = datetime.strptime(
+                        appointment_datetime, "%Y-%m-%dT%H:%M"
+                    ).strftime("%A, %B %d, %Y at %I:%M %p")
+                except ValueError:
+                    formatted_datetime = appointment_datetime  # Use as is if format is different
+            
+            # Delete the appointment
             mongo.db.appointments.delete_one({'_id': ObjectId(appointment_id)})
+            
+            # Generate dashboard URL for email template
+            dashboard_url = request.host_url.rstrip('/') + url_for('patient_dashboard')
+            doctor_dashboard_url = request.host_url.rstrip('/') + url_for('doctor_dashboard')
+            
+            # HTML Email Template for Patient Cancellation
+            patient_email_html = f"""
+            <!DOCTYPE html>
+            <html>
+            <head>
+                <meta charset="UTF-8">
+                <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                <title>Appointment Cancellation</title>
+                <style>
+                    body {{
+                        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+                        line-height: 1.6;
+                        color: #333;
+                        margin: 0;
+                        padding: 0;
+                    }}
+                    .email-container {{
+                        max-width: 600px;
+                        margin: 0 auto;
+                        padding: 20px;
+                    }}
+                    .header {{
+                        background-color: #ea4335;
+                        color: white;
+                        padding: 20px;
+                        text-align: center;
+                        border-radius: 5px 5px 0 0;
+                    }}
+                    .content {{
+                        background-color: #ffffff;
+                        padding: 20px;
+                        border-left: 1px solid #e0e0e0;
+                        border-right: 1px solid #e0e0e0;
+                    }}
+                    .cancellation-details {{
+                        background-color: #fef8f8;
+                        padding: 15px;
+                        border-radius: 5px;
+                        margin: 15px 0;
+                        border-left: 4px solid #ea4335;
+                    }}
+                    .cancellation-item {{
+                        margin-bottom: 10px;
+                    }}
+                    .cancellation-label {{
+                        font-weight: bold;
+                        color: #ea4335;
+                    }}
+                    .footer {{
+                        background-color: #f5f5f5;
+                        padding: 15px;
+                        text-align: center;
+                        font-size: 12px;
+                        color: #757575;
+                        border-radius: 0 0 5px 5px;
+                        border: 1px solid #e0e0e0;
+                    }}
+                    .button {{
+                        display: inline-block;
+                        background-color: #4285f4;
+                        color: white;
+                        padding: 10px 20px;
+                        text-decoration: none;
+                        border-radius: 5px;
+                        margin-top: 15px;
+                    }}
+                    .logo {{
+                        font-size: 24px;
+                        font-weight: bold;
+                        color: white;
+                    }}
+                </style>
+            </head>
+            <body>
+                <div class="email-container">
+                    <div class="header">
+                        <div class="logo">RapiACT!</div>
+                        <h2>Appointment Cancellation</h2>
+                    </div>
+                    <div class="content">
+                        <p>Dear {appointment['patient_name']},</p>
+                        <p>Your appointment has been successfully canceled.</p>
+                        
+                        <div class="cancellation-details">
+                            <div class="cancellation-item">
+                                <span class="cancellation-label">Canceled Appointment:</span> {formatted_datetime}
+                            </div>
+                            <div class="cancellation-item">
+                                <span class="cancellation-label">Doctor:</span> Dr. {doctor_name}
+                            </div>
+                            <div class="cancellation-item">
+                                <span class="cancellation-label">Reason for Visit:</span> {appointment.get('cause', 'Not specified')}
+                            </div>
+                        </div>
+                        
+                        <p>If you would like to schedule a new appointment, please visit your dashboard.</p>
+                        
+                        <center>
+                            <a href="{dashboard_url}" class="button">Schedule New Appointment</a>
+                        </center>
+                    </div>
+                    <div class="footer">
+                        <p>© 2025 RapiACT! Healthcare Services</p>
+                        <p>This is an automated email. Please do not reply to this message.</p>
+                    </div>
+                </div>
+            </body>
+            </html>
+            """
+            
+            # HTML Email Template for Doctor Cancellation Notification
+            doctor_email_html = f"""
+            <!DOCTYPE html>
+            <html>
+            <head>
+                <meta charset="UTF-8">
+                <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                <title>Appointment Cancellation Notice</title>
+                <style>
+                    body {{
+                        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+                        line-height: 1.6;
+                        color: #333;
+                        margin: 0;
+                        padding: 0;
+                    }}
+                    .email-container {{
+                        max-width: 600px;
+                        margin: 0 auto;
+                        padding: 20px;
+                    }}
+                    .header {{
+                        background-color: #ea4335;
+                        color: white;
+                        padding: 20px;
+                        text-align: center;
+                        border-radius: 5px 5px 0 0;
+                    }}
+                    .content {{
+                        background-color: #ffffff;
+                        padding: 20px;
+                        border-left: 1px solid #e0e0e0;
+                        border-right: 1px solid #e0e0e0;
+                    }}
+                    .cancellation-details {{
+                        background-color: #fef8f8;
+                        padding: 15px;
+                        border-radius: 5px;
+                        margin: 15px 0;
+                        border-left: 4px solid #ea4335;
+                    }}
+                    .cancellation-item {{
+                        margin-bottom: 10px;
+                    }}
+                    .cancellation-label {{
+                        font-weight: bold;
+                        color: #ea4335;
+                    }}
+                    .footer {{
+                        background-color: #f5f5f5;
+                        padding: 15px;
+                        text-align: center;
+                        font-size: 12px;
+                        color: #757575;
+                        border-radius: 0 0 5px 5px;
+                        border: 1px solid #e0e0e0;
+                    }}
+                    .button {{
+                        display: inline-block;
+                        background-color: #34a853;
+                        color: white;
+                        padding: 10px 20px;
+                        text-decoration: none;
+                        border-radius: 5px;
+                        margin-top: 15px;
+                    }}
+                    .logo {{
+                        font-size: 24px;
+                        font-weight: bold;
+                        color: white;
+                    }}
+                </style>
+            </head>
+            <body>
+                <div class="email-container">
+                    <div class="header">
+                        <div class="logo">RapiACT!</div>
+                        <h2>Appointment Cancellation Notice</h2>
+                    </div>
+                    <div class="content">
+                        <p>Dear Dr. {doctor_name},</p>
+                        <p>An appointment has been canceled.</p>
+                        
+                        <div class="cancellation-details">
+                            <div class="cancellation-item">
+                                <span class="cancellation-label">Patient:</span> {appointment['patient_name']}
+                            </div>
+                            <div class="cancellation-item">
+                                <span class="cancellation-label">Canceled Appointment:</span> {formatted_datetime}
+                            </div>
+                            <div class="cancellation-item">
+                                <span class="cancellation-label">Reason for Visit:</span> {appointment.get('cause', 'Not specified')}
+                            </div>
+                        </div>
+                        
+                        <p>Your schedule has been updated accordingly.</p>
+                        
+                        <center>
+                            <a href="{doctor_dashboard_url}" class="button">View Updated Schedule</a>
+                        </center>
+                    </div>
+                    <div class="footer">
+                        <p>© 2025 RapiACT! Healthcare Services</p>
+                        <p>This is an automated email. Please do not reply to this message.</p>
+                    </div>
+                </div>
+            </body>
+            </html>
+            """
 
-            # Send cancellation email to patient
+            # Send HTML emails
             email = appointment['email']
             subject = "Appointment Cancellation"
-            body = f"Dear {appointment['patient_name']},\n\nYour appointment has been canceled.\n\nThank you!"
-            send_email(subject, [email], body)
+            send_email1(subject, [email], None, patient_email_html)
+            
+            # Also notify the doctor if email is available
+            if doctor_email:
+                send_email1("Appointment Cancellation Notice", [doctor_email], None, doctor_email_html)
 
             flash("Appointment canceled successfully.", "success")
         else:
             flash("Unauthorized action.", "danger")
-
+        
         return redirect(url_for('patient_dashboard'))
+    
     return redirect(url_for('login'))
 from bson.binary import Binary
 def get_content_type(file_ext):
@@ -2147,6 +2398,9 @@ def create_appointment():
             doctor_name = f"{doctor['name']}"
             doctor_email = doctor['email']
 
+            # Format datetime for display
+            formatted_datetime = datetime.strptime(appointment_datetime, "%Y-%m-%dT%H:%M").strftime("%A, %B %d, %Y at %I:%M %p")
+
             # Insert appointment into DB
             appointment_id = mongo.db.appointments.insert_one({
                 'patient_name': patient_name,
@@ -2162,21 +2416,369 @@ def create_appointment():
                 'patient_id': ObjectId(session['user_id']),
             }).inserted_id
 
-            # Email content
-            subject = "Appointment Confirmation"
-            body_patient = f"Dear {patient_name},\n\nYour appointment with Dr. {doctor_name} is confirmed on {appointment_datetime}.\n\nThank you!\n RapiACT!"
-            body_doctor = f"Dear Dr. {doctor_name},\n\nYou have a new appointment with {patient_name} on {appointment_datetime}.\n\nThank you!\n RapiACT!"
+            # Generate dashboard URLs for email templates
+            dashboard_url = request.host_url.rstrip('/') + url_for('patient_dashboard')
+            doctor_dashboard_url = request.host_url.rstrip('/') + url_for('doctor_dashboard')
 
-            # Send emails
-            send_email(subject, [email], body_patient)
-            send_email(subject, [doctor_email], body_doctor)
+            # HTML Email Template for Patient
+            patient_email_html = f"""
+            <!DOCTYPE html>
+            <html>
+            <head>
+                <meta charset="UTF-8">
+                <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                <title>Appointment Confirmation</title>
+                <style>
+                    body {{
+                        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+                        line-height: 1.6;
+                        color: #333;
+                        margin: 0;
+                        padding: 0;
+                    }}
+                    .email-container {{
+                        max-width: 600px;
+                        margin: 0 auto;
+                        padding: 20px;
+                    }}
+                    .header {{
+                        background-color: #4285f4;
+                        color: white;
+                        padding: 20px;
+                        text-align: center;
+                        border-radius: 5px 5px 0 0;
+                    }}
+                    .content {{
+                        background-color: #ffffff;
+                        padding: 20px;
+                        border-left: 1px solid #e0e0e0;
+                        border-right: 1px solid #e0e0e0;
+                    }}
+                    .appointment-details {{
+                        background-color: #f9f9f9;
+                        padding: 15px;
+                        border-radius: 5px;
+                        margin: 15px 0;
+                    }}
+                    .appointment-item {{
+                        margin-bottom: 10px;
+                    }}
+                    .appointment-label {{
+                        font-weight: bold;
+                        color: #4285f4;
+                    }}
+                    .footer {{
+                        background-color: #f5f5f5;
+                        padding: 15px;
+                        text-align: center;
+                        font-size: 12px;
+                        color: #757575;
+                        border-radius: 0 0 5px 5px;
+                        border: 1px solid #e0e0e0;
+                    }}
+                    .button {{
+                        display: inline-block;
+                        background-color: #4285f4;
+                        color: white;
+                        padding: 10px 20px;
+                        text-decoration: none;
+                        border-radius: 5px;
+                        margin-top: 15px;
+                    }}
+                    .logo {{
+                        font-size: 24px;
+                        font-weight: bold;
+                        color: white;
+                    }}
+                </style>
+            </head>
+            <body>
+                <div class="email-container">
+                    <div class="header">
+                        <div class="logo">RapiACT!</div>
+                        <h2>Appointment Confirmation</h2>
+                    </div>
+                    <div class="content">
+                        <p>Dear {patient_name},</p>
+                        <p>Your appointment with Dr. {doctor_name} has been successfully scheduled.</p>
+                        
+                        <div class="appointment-details">
+                            <div class="appointment-item">
+                                <span class="appointment-label">Date & Time:</span> {formatted_datetime}
+                            </div>
+                            <div class="appointment-item">
+                                <span class="appointment-label">Doctor:</span> Dr. {doctor_name}
+                            </div>
+                            <div class="appointment-item">
+                                <span class="appointment-label">Reason:</span> {cause}
+                            </div>
+                        </div>
+                        
+                        <p>Please arrive 15 minutes before your scheduled appointment time.</p>
+                        <p>You can view or manage your appointments from your patient dashboard.</p>
+                        
+                        <center>
+                            <a href="{dashboard_url}" class="button">Access Dashboard</a>
+                        </center>
+                    </div>
+                    <div class="footer">
+                        <p>© 2025 RapiACT! Healthcare Services</p>
+                        <p>This is an automated email. Please do not reply to this message.</p>
+                    </div>
+                </div>
+            </body>
+            </html>
+            """
+
+            # HTML Email Template for Doctor
+            doctor_email_html = f"""
+            <!DOCTYPE html>
+            <html>
+            <head>
+                <meta charset="UTF-8">
+                <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                <title>New Appointment Notification</title>
+                <style>
+                    body {{
+                        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+                        line-height: 1.6;
+                        color: #333;
+                        margin: 0;
+                        padding: 0;
+                    }}
+                    .email-container {{
+                        max-width: 600px;
+                        margin: 0 auto;
+                        padding: 20px;
+                    }}
+                    .header {{
+                        background-color: #34a853;
+                        color: white;
+                        padding: 20px;
+                        text-align: center;
+                        border-radius: 5px 5px 0 0;
+                    }}
+                    .content {{
+                        background-color: #ffffff;
+                        padding: 20px;
+                        border-left: 1px solid #e0e0e0;
+                        border-right: 1px solid #e0e0e0;
+                    }}
+                    .patient-details {{
+                        background-color: #f9f9f9;
+                        padding: 15px;
+                        border-radius: 5px;
+                        margin: 15px 0;
+                    }}
+                    .patient-item {{
+                        margin-bottom: 10px;
+                    }}
+                    .patient-label {{
+                        font-weight: bold;
+                        color: #34a853;
+                    }}
+                    .footer {{
+                        background-color: #f5f5f5;
+                        padding: 15px;
+                        text-align: center;
+                        font-size: 12px;
+                        color: #757575;
+                        border-radius: 0 0 5px 5px;
+                        border: 1px solid #e0e0e0;
+                    }}
+                    .button {{
+                        display: inline-block;
+                        background-color: #34a853;
+                        color: white;
+                        padding: 10px 20px;
+                        text-decoration: none;
+                        border-radius: 5px;
+                        margin-top: 15px;
+                    }}
+                    .logo {{
+                        font-size: 24px;
+                        font-weight: bold;
+                        color: white;
+                    }}
+                </style>
+            </head>
+            <body>
+                <div class="email-container">
+                    <div class="header">
+                        <div class="logo">RapiACT!</div>
+                        <h2>New Appointment Notification</h2>
+                    </div>
+                    <div class="content">
+                        <p>Dear Dr. {doctor_name},</p>
+                        <p>You have a new appointment scheduled with a patient.</p>
+                        
+                        <div class="patient-details">
+                            <div class="patient-item">
+                                <span class="patient-label">Patient:</span> {patient_name}
+                            </div>
+                            <div class="patient-item">
+                                <span class="patient-label">Date & Time:</span> {formatted_datetime}
+                            </div>
+                            <div class="patient-item">
+                                <span class="patient-label">Age:</span> {age}
+                            </div>
+                            <div class="patient-item">
+                                <span class="patient-label">Height:</span> {height}
+                            </div>
+                            <div class="patient-item">
+                                <span class="patient-label">Weight:</span> {weight}
+                            </div>
+                            <div class="patient-item">
+                                <span class="patient-label">Reason:</span> {cause}
+                            </div>
+                            <div class="patient-item">
+                                <span class="patient-label">Contact:</span> {phone}
+                            </div>
+                            <div class="patient-item">
+                                <span class="patient-label">Email:</span> {email}
+                            </div>
+                        </div>
+                        
+                        <p>Please review the appointment details and be prepared for the consultation.</p>
+                        
+                        <center>
+                            <a href="{doctor_dashboard_url}" class="button">View Your Schedule</a>
+                        </center>
+                    </div>
+                    <div class="footer">
+                        <p>© 2025 RapiACT! Healthcare Services</p>
+                        <p>This is an automated email. Please do not reply to this message.</p>
+                    </div>
+                </div>
+            </body>
+            </html>
+            """
+
+            # HTML Email Template for Reminder
+            reminder_email_html = f"""
+            <!DOCTYPE html>
+            <html>
+            <head>
+                <meta charset="UTF-8">
+                <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                <title>Appointment Reminder</title>
+                <style>
+                    body {{
+                        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+                        line-height: 1.6;
+                        color: #333;
+                        margin: 0;
+                        padding: 0;
+                    }}
+                    .email-container {{
+                        max-width: 600px;
+                        margin: 0 auto;
+                        padding: 20px;
+                    }}
+                    .header {{
+                        background-color: #fbbc05;
+                        color: white;
+                        padding: 20px;
+                        text-align: center;
+                        border-radius: 5px 5px 0 0;
+                    }}
+                    .content {{
+                        background-color: #ffffff;
+                        padding: 20px;
+                        border-left: 1px solid #e0e0e0;
+                        border-right: 1px solid #e0e0e0;
+                    }}
+                    .reminder-details {{
+                        background-color: #fffde7;
+                        padding: 15px;
+                        border-radius: 5px;
+                        margin: 15px 0;
+                        border-left: 4px solid #fbbc05;
+                    }}
+                    .reminder-item {{
+                        margin-bottom: 10px;
+                    }}
+                    .reminder-label {{
+                        font-weight: bold;
+                        color: #fbbc05;
+                    }}
+                    .footer {{
+                        background-color: #f5f5f5;
+                        padding: 15px;
+                        text-align: center;
+                        font-size: 12px;
+                        color: #757575;
+                        border-radius: 0 0 5px 5px;
+                        border: 1px solid #e0e0e0;
+                    }}
+                    .button {{
+                        display: inline-block;
+                        background-color: #fbbc05;
+                        color: white;
+                        padding: 10px 20px;
+                        text-decoration: none;
+                        border-radius: 5px;
+                        margin-top: 15px;
+                    }}
+                    .logo {{
+                        font-size: 24px;
+                        font-weight: bold;
+                        color: white;
+                    }}
+                    .countdown {{
+                        font-size: 18px;
+                        font-weight: bold;
+                        color: #fbbc05;
+                    }}
+                </style>
+            </head>
+            <body>
+                <div class="email-container">
+                    <div class="header">
+                        <div class="logo">RapiACT!</div>
+                        <h2>Appointment Reminder</h2>
+                    </div>
+                    <div class="content">
+                        <p>Dear {patient_name},</p>
+                        <p><span class="countdown">Your appointment is in 5 minutes!</span></p>
+                        
+                        <div class="reminder-details">
+                            <div class="reminder-item">
+                                <span class="reminder-label">Date & Time:</span> {formatted_datetime}
+                            </div>
+                            <div class="reminder-item">
+                                <span class="reminder-label">Doctor:</span> Dr. {doctor_name}
+                            </div>
+                            <div class="reminder-item">
+                                <span class="reminder-label">Reason:</span> {cause}
+                            </div>
+                        </div>
+                        
+                        <p>Please ensure you're ready for your appointment.</p>
+                        
+                        <center>
+                            <a href="{dashboard_url}" class="button">Access Dashboard</a>
+                        </center>
+                    </div>
+                    <div class="footer">
+                        <p>© 2025 RapiACT! Healthcare Services</p>
+                        <p>This is an automated email. Please do not reply to this message.</p>
+                    </div>
+                </div>
+            </body>
+            </html>
+            """
+
+            # Send HTML emails
+            subject = "Appointment Confirmation"
+            send_email1(subject, [email], None, patient_email_html)
+            send_email1(subject, [doctor_email], None, doctor_email_html)
 
             # Schedule reminder email
             appointment_time = datetime.strptime(appointment_datetime, "%Y-%m-%dT%H:%M")
             reminder_time = appointment_time - timedelta(minutes=5)
             reminder_subject = "Appointment Reminder"
-            reminder_body = f"Dear {patient_name},\n\nThis is a reminder that your appointment with Dr. {doctor_name} is in 5 minutes."
-            schedule_email(reminder_subject, [email], reminder_body, reminder_time)
+            schedule_email1(reminder_subject, [email], None, reminder_email_html, reminder_time)
 
             flash(f"Appointment created successfully with Dr. {doctor_name}!", "success")
             return redirect(url_for('patient_dashboard'))
@@ -2186,6 +2788,40 @@ def create_appointment():
 
     flash("Unauthorized access.", "danger")
     return redirect(url_for('login'))
+
+# Update send_email function to support HTML emails
+def send_email1(subject, recipients, text_body=None, html_body=None):
+    msg = Message(subject=subject, recipients=recipients)
+    if text_body:
+        msg.body = text_body
+    if html_body:
+        msg.html = html_body
+    mail.send(msg)
+
+# Update schedule_email function to support HTML emails
+def schedule_email1(subject, recipients, text_body=None, html_body=None, scheduled_time=None):
+    # This is a placeholder for scheduling emails
+    # In a production app, you'd use a task queue like Celery with Redis/RabbitMQ
+    # For simplicity, we'll simulate scheduling with a background thread
+    
+    def send_scheduled_email():
+        # Calculate sleep time
+        now = datetime.now()
+        if scheduled_time > now:
+            sleep_seconds = (scheduled_time - now).total_seconds()
+            time.sleep(sleep_seconds)
+        
+        # Send email after sleeping
+        send_email(subject, recipients, text_body, html_body)
+    
+    if scheduled_time:
+        # Run in background thread
+        email_thread = threading.Thread(target=send_scheduled_email)
+        email_thread.daemon = True
+        email_thread.start()
+    else:
+        # Send immediately if no scheduled time
+        send_email(subject, recipients, text_body, html_body)
 
 @app.route('/add_user', methods=['POST'])
 def add_user():
@@ -3695,6 +4331,149 @@ def patient_orders():
 
     return render_template('patient_orders.html', orders=orders)
 
+@app.route('/cart/checkout', methods=['POST'])
+def cart_checkout():
+    if not session.get('logged_in') or session.get('role') != 'patient':
+        return jsonify({'success': False, 'message': 'Please log in as a patient to checkout'}), 401
+    
+    # Get the cart items from the request
+    data = request.json
+    items = data.get('items', [])
+    
+    if not items:
+        return jsonify({'success': False, 'message': 'Your cart is empty'}), 400
+    
+    try:
+        # Calculate order details
+        subtotal = sum(item['price'] * item['quantity'] for item in items)
+        shipping_fee = 40.00  # Fixed shipping fee
+        tax = subtotal * 0.05  # 5% GST
+        total_amount = subtotal + shipping_fee + tax
+        
+        # Create order in database
+        order_id = str(ObjectId())  # Generate a new ObjectId
+        
+        # Get the patient information
+        patient_id = session.get('user_id')
+        
+        # Save order to database
+        db.orders.insert_one({
+            '_id': ObjectId(order_id),
+            'patient_id': ObjectId(patient_id),
+            'items': items,
+            'subtotal': subtotal,
+            'shipping_fee': shipping_fee,
+            'tax': tax,
+            'total_amount': total_amount,
+            'status': 'pending_payment',
+            'created_at': datetime.datetime.now(),
+            'payment_details': {
+                'status': 'pending'
+            }
+        })
+        
+        return jsonify({
+            'success': True,
+            'order_id': order_id,
+            'message': 'Order created successfully'
+        })
+        
+    except Exception as e:
+        print(f"Error during checkout: {str(e)}")
+        return jsonify({'success': False, 'message': 'An error occurred during checkout'}), 500
+
+
+@app.route('/payment_cart/<order_id>')
+def payment_cart(order_id):
+    if not session.get('logged_in') or session.get('role') != 'patient':
+        flash('Please log in as a patient to view this page', 'danger')
+        return redirect(url_for('login'))
+    
+    try:
+        # Get the order details from database
+        order = db.orders.find_one({'_id': ObjectId(order_id)})
+        
+        if not order:
+            flash('Order not found', 'danger')
+            return redirect(url_for('pharmacy'))
+        
+        # Get patient details
+        patient_id = session.get('user_id')
+        patient = db.users.find_one({'_id': ObjectId(patient_id)})
+        
+        if not patient or str(order['patient_id']) != patient_id:
+            flash('Unauthorized access', 'danger')
+            return redirect(url_for('pharmacy'))
+        
+        # Generate a QR code for payment
+        # This is a placeholder - you would typically generate this using a payment gateway
+        qr_code_data = f"upi://pay?pa=merchant@upi&pn=RapiACT&am={order['total_amount']}&tr={order_id}&cu=INR"
+        qr = qrcode.make(qr_code_data)
+        
+        # Create a BytesIO object to store the QR code
+        qr_io = BytesIO()
+        qr.save(qr_io)
+        qr_io.seek(0)
+        
+        # Convert to base64 for displaying in HTML
+        qr_base64 = base64.b64encode(qr_io.getvalue()).decode('utf-8')
+        qr_code = f"data:image/png;base64,{qr_base64}"
+        
+        return render_template(
+            'payment_cart.html',
+            order=order,
+            order_id=order_id,
+            subtotal=order['subtotal'],
+            shipping_fee=order['shipping_fee'],
+            tax=order['tax'],
+            total_amount=order['total_amount'],
+            qr_code=qr_code
+        )
+        
+    except Exception as e:
+        print(f"Error during payment page loading: {str(e)}")
+        flash('An error occurred while loading the payment page', 'danger')
+        return redirect(url_for('pharmacy'))
+
+
+@app.route('/submit_cart_payment', methods=['POST'])
+def submit_cart_payment():
+    if not session.get('logged_in') or session.get('role') != 'patient':
+        return jsonify({'success': False, 'message': 'Please log in as a patient'}), 401
+    
+    data = request.json
+    order_id = data.get('order_id')
+    utr_id = data.get('utr_id')
+    
+    if not order_id or not utr_id:
+        return jsonify({'success': False, 'message': 'Missing required fields'}), 400
+    
+    try:
+        # Update the order with payment details
+        result = db.orders.update_one(
+            {'_id': ObjectId(order_id)},
+            {'$set': {
+                'payment_details': {
+                    'utr_id': utr_id,
+                    'status': 'verification_pending',
+                    'submitted_at': datetime.datetime.now()
+                },
+                'status': 'payment_verification_pending'
+            }}
+        )
+        
+        if result.modified_count == 0:
+            return jsonify({'success': False, 'message': 'Order not found or payment already submitted'}), 404
+        
+        return jsonify({
+            'success': True,
+            'message': 'Payment submitted successfully'
+        })
+        
+    except Exception as e:
+        print(f"Error during payment submission: {str(e)}")
+        return jsonify({'success': False, 'message': 'An error occurred during payment submission'}), 500
+
 import traceback
 @app.route('/patient/prescriptions')
 def patient_prescriptions():
@@ -3785,23 +4564,26 @@ import PyPDF2
 from werkzeug.utils import secure_filename
 
 
-model = joblib.load('templates/diabetes_model.sav')
-from werkzeug.utils import secure_filename 
+
+from flask import Flask, render_template, request, redirect, url_for
+import joblib
+import PyPDF2
+import re
+import os
+from werkzeug.utils import secure_filename
 
 
-# Configure upload folder
-app.config['UPLOAD_FOLDER'] = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'uploads')
-# Create the uploads directory if it doesn't exist
-if not os.path.exists(app.config['UPLOAD_FOLDER']):
-    os.makedirs(app.config['UPLOAD_FOLDER'])
+# Ensure uploads directory exists
+if not os.path.exists('uploads'):
+    os.makedirs('uploads')
 
-# Load diabetes prediction model
-model = joblib.load('templates/diabetes_model.sav')
+# Load the model
+model = joblib.load('templates/voting_diabetes .pkl')  # Note: fixed the space in the filename
 
 # Features for diabetes prediction
 features = [
     'Pregnancies', 'Glucose', 'Blood Pressure', 'Skin Thickness', 'Insulin',
-    'BMI', 'Diabetes Pedigree Function', 'Age'
+    'BMI', 'Diabetes Pedigree Function',
 ]
 
 def extract_text_from_pdf(filepath):
@@ -3819,8 +4601,8 @@ def extract_text_from_pdf(filepath):
 
 def extract_data(text):
     extracted_data = {feature: None for feature in features}
-
-    # Updated regex patterns with flexible spacing and colon handling
+    
+    # Regex patterns with flexible spacing and colon handling
     patterns = {
         'Pregnancies': r'Pregnancies[:\s]*([\d\.]+)',
         'Glucose': r'Glucose[:\s]*([\d\.]+)',
@@ -3829,9 +4611,8 @@ def extract_data(text):
         'Insulin': r'Insulin[:\s]*([\d\.]+)',
         'BMI': r'BMI[:\s]*([\d\.]+)',
         'Diabetes Pedigree Function': r'Diabetes[\s]*Pedigree[\s]*Function[:\s]*([\d\.]+)',
-        'Age': r'Age[:\s]*([\d\.]+)'
     }
-
+    
     # Extract values using regex
     for key, pattern in patterns.items():
         match = re.search(pattern, text, re.IGNORECASE)
@@ -3840,34 +4621,27 @@ def extract_data(text):
             extracted_data[key] = float(value) if '.' in value else int(value)
         else:
             extracted_data[key] = 0  # Default to 0 if value isn't found
-
+    
     print("✅ Extracted Data:", extracted_data)
     return extracted_data
 
-# Main index route
+# Define index route
 @app.route('/')
 def index():
     return render_template('index.html')
 
-# Route for the diabetes tool
-@app.route('/diabetes')
-def diabetes_home():
+@app.route('/diabetes', methods=['GET', 'POST'])
+def diabetes():
     return render_template('diabetes.html', features=features, extracted_data=None)
 
-# Original home route - now redirects to diabetes_home
-@app.route('/home')
-def home_redirect():
-    return redirect(url_for('diabetes'))
-
-@app.route('/extract/diabetes', methods=['POST'])
+@app.route('/extract', methods=['POST'])
 def extract():
     file = request.files['file']
     if file:
         filename = secure_filename(file.filename)
-        filepath = os.path.join(app.config['UPLOAD_FOLDER'], filename)
-        os.makedirs(os.path.dirname(filepath), exist_ok=True)  # Ensure directory exists
+        filepath = os.path.join('uploads', filename)
         file.save(filepath)
-
+        
         if file.filename.endswith('.pdf'):
             text = extract_text_from_pdf(filepath)
         else:
@@ -3875,19 +4649,19 @@ def extract():
         
         extracted_data = extract_data(text)
         return render_template('diabetes.html', features=features, extracted_data=extracted_data)
-    return redirect(url_for('diabetes_home'))
+    return redirect(url_for('diabetes'))
 
-@app.route('/predict/diabetes', methods=['POST'])
+@app.route('/predict', methods=['POST'])
 def predict():
     input_data = []
     for feature in features:
         value = request.form.get(feature)
         input_data.append(float(value) if value else 0)
-
+    
     # Predict using the loaded model
     prediction = model.predict([input_data])[0]
     prediction_text = '⚠️ High Risk of Diabetes' if prediction == 1 else '✅ Low Risk of Diabetes'
-
+    
     # Suggest precautions if high risk
     precautions = [
         '🟢 Follow a balanced diet low in sugar.',
@@ -3895,13 +4669,8 @@ def predict():
         '💉 Monitor blood sugar levels frequently.',
         '🩺 Regular check-ups with your doctor.'
     ] if prediction == 1 else []
-
+    
     return render_template('diabetes.html', features=features, extracted_data=None, prediction_text=prediction_text, precautions=precautions)
-
-
-
-
-
 
 #Heart Disease
 model2 = joblib.load('templates/heart.pkl')
@@ -3999,6 +4768,10 @@ def predict_heart():
 
     return render_template('heart_home.html', features=features_heart, extracted_data=None, prediction_text=prediction_text, precautions=precautions)
 
+
+
+
+
 # Load the trained model (Ensure the model file is in the same directory)
 model3 = joblib.load('templates/kidney.pkl')
 
@@ -4060,6 +4833,7 @@ def extract_data_from_kidney(text):
         extracted_data[feature] = match.group(1) if match else None
 
     return extracted_data
+
 
 # Home Route
 @app.route('/model3', methods=['GET'])
@@ -4124,174 +4898,43 @@ from PyPDF2 import PdfReader
 from docx import Document
 
 
-# Configure upload folder - after app is defined
-app.config['UPLOAD_FOLDER'] = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'uploads')
-# Create the uploads directory if it doesn't exist
-if not os.path.exists(app.config['UPLOAD_FOLDER']):
-    os.makedirs(app.config['UPLOAD_FOLDER'])
 
-# Load pre-trained model and scaler 
-svmodel = pickle.load(open('templates/svmodel.pkl', 'rb'))
-scaler = pickle.load(open('templates/scaling.pkl', 'rb'))
+# Configure separate upload folders for each module
+PARKINSONS_UPLOAD_FOLDER = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'parkinsons_uploads')
+THYROID_UPLOAD_FOLDER = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'thyroid_uploads')
 
-# features_parkinsons for matching
-features_parkinsons = [
+# Create the upload directories if they don't exist
+if not os.path.exists(PARKINSONS_UPLOAD_FOLDER):
+    os.makedirs(PARKINSONS_UPLOAD_FOLDER)
+if not os.path.exists(THYROID_UPLOAD_FOLDER):
+    os.makedirs(THYROID_UPLOAD_FOLDER)
+
+# Load pre-trained models and scalers
+parkinsons_model = pickle.load(open('templates/svmodel.pkl', 'rb'))
+parkinsons_scaler = pickle.load(open('templates/scaling.pkl', 'rb'))
+
+thyroid_model = pickle.load(open('templates/best_model1.pkl', 'rb'))
+thyroid_scaler = pickle.load(open('templates/scaler1.pkl', 'rb'))
+
+# Keywords for matching
+KEYWORDS_PARKINSONS = [
     "MDVP:Fo(Hz)", "MDVP:Fhi(Hz)", "MDVP:Flo(Hz)", "MDVP:Jitter(%)",
     "MDVP:Jitter(Abs)", "MDVP:RAP", "MDVP:PPQ", "Jitter:DDP", "MDVP:Shimmer",
     "MDVP:Shimmer(dB)", "Shimmer:APQ3", "Shimmer:APQ5", "MDVP:APQ", "Shimmer:DDA",
     "NHR", "HNR", "RPDE", "DFA", "spread1", "spread2", "D2", "PPE"
 ]
 
+THYROID_KEYWORDS = [
+    "Age", "Gender", "Smoking", "Smoking History",
+    "Radiotherapy History", "Thyroid Function",
+    "Physical Examination", "Adenopathy",
+    "Types of Thyroid Cancer (Pathology)", "Focality",
+    "Risk", "Tumor", "Lymph Nodes",
+    "Cancer Metastasis", "Stage", "Treatment Response"
+]
 
-
-# Parkinson's disease page route
-@app.route('/parkinsons')
-def parkinsons():
-    # Initialize extracted_data as an empty dictionary
-    extracted_data = session.get('extracted_data', {})
-    # Pass default values and initialize error as None
-    return render_template('parkinsons.html', 
-                          features_parkinsons=features_parkinsons, 
-                          extracted_data=extracted_data,
-                          prediction_text=None,
-                          precautions=None,
-                          error=None,
-                          status_message=session.pop('status_message', None))
-
-# File upload and extraction route
-@app.route('/extract/parkinsons', methods=['POST'])
-def extract_data_parkinsons():
-    extracted_data = {}
-    status_message = None
-    error = None
-
-    # File Upload Handling
-    if 'file' in request.files and request.files['file'].filename != '':
-        file = request.files['file']
-        
-        if file.filename.endswith('.pdf') or file.filename.endswith('.docx'):
-            try:
-                safe_filename = file.filename.encode('utf-8', errors='ignore').decode()
-                filename = os.path.join(app.config['UPLOAD_FOLDER'], safe_filename)
-                file.save(filename)
-                
-                # Detect file type and extract text
-                if file.filename.endswith('.pdf'):
-                    text = extract_text_from_pdf_parkinsons(filename)
-                    file_type = "PDF"
-                elif file.filename.endswith('.docx'):
-                    text = extract_text_from_docx_parkinsons(filename)
-                    file_type = "DOCX"
-                
-                # Extract data using regular expressions
-                extracted_data = regex_extract(text)
-                
-                # Remove None values and count valid extractions
-                valid_extractions = sum(1 for v in extracted_data.values() if v is not None)
-                
-                # Set status message based on extraction results
-                if valid_extractions > 0:
-                    status_message = f"Successfully extracted {valid_extractions} values from {file_type} file."
-                else:
-                    status_message = f"File processed, but no valid data could be extracted. Please check file format."
-                
-                # Store in session for persistence
-                session['extracted_data'] = {k: v for k, v in extracted_data.items() if v is not None}
-                session['status_message'] = status_message
-                
-            except Exception as e:
-                error = f"Error processing file: {str(e)}"
-                print(f"Error: {str(e)}")
-        else:
-            error = 'Unsupported file format. Please upload PDF or DOCX files only.'
-    else:
-        error = 'No file selected. Please choose a file to upload.'
-
-    if error:
-        return render_template('parkinsons.html', 
-                            error=error, 
-                            features_parkinsons=features_parkinsons, 
-                            extracted_data={},
-                            prediction_text=None,
-                            precautions=None)
-    
-    # Use redirect to get a clean URL and prevent form resubmission
-    return redirect(url_for('parkinsons'))
-
-# Prediction route
-@app.route('/predict/parkinsons', methods=['POST'])
-def predict_parkinsons():
-    input_data = []
-    extracted_data = {}
-
-    # Collect data from form fields (manual or auto-filled)
-    for keyword in features_parkinsons:
-        value = request.form.get(keyword)
-        try:
-            if value and value.strip() != '':
-                input_data.append(float(value))
-                extracted_data[keyword] = float(value)
-            else:
-                input_data.append(0.0)
-                extracted_data[keyword] = 0.0  # Store 0.0 in extracted_data for display
-        except (ValueError, TypeError):
-            input_data.append(0.0)
-            extracted_data[keyword] = 0.0  # Store 0.0 in extracted_data for display
-
-    # Make sure we have a full set of values
-    if len(input_data) != len(features_parkinsons):
-        return render_template(
-            "parkinsons.html",
-            error="Invalid input data. Please ensure all fields are filled correctly.",
-            extracted_data=extracted_data,
-            features_parkinsons=features_parkinsons,
-            prediction_text=None,
-            precautions=None
-        )
-
-    # Scale and predict
-    try:
-        input_scaled = scaler.transform(np.array(input_data).reshape(1, -1))
-        prediction = svmodel.predict(input_scaled)[0]
-
-        # Prediction result
-        result = "Positive for Parkinson's Disease" if prediction == 1 else "Negative for Parkinson's Disease"
-
-        # Precautions for positive result
-        precautions = []
-        if prediction == 1:
-            precautions = [
-                "🧘 Engage in regular physical exercise and therapy.",
-                "🥗 Follow a balanced diet rich in fiber and antioxidants.",
-                "💊 Take medications as prescribed by your doctor.",
-                "🩺 Schedule regular neurological checkups.",
-                "🧠 Practice mental exercises and stress management."
-            ]
-
-        # Store extracted data in session again to keep the form filled
-        session['extracted_data'] = extracted_data
-
-        return render_template(
-            "parkinsons.html",
-            prediction_text=f"Prediction: {result}",
-            precautions=precautions if prediction == 1 else None,
-            extracted_data=extracted_data,
-            features_parkinsons=features_parkinsons,
-            error=None
-        )
-    except Exception as e:
-        print(f"Prediction error: {str(e)}")
-        return render_template(
-            "parkinsons.html",
-            error=f"Error during prediction: {str(e)}",
-            extracted_data=extracted_data,
-            features_parkinsons=features_parkinsons,
-            prediction_text=None,
-            precautions=None
-        )
-
-# Extract text from PDF
-def extract_text_from_pdf_parkinsons(file):
+# Utility functions for text extraction
+def extract_text_from_pdf(file):
     reader = PdfReader(file)
     text = ""
     for page in reader.pages:
@@ -4302,12 +4945,9 @@ def extract_text_from_pdf_parkinsons(file):
                 text += cleaned_text + "\n"
         except UnicodeEncodeError:
             continue
-    
-    print(f"Extracted PDF Text (first 200 chars): {text[:200]}")
     return text.strip()
 
-# Extract text from DOCX
-def extract_text_from_docx_parkinsons(file):
+def extract_text_from_docx(file):
     doc = Document(file)
     text = ""
     for para in doc.paragraphs:
@@ -4316,12 +4956,97 @@ def extract_text_from_docx_parkinsons(file):
             text += cleaned_text + "\n"
         except UnicodeEncodeError:
             continue
-    
-    print(f"Extracted DOCX Text (first 200 chars): {text[:200]}")
     return text.strip()
 
-# Regex-based data extraction
-def regex_extract(text):
+#--------- PARKINSONS DISEASE MODULE ---------#
+
+# Parkinsons home page route
+@app.route('/parkinsons')
+def parkinsons():
+    return render_template('parkinsons.html', features_parkinsons=KEYWORDS_PARKINSONS, extracted_data={})
+
+# Parkinsons file upload and extraction route 
+@app.route('/extract/parkinsons', methods=['POST'])
+def extract_data_parkinsons():
+    extracted_data = {}
+    status_message = None
+
+    # File Upload Handling
+    if 'file' in request.files and request.files['file'].filename != '':
+        file = request.files['file']
+        safe_filename = file.filename.encode('utf-8', errors='ignore').decode()
+        filename = os.path.join(PARKINSONS_UPLOAD_FOLDER, safe_filename)
+        file.save(filename)
+
+        # Detect file type and extract text
+        if file.filename.endswith('.pdf'):
+            text = extract_text_from_pdf(filename)
+            status_message = f"PDF processed: {safe_filename}"
+        elif file.filename.endswith('.docx'):
+            text = extract_text_from_docx(filename)
+            status_message = f"DOCX processed: {safe_filename}"
+        else:
+            return render_template('parkinsons.html', 
+                                  error='Unsupported file format', 
+                                  features_parkinsons=KEYWORDS_PARKINSONS,
+                                  extracted_data={})
+
+        # Extract data using regular expressions
+        extracted_data = regex_extract_parkinsons(text)
+
+    return render_template(
+        "parkinsons.html",
+        extracted_data=extracted_data,
+        features_parkinsons=KEYWORDS_PARKINSONS,
+        status_message=status_message
+    )
+
+# Parkinsons prediction route
+@app.route('/predict/parkinsons', methods=['POST'])
+def predict_parkinsons():
+    input_data = []
+    extracted_data = {}
+
+    # Collect data from form fields (manual or auto-filled)
+    for keyword in KEYWORDS_PARKINSONS:
+        value = request.form.get(keyword)
+        try:
+            if value and value.strip() != '':
+                input_data.append(float(value))
+                extracted_data[keyword] = float(value)
+            else:
+                input_data.append(0.0)
+        except (ValueError, TypeError):
+            input_data.append(0.0)
+
+    # Scale and predict
+    input_scaled = parkinsons_scaler.transform(np.array(input_data).reshape(1, -1))
+    prediction = parkinsons_model.predict(input_scaled)[0]
+
+    # Prediction result
+    result = "Positive for Parkinson's Disease" if prediction == 1 else "Negative for Parkinson's Disease"
+
+    # Precautions for positive result
+    precautions = []
+    if prediction == 1:
+        precautions = [
+            "🧘 Engage in regular physical exercise and therapy.",
+            "🥗 Follow a balanced diet rich in fiber and antioxidants.",
+            "💊 Take medications as prescribed by your doctor.",
+            "🩺 Schedule regular neurological checkups.",
+            "🧠 Practice mental exercises and stress management."
+        ]
+
+    return render_template(
+        "parkinsons.html",
+        prediction_text=f"Prediction: {result}",
+        precautions=precautions if prediction == 1 else None,
+        extracted_data=extracted_data,
+        features_parkinsons=KEYWORDS_PARKINSONS
+    )
+
+# Parkinsons regex-based data extraction
+def regex_extract_parkinsons(text):
     extracted_data = {}
 
     # Clean hidden characters, normalize spaces, and handle special formatting
@@ -4333,7 +5058,7 @@ def regex_extract(text):
     pattern = re.compile(
         r"(MDVP:Fo\(Hz\)|MDVP:Fhi\(Hz\)|MDVP:Flo\(Hz\)|MDVP:Jitter\(%\)|"
         r"MDVP:Jitter\(Abs\)|MDVP:RAP|MDVP:PPQ|Jitter:DDP|MDVP:Shimmer|MDVP:Shimmer\(dB\)|"
-        r"Shimmer:APQ3|Shimmer:APQ5|MDVP:APQ|Shimmer:DDA|NHR|HNR|RPDE|DFA|[Ss]pread1|[Ss]pread2|D2|PPE)"
+        r"Shimmer:APQ3|Shimmer:APQ5|MDVP:APQ|Shimmer:DDA|NHR|HNR|RPDE|DFA|Spread1|Spread2|D2|PPE)"
         r"[:\s]*"  # Matches colon or spaces
         r"([-+]?\d*\.?\d+(?:[eE][-+]?\d+)?)",  # Captures negative, decimal, or scientific notation
         flags=re.IGNORECASE
@@ -4342,33 +5067,247 @@ def regex_extract(text):
     matches = pattern.findall(text)
 
     # Log extracted values for debugging
-    print(f"🔍 Extracted Matches: {matches}")
+    print("🔍 Parkinsons Extracted Matches:", matches)
 
     # Store extracted values in the dictionary
     for match in matches:
         keyword, value = match
-        # Normalize keyword case sensitivity for spread1/spread2
-        if keyword.lower() == "spread1":
-            keyword = "spread1"
-        elif keyword.lower() == "spread2":
-            keyword = "spread2"
-            
-        try:
-            extracted_data[keyword] = float(value)
-        except ValueError:
-            extracted_data[keyword] = None
+        # Handle case-sensitivity in the keys
+        for k in KEYWORDS_PARKINSONS:
+            if k.lower() == keyword.lower():
+                try:
+                    extracted_data[k] = float(value)
+                except ValueError:
+                    extracted_data[k] = None
+                break
 
-    # Ensure all features_parkinsons are present
-    for keyword in features_parkinsons:
+    # Ensure all keywords are present
+    for keyword in KEYWORDS_PARKINSONS:
         if keyword not in extracted_data:
             extracted_data[keyword] = None
 
     # Log extracted data for debugging
-    print("✅ Final Extracted Data:", extracted_data)
+    print("✅ Parkinsons Final Extracted Data:", extracted_data)
 
     return extracted_data
 
+#--------- THYROID MODULE ---------#
 
+@app.route('/Tyroid')
+def Tyroid():
+    return render_template('tyroid.html', keywords=THYROID_KEYWORDS, extracted_data={})
+
+@app.route('/extract/Tyroid', methods=['POST'])
+def extract_data_thyroid():
+    extracted_data = {}
+    if 'file' in request.files and request.files['file'].filename != '':
+        file = request.files['file']
+        safe_filename = secure_filename(file.filename)
+        filename = os.path.join(THYROID_UPLOAD_FOLDER, safe_filename)
+        file.save(filename)
+
+        try:
+            if file.filename.endswith('.pdf'):
+                text = extract_text_from_pdf(filename)
+                status_message = f"PDF processed: {safe_filename}"
+            elif file.filename.endswith('.docx'):
+                text = extract_text_from_docx(filename)
+                status_message = f"DOCX processed: {safe_filename}"
+            else:
+                return render_template('tyroid.html', error='Unsupported file format', 
+                                      keywords=THYROID_KEYWORDS, extracted_data={})
+            
+            # Extract data from the document text
+            extracted_data = regex_extract_thyroid(text)
+            
+            # Ensure all expected fields are present with proper formatting
+            for keyword in THYROID_KEYWORDS:
+                if keyword not in extracted_data:
+                    extracted_data[keyword] = 0
+                    
+            print("✅ Thyroid Data prepared for form:", extracted_data)
+            
+        except Exception as e:
+            print(f"Error during extraction: {str(e)}")
+            return render_template('tyroid.html', error=f'Error extracting data: {str(e)}', 
+                                  keywords=THYROID_KEYWORDS, extracted_data={})
+
+    # Pass the extracted data to the template for autofilling
+    return render_template("tyroid.html", extracted_data=extracted_data, 
+                          keywords=THYROID_KEYWORDS, status_message=status_message)
+
+@app.route('/predict/Tyroid', methods=['POST'])
+def predict_thyroid():
+    try:
+        data = {}
+        extracted_data = {}
+
+        for keyword in THYROID_KEYWORDS:
+            value = request.form.get(keyword)
+            try:
+                if value and value.strip() != '':
+                    if keyword == "Age":
+                        raw_age = float(value)
+                        extracted_data[keyword] = raw_age
+                        data[keyword] = thyroid_scaler.transform([[raw_age]])[0][0]
+                    else:
+                        data[keyword] = int(value)
+                        extracted_data[keyword] = int(value)
+                else:
+                    data[keyword] = 0
+                    extracted_data[keyword] = 0
+            except (ValueError, TypeError):
+                data[keyword] = 0
+                extracted_data[keyword] = 0
+
+        df_input = pd.DataFrame([data])
+        prediction = thyroid_model.predict(df_input)[0]
+        result = "High Risk of Thyroid Recurrence" if prediction == 1 else "Low Risk of Thyroid Recurrence"
+
+        recommendations = [
+            "🏥 Schedule more frequent follow-up appointments with your endocrinologist.",
+            "🔬 Consider additional diagnostic imaging or blood tests.",
+            "💊 Adhere strictly to your prescribed treatment.",
+            "🍎 Maintain a healthy diet low in iodine if advised.",
+            "📝 Keep a symptom diary."
+        ] if prediction == 1 else [
+            "🏥 Continue regular check-ups as advised.",
+            "🩸 Monitor thyroid function tests regularly.",
+            "🍎 Eat healthy and maintain lifestyle.",
+            "📝 Report any new symptoms."
+        ]
+
+        return render_template("tyroid.html", prediction_text=f"Prediction: {result}", 
+                              recommendations=recommendations, extracted_data=extracted_data, 
+                              keywords=THYROID_KEYWORDS)
+    except Exception as e:
+        return render_template('tyroid.html', error=f"Prediction Error: {str(e)}", 
+                              keywords=THYROID_KEYWORDS, extracted_data={})
+
+def regex_extract_thyroid(text):
+    extracted_data = {}
+    
+    # Normalize text for better pattern matching
+    text = re.sub(r"[•\t\r\u200B\u00A0]", " ", text)
+    text = re.sub(r"\s+", " ", text).lower()
+    
+    # Helper function to add keys with default values if none found
+    def add_or_default(key, value, default=0):
+        extracted_data[key] = value if value is not None else default
+
+    # Age extraction with better pattern matching
+    age_match = re.search(r"age[:\s\-]*([0-9]{1,3})(?:\s*years)?", text)
+    add_or_default("Age", float(age_match.group(1)) if age_match else None)
+
+    # Gender extraction (improved pattern matching)
+    gender_patterns = {
+        0: [r"\b(female|f|woman|girl)\b"],
+        1: [r"\b(male|m|man|boy)\b"]
+    }
+    
+    for value, patterns in gender_patterns.items():
+        if any(re.search(pattern, text) for pattern in patterns):
+            extracted_data["Gender"] = value
+            break
+    if "Gender" not in extracted_data:
+        extracted_data["Gender"] = 0  # Default to female if not specified
+    
+    # Boolean fields with improved pattern matching
+    boolean_fields = {
+        "Smoking": [
+            (r"\bsmoking[:\s]*(yes|y|positive|present|true|1)\b", 1),
+            (r"\bsmoking[:\s]*(no|n|negative|absent|false|0)\b", 0)
+        ],
+        "Smoking History": [
+            (r"\bsmoking\s*history[:\s]*(yes|y|positive|present|true|1)\b", 1),
+            (r"\bsmoking\s*history[:\s]*(no|n|negative|absent|false|0)\b", 0)
+        ],
+        "Radiotherapy History": [
+            (r"\bradiotherapy\s*history[:\s]*(yes|y|positive|present|true|1)\b", 1),
+            (r"\bradiotherapy\s*history[:\s]*(no|n|negative|absent|none|false|0)\b", 0)
+        ]
+    }
+    
+    for field, patterns in boolean_fields.items():
+        for pattern, value in patterns:
+            if re.search(pattern, text):
+                extracted_data[field] = value
+                break
+        if field not in extracted_data:
+            extracted_data[field] = 0  # Default to 0 (No) if not found
+    
+    # Handle thyroid function field
+    if re.search(r"\b(euthyroid|normal\s*thyroid)\b", text):
+        extracted_data["Thyroid Function"] = 0
+    elif re.search(r"\b(hypothyroid|hyperthyroid|abnormal\s*thyroid)\b", text):
+        extracted_data["Thyroid Function"] = 1
+    else:
+        extracted_data["Thyroid Function"] = 0  # Default
+    
+    # Physical examination and adenopathy
+    if re.search(r"\b(single\s*nodular\s*goiter|nodule\s*found)\b", text):
+        extracted_data["Physical Examination"] = 1
+    else:
+        extracted_data["Physical Examination"] = 0
+        
+    if re.search(r"\b(adenopathy\s*present|enlarged\s*lymph\s*nodes)\b", text):
+        extracted_data["Adenopathy"] = 1
+    else:
+        extracted_data["Adenopathy"] = 0
+    
+    # Cancer pathology type
+    if re.search(r"\b(papillary\s*thyroid\s*carcinoma|ptc)\b", text):
+        extracted_data["Types of Thyroid Cancer (Pathology)"] = 1
+    elif re.search(r"\b(follicular)\b", text):
+        extracted_data["Types of Thyroid Cancer (Pathology)"] = 2
+    else:
+        extracted_data["Types of Thyroid Cancer (Pathology)"] = 0
+    
+    # Focality
+    if re.search(r"\b(multi-?focal|multiple\s*foci)\b", text):
+        extracted_data["Focality"] = 1
+    else:
+        extracted_data["Focality"] = 0
+    
+    # Risk level
+    if re.search(r"\brisk\s*category[:\s]*(high|3)\b", text):
+        extracted_data["Risk"] = 2
+    elif re.search(r"\brisk\s*category[:\s]*(intermediate|medium|2)\b", text):
+        extracted_data["Risk"] = 1
+    else:
+        extracted_data["Risk"] = 0
+    
+    # TNM staging
+    tnm_fields = {
+        "Tumor": r"t\s*(\d+)",
+        "Lymph Nodes": r"n\s*(\d+)",
+        "Cancer Metastasis": r"m\s*(\d+)"
+    }
+    
+    for field, pattern in tnm_fields.items():
+        match = re.search(pattern, text)
+        extracted_data[field] = int(match.group(1)) if match else 0
+    
+    # Stage (roman numerals)
+    stage_match = re.search(r"stage\s*(i{1,3}|iv|v)\b", text)
+    roman_to_int = {"i": 1, "ii": 2, "iii": 3, "iv": 4, "v": 5}
+    if stage_match:
+        extracted_data["Stage"] = roman_to_int.get(stage_match.group(1).lower(), 0)
+    else:
+        # Try numeric stage
+        numeric_stage = re.search(r"stage\s*([1-5])\b", text)
+        extracted_data["Stage"] = int(numeric_stage.group(1)) if numeric_stage else 0
+    
+    # Treatment response
+    if re.search(r"\bresponse[:\s]*(structural\s*incomplete|poor|inadequate)\b", text):
+        extracted_data["Treatment Response"] = 1
+    elif re.search(r"\bresponse[:\s]*(excellent|good|complete)\b", text):
+        extracted_data["Treatment Response"] = 0
+    else:
+        extracted_data["Treatment Response"] = 0
+    
+    print("🔍 Thyroid Extracted from report:", extracted_data)
+    return extracted_data
 
 
 
@@ -4582,220 +5521,6 @@ def lung_cancer():
 
 
 
-# Load pre-trained model and scaler for thyroid prediction
-model = pickle.load(open('templates/best_model.pkl', 'rb'))
-scaler = pickle.load(open('templates/scaler1.pkl', 'rb'))
-
-# Define thyroid prediction features/keywords for form and extraction
-THYROID_KEYWORDS = [
-    "Age", "Gender", "Smoking", "Smoking History", 
-    "Radiotherapy History", "Thyroid Function", 
-    "Physical Examination", "Adenopathy", 
-    "Types of Thyroid Cancer (Pathology)", "Focality", 
-    "Risk", "Tumor", "Lymph Nodes", 
-    "Cancer Metastasis", "Stage", "Treatment Response"
-]
-
-# Add this new route for the main Thyroid page
-@app.route('/Tyroid')
-def thyroid_page():
-    return render_template('thyroid.html', keywords=THYROID_KEYWORDS, extracted_data={})
-
-# File upload and extraction route for thyroid data
-@app.route('/extract/Tyroid', methods=['POST'])
-def extract_thyroid_data():
-    extracted_data = {}
-
-    # File Upload Handling
-    if 'file' in request.files and request.files['file'].filename != '':
-        file = request.files['file']
-        safe_filename = file.filename.encode('utf-8', errors='ignore').decode()
-        filename = os.path.join(app.config['UPLOAD_FOLDER'], safe_filename)
-        file.save(filename)
-
-        # Detect file type and extract text
-        if file.filename.endswith('.pdf'):
-            text = extract_text_from_pdf(filename)
-        elif file.filename.endswith('.docx'):
-            text = extract_text_from_docx(filename)
-        else:
-            return render_template('thyroid.html', error='Unsupported file format', keywords=THYROID_KEYWORDS, extracted_data={})
-
-        # Extract data using regular expressions
-        extracted_data = regex_extract(text)
-
-    return render_template(
-        "thyroid.html",
-        extracted_data=extracted_data,
-        keywords=THYROID_KEYWORDS
-    )
-
-# Prediction route for thyroid data
-@app.route('/predict/Tyroid', methods=['POST'])
-def predict_thyroid():
-    try:
-        # Initialize data dictionary
-        data = {}
-        extracted_data = {}
-        
-        # Collect data from form fields (manual or auto-filled)
-        for keyword in THYROID_KEYWORDS:
-            value = request.form.get(keyword)
-            try:
-                if value and value.strip() != '':
-                    # Convert to appropriate data type
-                    if keyword == "Age":
-                        # Store original value for display
-                        raw_age = float(value)
-                        extracted_data[keyword] = raw_age
-                        # Scale age value for prediction
-                        data[keyword] = scaler.transform([[raw_age]])[0][0]
-                    else:
-                        # Other fields should be integers
-                        data[keyword] = int(value)
-                        extracted_data[keyword] = int(value)
-                else:
-                    data[keyword] = 0
-                    extracted_data[keyword] = 0
-            except (ValueError, TypeError):
-                data[keyword] = 0
-                extracted_data[keyword] = 0
-        
-        # Convert to DataFrame and predict
-        df_input = pd.DataFrame([data])
-        prediction = model.predict(df_input)[0]
-        
-        # Prediction result
-        result = "High Risk of Thyroid Recurrence" if prediction == 1 else "Low Risk of Thyroid Recurrence"
-        
-        # Recommendations based on prediction
-        recommendations = []
-        if prediction == 1:
-            recommendations = [
-                "🏥 Schedule more frequent follow-up appointments with your endocrinologist.",
-                "🔬 Consider additional diagnostic imaging or blood tests as recommended by your physician.",
-                "💊 Adhere strictly to prescribed medication and treatment plans.",
-                "🍎 Maintain a balanced diet rich in antioxidants and low in iodine when appropriate.",
-                "📝 Keep a detailed log of any symptoms or changes to discuss with your healthcare provider."
-            ]
-        else:
-            recommendations = [
-                "🏥 Continue regular check-ups as recommended by your healthcare provider.",
-                "🩸 Maintain regular thyroid function tests according to your doctor's schedule.",
-                "🍎 Follow a healthy diet and lifestyle to support overall health.",
-                "📝 Report any new symptoms or concerns to your healthcare provider promptly."
-            ]
-
-        return render_template(
-            "thyroid.html",
-            prediction_text=f"Prediction: {result}",
-            recommendations=recommendations,
-            extracted_data=extracted_data,
-            keywords=THYROID_KEYWORDS
-        )
-        
-    except Exception as e:
-        return render_template('thyroid.html', error=f"Prediction Error: {str(e)}", keywords=THYROID_KEYWORDS, extracted_data={})
-
-# Extract text from PDF (if not already defined in your app.py)
-def extract_text_from_pdf(file):
-    reader = PdfReader(file)
-    text = ""
-    for page in reader.pages:
-        try:
-            page_text = page.extract_text()
-            if page_text:
-                cleaned_text = re.sub(r"[•\t\r\u200B]", " ", page_text).strip()
-                text += cleaned_text + "\n"
-        except UnicodeEncodeError:
-            continue
-    return text.strip()
-
-# Extract text from DOCX (if not already defined in your app.py)
-def extract_text_from_docx(file):
-    doc = Document(file)
-    text = ""
-    for para in doc.paragraphs:
-        try:
-            cleaned_text = re.sub(r"[•\t\r\u200B]", " ", para.text).strip()
-            text += cleaned_text + "\n"
-        except UnicodeEncodeError:
-            continue
-    return text.strip()
-
-# Regex-based data extraction for thyroid documents
-def regex_extract(text):
-    extracted_data = {}
-
-    # Clean hidden characters, normalize spaces, and handle special formatting
-    text = re.sub(r"[•\t\r\u200B\u00A0]", " ", text)  # Remove unwanted characters
-    text = re.sub(r"\s+", " ", text)  # Normalize spaces
-    text = text.replace("–", "-")  # Replace special minus signs with standard minus
-
-    # Patterns for each type of data
-    # Age pattern - looking for age mentioned with years
-    age_pattern = re.compile(r"age[:\s]*(\d+)(?:\s*years)?", re.IGNORECASE)
-    age_match = age_pattern.search(text)
-    if age_match:
-        extracted_data["Age"] = float(age_match.group(1))
-    
-    # Gender pattern (0 for Female, 1 for Male)
-    if re.search(r"\b(male|m)\b", text, re.IGNORECASE):
-        extracted_data["Gender"] = 1
-    elif re.search(r"\b(female|f)\b", text, re.IGNORECASE):
-        extracted_data["Gender"] = 0
-    
-    # Smoking pattern (0 for No, 1 for Yes)
-    if re.search(r"\bsmoking[:\s]*(yes|positive|1|true)\b", text, re.IGNORECASE):
-        extracted_data["Smoking"] = 1
-    elif re.search(r"\bsmoking[:\s]*(no|negative|0|false)\b", text, re.IGNORECASE):
-        extracted_data["Smoking"] = 0
-    
-    # Smoking History pattern (0 for No, 1 for Yes)
-    if re.search(r"\bsmoking\s*history[:\s]*(yes|positive|1|true)\b", text, re.IGNORECASE):
-        extracted_data["Smoking History"] = 1
-    elif re.search(r"\bsmoking\s*history[:\s]*(no|negative|0|false)\b", text, re.IGNORECASE):
-        extracted_data["Smoking History"] = 0
-    
-    # Radiotherapy History pattern (0 for No, 1 for Yes)
-    if re.search(r"\bradiotherapy\s*history[:\s]*(yes|positive|1|true)\b", text, re.IGNORECASE):
-        extracted_data["Radiotherapy History"] = 1
-    elif re.search(r"\bradiotherapy\s*history[:\s]*(no|negative|0|false)\b", text, re.IGNORECASE):
-        extracted_data["Radiotherapy History"] = 0
-    
-    # General pattern for numeric values (for the remaining fields)
-    # This will look for keyword: value patterns
-    for keyword in THYROID_KEYWORDS:
-        if keyword not in extracted_data:
-            # Create a regex pattern for each keyword, allowing for various formats
-            # This handles both text values (low/medium/high) and numeric values (0/1/2)
-            pattern = re.compile(
-                r"\b" + re.escape(keyword) + r"[:\s]*([0-9]+|low|medium|high|negative|positive)\b", 
-                re.IGNORECASE
-            )
-            match = pattern.search(text)
-            
-            if match:
-                value = match.group(1).lower()
-                
-                # Convert text values to numeric if needed
-                if value in ["low", "negative"]:
-                    extracted_data[keyword] = 0
-                elif value in ["medium"]:
-                    extracted_data[keyword] = 1
-                elif value in ["high", "positive"]:
-                    extracted_data[keyword] = 2
-                else:
-                    try:
-                        extracted_data[keyword] = int(value)
-                    except ValueError:
-                        extracted_data[keyword] = None
-    
-    # Log extracted data for debugging
-    print("✅ Final Extracted Data:", extracted_data)
-    
-    return extracted_data
-
 import pandas as pd
 
 # Liver Disease Model Loading
@@ -4902,4 +5627,5 @@ def predict_liver():
 if __name__ == '__main__':
     if not os.path.exists('uploads'):
         os.makedirs('uploads')
-    app.run(debug=True)
+    app.run(host="0.0.0.0", port=5000, debug=True)
+

@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Admin Orders | RapiACT!</title>
-    <link rel="icon" type="image/jpg" href="{{ url_for('static', filename='images/logo.jpg') }}">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/css/bootstrap.min.css" rel="stylesheet">
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
@@ -583,11 +582,9 @@
         <hr>
         {% if session.get('role') == 'admin' %}
         <a href="/admin_dashboard"><i class="fas fa-home"></i>Dashboard</a>
-        <a href="/add_user"><i class="fas fa-user-plus"></i>Add User</a>
         <a href="/users"><i class="fas fa-users"></i>Users</a>
         <a href="/appointments"><i class="fas fa-calendar-check"></i>Appointments</a>
         <a href="/admin_dashboard/add_medicine"><i class="fas fa-plus-circle"></i>Add Medicine</a>
-        <a href="/pharmacy"><i class="fas fa-pills"></i>Pharmacy</a>
         <a href="/email_dashboard"><i class="fas fa-envelope"></i>Email Sending</a>
         <a href="/enquiry_details"><i class="fas fa-question-circle"></i>Contact Queries</a>
         <a href="/admin_dashboard/verify_payment"><i class="fas fa-check-circle"></i>Verify Payment</a>
@@ -638,94 +635,100 @@
                 
                 <div id="ordersList">
                     {% if orders %}
-                        {% for order in orders %}
-                        <div class="order-card" data-order-id="{{ order._id }}" data-customer-name="{{ order.patient.name|lower }}" data-customer-email="{{ order.patient.email|lower }}" data-customer-phone="{{ order.patient.phone }}" data-utr-id="{{ order.utr_id|lower }}" data-order-status="{{ order.status|lower if order.status else 'verified' }}">
-                            <div class="order-header">
-                                <div><i class="fas fa-hashtag"></i> Order #{{ order._id }}</div>
-                                <div class="badge badge-verified">Verified Payment</div>
-                            </div>
-                            <div class="order-body">
-                                <div class="order-info">
-                                    <h4><i class="fas fa-user-circle"></i> Customer Details</h4>
-                                    <div class="customer-info">
-                                        <div class="customer-info-label"><i class="fas fa-user"></i> Name:</div>
-                                        <div class="customer-info-value">{{ order.patient.name }}</div>
-                                        
-                                        <div class="customer-info-label"><i class="fas fa-envelope"></i> Email:</div>
-                                        <div class="customer-info-value">{{ order.patient.email }}</div>
-                                        
-                                        <div class="customer-info-label"><i class="fas fa-phone"></i> Phone:</div>
-                                        <div class="customer-info-value">{{ order.patient.phone }}</div>
-                                        
-                                        <div class="customer-info-label"><i class="fas fa-calendar-alt"></i> Order Date:</div>
-                                        <div class="customer-info-value">{{ order.date.strftime('%d-%m-%Y %H:%M') if order.date else 'N/A' }}</div>
-                                        
-                                        <div class="customer-info-label"><i class="fas fa-money-check"></i> UTR ID:</div>
-                                        <div class="customer-info-value">{{ order.utr_id }}</div>
-                                        
-                                        <div class="customer-info-label"><i class="fas fa-info-circle"></i> Status:</div>
-                                        <div class="customer-info-value">
-                                            <span class="status-label status-{{ order.status|lower if order.status else 'verified' }}">
-                                                {{ order.status if order.status else 'Payment Verified' }}
-                                            </span>
-                                        </div>
+                    {% for order in orders %}
+                    <div class="order-card" 
+                         data-order-id="{{ order._id }}" 
+                         data-customer-name="{{ order.patient.name|lower if order.patient else 'Unknown' }}" 
+                         data-customer-email="{{ order.patient.email|lower if order.patient else '' }}" 
+                         data-customer-phone="{{ order.patient.phone if order.patient and order.patient.phone else '' }}" 
+                         data-utr-id="{{ order.utr_id|lower if order.utr_id else '' }}" 
+                         data-order-status="{{ order.status|lower if order.status else 'verified' }}">
+                        <div class="order-header">
+                            <div><i class="fas fa-hashtag"></i> Order #{{ order._id }}</div>
+                            <div class="badge badge-verified">Verified Payment</div>
+                        </div>
+                        <div class="order-body">
+                            <div class="order-info">
+                                <h4><i class="fas fa-user-circle"></i> Customer Details</h4>
+                                <div class="customer-info">
+                                    <div class="customer-info-label"><i class="fas fa-user"></i> Name:</div>
+                                    <div class="customer-info-value">{{ order.patient.name if order.patient else 'Unknown' }}</div>
+                                    
+                                    <div class="customer-info-label"><i class="fas fa-envelope"></i> Email:</div>
+                                    <div class="customer-info-value">{{ order.patient.email if order.patient else 'Unknown' }}</div>
+                                    
+                                    <div class="customer-info-label"><i class="fas fa-phone"></i> Phone:</div>
+                                    <div class="customer-info-value">{{ order.patient.phone if order.patient and order.patient.phone else 'N/A' }}</div>
+                                    
+                                    <div class="customer-info-label"><i class="fas fa-calendar-alt"></i> Order Date:</div>
+                                    <div class="customer-info-value">{{ order.date.strftime('%d-%m-%Y %H:%M') if order.date else 'N/A' }}</div>
+                                    
+                                    <div class="customer-info-label"><i class="fas fa-money-check"></i> UTR ID:</div>
+                                    <div class="customer-info-value">{{ order.utr_id if order.utr_id else 'N/A' }}</div>
+                                    
+                                    <div class="customer-info-label"><i class="fas fa-info-circle"></i> Status:</div>
+                                    <div class="customer-info-value">
+                                        <span class="status-label status-{{ order.status|lower if order.status else 'verified' }}">
+                                            {{ order.status if order.status else 'Payment Verified' }}
+                                        </span>
                                     </div>
                                 </div>
-                                <div class="order-product">
-                                    <h4><i class="fas fa-pills"></i> Product Details</h4>
-                                    <table class="products-table">
-                                        <thead>
-                                            <tr>
-                                                <th>Product</th>
-                                                <th>Description</th>
-                                                <th>Price</th>
-                                                <th>Quantity</th>
-                                                <th>Subtotal</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            {% set total = namespace(value=0) %}
-                                            {% for product in order.products %}
-                                            <tr>
-                                                <td>{{ product.name }}</td>
-                                                <td>{{ product.description }}</td>
-                                                <td>₹{{ product.price }}</td>
-                                                {% set quantity = 1 %}
-                                                {% for med in order.medicines %}
-                                                    {% if med.id|string == product._id|string %}
-                                                        {% set quantity = med['quantity']|int if 'quantity' in med else 1 %}
-                                                    {% endif %}
-                                                {% endfor %}
-                                                <td>{{ quantity }}</td>
-                                                <td>₹{{ product.price * quantity }}</td>
-                                                {% set total.value = total.value + (product.price * quantity) %}
-                                            </tr>
+                            </div>
+                            <div class="order-product">
+                                <h4><i class="fas fa-pills"></i> Product Details</h4>
+                                <table class="products-table">
+                                    <thead>
+                                        <tr>
+                                            <th>Product</th>
+                                            <th>Description</th>
+                                            <th>Price</th>
+                                            <th>Quantity</th>
+                                            <th>Subtotal</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% set total = namespace(value=0) %}
+                                        {% for product in order.products %}
+                                        <tr>
+                                            <td>{{ product.name }}</td>
+                                            <td>{{ product.description }}</td>
+                                            <td>₹{{ product.price }}</td>
+                                            {% set quantity = 1 %}
+                                            {% for med in order.medicines %}
+                                                {% if med.id|string == product._id|string %}
+                                                    {% set quantity = med['quantity']|int if 'quantity' in med else 1 %}
+                                                {% endif %}
                                             {% endfor %}
-                                        </tbody>
-                                        <tfoot>
-                                            <tr>
-                                                <th colspan="4" style="text-align: right;">Total:</th>
-                                                <td><strong>₹{{ total.value }}</strong></td>
-                                            </tr>
-                                        </tfoot>
-                                    </table>
-                                </div>
-                                <div class="order-actions">
-                                    <h4><i class="fas fa-cog"></i> Update Order Status</h4>
-                                    <form action="{{ url_for('update_order_status', order_id=order._id) }}" method="POST">
-                                        <select name="status" class="status-select">
-                                            <option value="Processing" {% if order.status == 'Processing' %}selected{% endif %}>Processing</option>
-                                            <option value="Packed" {% if order.status == 'Packed' %}selected{% endif %}>Packed</option>
-                                            <option value="Shipped" {% if order.status == 'Shipped' %}selected{% endif %}>Shipped</option>
-                                            <option value="Out for Delivery" {% if order.status == 'Out for Delivery' %}selected{% endif %}>Out for Delivery</option>
-                                            <option value="Delivered" {% if order.status == 'Delivered' %}selected{% endif %}>Delivered</option>
-                                        </select>
-                                        <button type="submit" class="btn btn-action btn-update"><i class="fas fa-sync-alt"></i> Update Status & Notify Customer</button>
-                                    </form>
-                                </div>
+                                            <td>{{ quantity }}</td>
+                                            <td>₹{{ product.price * quantity }}</td>
+                                            {% set total.value = total.value + (product.price * quantity) %}
+                                        </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                    <tfoot>
+                                        <tr>
+                                            <th colspan="4" style="text-align: right;">Total:</th>
+                                            <td><strong>₹{{ total.value }}</strong></td>
+                                        </tr>
+                                    </tfoot>
+                                </table>
+                            </div>
+                            <div class="order-actions">
+                                <h4><i class="fas fa-cog"></i> Update Order Status</h4>
+                                <form action="{{ url_for('update_order_status', order_id=order._id) }}" method="POST">
+                                    <select name="status" class="status-select">
+                                        <option value="Processing" {% if order.status == 'Processing' %}selected{% endif %}>Processing</option>
+                                        <option value="Packed" {% if order.status == 'Packed' %}selected{% endif %}>Packed</option>
+                                        <option value="Shipped" {% if order.status == 'Shipped' %}selected{% endif %}>Shipped</option>
+                                        <option value="Out for Delivery" {% if order.status == 'Out for Delivery' %}selected{% endif %}>Out for Delivery</option>
+                                        <option value="Delivered" {% if order.status == 'Delivered' %}selected{% endif %}>Delivered</option>
+                                    </select>
+                                    <button type="submit" class="btn btn-action btn-update"><i class="fas fa-sync-alt"></i> Update Status & Notify Customer</button>
+                                </form>
                             </div>
                         </div>
-                        {% endfor %}
+                    </div>
+                    {% endfor %}
                     {% else %}
                         <div class="empty-results">
                             <i class="fas fa-box-open"></i>

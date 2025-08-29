@@ -5,375 +5,394 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Parkinson's Disease Prediction</title>
     <style>
+        /* Parkinson's-specific styling */
         :root {
-            --primary: #4a89dc;
-            --primary-light: #6fa2e9;
-            --primary-dark: #3a70c2;
-            --secondary: #f5f7fa;
-            --text: #333;
-            --text-light: #666;
-            --success: #37bc9b;
-            --danger: #da4453;
-            --warning: #f6bb42;
-            --border-radius: 8px;
-            --box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-            --transition: all 0.3s ease;
+            --parkinson-primary: #4a89dc;
+            --parkinson-secondary: #6fa2e9;
+            --parkinson-accent: #f6bb42;
+            --parkinson-light: #f8f9fb;
+            --parkinson-dark: #333;
         }
-        
+
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
         }
-        
+
         body {
-            background-color: #f8f9fb;
-            color: var(--text);
+            background-color: var(--parkinson-light);
+            color: var(--parkinson-dark);
             line-height: 1.6;
         }
-        
-        .container {
+
+        .parkinson-container {
             max-width: 1200px;
-            margin: 0 auto;
-            padding: 2rem;
+            margin: 2rem auto;
+            padding: 0 20px;
         }
-        
-        header {
-            text-align: center;
-            margin-bottom: 3rem;
-            padding-bottom: 1.5rem;
-            border-bottom: 1px solid #e0e6ed;
-        }
-        
-        header h1 {
-            color: var(--primary);
-            font-size: 2.5rem;
-            margin-bottom: 0.5rem;
-        }
-        
-        header p {
-            color: var(--text-light);
-            font-size: 1.1rem;
-        }
-        
-        main {
-            display: grid;
-            grid-template-columns: 1fr;
-            gap: 2rem;
-        }
-        
-        @media (min-width: 992px) {
-            main {
-                grid-template-columns: 1fr 1fr;
-            }
-            
-            .results {
-                grid-column: 1 / -1;
-            }
-        }
-        
-        section {
-            background: white;
-            border-radius: var(--border-radius);
-            box-shadow: var(--box-shadow);
-            padding: 2rem;
-            transition: var(--transition);
-        }
-        
-        section:hover {
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.15);
-        }
-        
-        h2 {
-            color: var(--primary);
-            margin-bottom: 1.5rem;
-            font-size: 1.5rem;
-            position: relative;
-            padding-bottom: 0.5rem;
-        }
-        
-        h2::after {
-            content: '';
-            position: absolute;
-            left: 0;
-            bottom: 0;
-            height: 3px;
-            width: 60px;
-            background-color: var(--primary-light);
-            border-radius: 3px;
-        }
-        
-        .file-upload {
-            border: 2px dashed #d2d9e4;
-            border-radius: var(--border-radius);
-            padding: 2rem;
-            text-align: center;
-            margin-bottom: 1.5rem;
-            position: relative;
-            transition: var(--transition);
-            cursor: pointer;
-        }
-        
-        .file-upload:hover {
-            border-color: var(--primary-light);
-            background-color: rgba(106, 161, 233, 0.05);
-        }
-        
-        .file-upload input[type="file"] {
-            position: absolute;
-            width: 100%;
-            height: 100%;
-            top: 0;
-            left: 0;
-            opacity: 0;
-            cursor: pointer;
-        }
-        
-        .file-upload label {
-            color: var(--primary);
-            font-weight: 500;
-            display: block;
-            margin-bottom: 0.5rem;
-        }
-        
-        .file-upload label::before {
-            content: "📄";
-            display: block;
-            font-size: 2.5rem;
-            margin-bottom: 1rem;
-        }
-        
-        .btn {
-            background-color: var(--primary);
+
+        .parkinson-header {
+            background: linear-gradient(135deg, var(--parkinson-primary), var(--parkinson-secondary));
             color: white;
-            border: none;
-            padding: 0.75rem 1.5rem;
-            border-radius: var(--border-radius);
-            font-size: 1rem;
-            font-weight: 500;
-            cursor: pointer;
-            transition: var(--transition);
-            display: inline-block;
+            padding: 2rem;
             text-align: center;
-            text-decoration: none;
-            width: 100%;
+            border-radius: 10px;
+            margin-bottom: 2rem;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
         }
-        
-        .btn:hover {
-            background-color: var(--primary-dark);
-            transform: translateY(-2px);
+
+        .parkinson-header h1 {
+            margin: 0;
+            font-size: 2.5rem;
         }
-        
-        .predict-btn {
-            background-color: var(--success);
+
+        .parkinson-header p {
+            margin: 10px 0 0;
+            font-size: 1.1rem;
+            opacity: 0.9;
         }
-        
-        .predict-btn:hover {
-            background-color: #2fa789;
+
+        .parkinson-panels {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 2rem;
+            margin-bottom: 2rem;
         }
-        
+
+        .parkinson-panel {
+            background-color: white;
+            border-radius: 10px;
+            padding: 2rem;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+            flex: 1;
+            min-width: 300px;
+            animation: fadeIn 0.5s ease-out forwards;
+        }
+
+        .parkinson-panel h2 {
+            color: var(--parkinson-primary);
+            margin-top: 0;
+            border-bottom: 2px solid var(--parkinson-secondary);
+            padding-bottom: 10px;
+        }
+
+        .instructions {
+            background-color: rgba(246, 187, 66, 0.1);
+            border-left: 4px solid var(--parkinson-accent);
+            padding: 15px;
+            margin-bottom: 1.5rem;
+            border-radius: 0 5px 5px 0;
+        }
+
+        .instructions h3 {
+            margin-top: 0;
+            color: var(--parkinson-dark);
+        }
+
+        .instructions ol {
+            margin-bottom: 0;
+            padding-left: 20px;
+        }
+
+        .instructions li {
+            margin-bottom: 8px;
+        }
+
+        .file-upload {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            border: 2px dashed var(--parkinson-secondary);
+            border-radius: 10px;
+            padding: 2rem;
+            margin-bottom: 1.5rem;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .file-upload:hover {
+            border-color: var(--parkinson-primary);
+            background-color: rgba(111, 162, 233, 0.05);
+        }
+
+        .file-upload p {
+            margin: 10px 0;
+            color: #666;
+        }
+
+        .file-input {
+            display: none;
+        }
+
+        .file-label {
+            display: inline-block;
+            padding: 12px 20px;
+            background-color: var(--parkinson-secondary);
+            color: white;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+
+        .file-label:hover {
+            background-color: var(--parkinson-primary);
+        }
+
         .form-grid {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
             gap: 1.5rem;
             margin-bottom: 1.5rem;
         }
-        
+
         .form-group {
             margin-bottom: 1rem;
         }
-        
+
         .form-group label {
             display: block;
             margin-bottom: 0.5rem;
             font-weight: 500;
-            color: var(--text);
+            color: var(--parkinson-dark);
             font-size: 0.95rem;
         }
-        
+
         .form-group input {
             width: 100%;
-            padding: 0.75rem;
+            padding: 10px;
             border: 1px solid #d2d9e4;
-            border-radius: var(--border-radius);
+            border-radius: 5px;
             font-size: 1rem;
-            transition: var(--transition);
+            transition: all 0.3s ease;
         }
-        
+
         .form-group input:focus {
             outline: none;
-            border-color: var(--primary);
+            border-color: var(--parkinson-primary);
             box-shadow: 0 0 0 3px rgba(74, 137, 220, 0.2);
         }
-        
+
         .form-group input.has-value {
             background-color: rgba(74, 137, 220, 0.05);
-            border-color: var(--primary);
+            border-color: var(--parkinson-primary);
         }
-        
-        .error-message {
-            background-color: rgba(218, 68, 83, 0.1);
-            color: var(--danger);
-            padding: 1rem;
-            border-radius: var(--border-radius);
-            margin-top: 1rem;
-        }
-        
-        .status-message {
-            background-color: rgba(74, 137, 220, 0.1); 
-            color: var(--primary); 
-            padding: 1rem; 
-            border-radius: var(--border-radius); 
-            margin-top: 1rem;
-        }
-        
-        .results {
-            background: linear-gradient(to right, #f5f7fa, #e8ecf4);
-        }
-        
-        .result-card {
-            background: white;
-            border-radius: var(--border-radius);
-            padding: 1.5rem;
-            margin-bottom: 1.5rem;
-            border-left: 4px solid var(--primary);
-        }
-        
-        .result-card.positive {
-            border-left-color: var(--danger);
-        }
-        
-        .result-card.negative {
-            border-left-color: var(--success);
-        }
-        
-        .prediction {
-            font-size: 1.25rem;
-            font-weight: 500;
-            margin-bottom: 1rem;
-        }
-        
-        .precautions {
-            background-color: rgba(246, 187, 66, 0.1);
-            border-radius: var(--border-radius);
-            padding: 1.5rem;
+
+        .button-group {
+            display: flex;
+            justify-content: space-between;
             margin-top: 1.5rem;
         }
-        
-        .precautions h3 {
-            color: var(--warning);
-            margin-bottom: 1rem;
-            font-size: 1.2rem;
+
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 5px;
+            font-size: 1rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            width: 100%;
         }
-        
-        .precautions ul {
-            list-style-position: inside;
-            color: var(--text);
+
+        .btn-primary {
+            background-color: var(--parkinson-primary);
+            color: white;
         }
-        
-        .precautions li {
-            margin-bottom: 0.5rem;
+
+        .btn-primary:hover {
+            background-color: #3a70c2;
         }
-        
+
+        .btn-secondary {
+            background-color: var(--parkinson-secondary);
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            background-color: #5a89c2;
+        }
+
+        .btn-success {
+            background-color: #37bc9b;
+            color: white;
+        }
+
+        .btn-success:hover {
+            background-color: #2fa789;
+        }
+
+        .status-message {
+            background-color: rgba(74, 137, 220, 0.1); 
+            color: var(--parkinson-primary); 
+            padding: 1rem; 
+            border-radius: 5px; 
+            margin-top: 1rem;
+        }
+
+        .error-message {
+            background-color: rgba(218, 68, 83, 0.1);
+            color: #da4453;
+            padding: 1rem;
+            border-radius: 5px;
+            margin-top: 1rem;
+        }
+
+        .extracted-info {
+            margin-top: 1rem;
+            padding: 1rem;
+            background-color: var(--parkinson-light);
+            border-radius: 5px;
+        }
+
+        .result-panel {
+            background-color: white;
+            border-radius: 10px;
+            padding: 2rem;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+            margin-top: 2rem;
+            animation: fadeIn 0.5s ease-out forwards;
+        }
+
+        .result-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 1.5rem;
+        }
+
+        .result-icon {
+            font-size: 2.5rem;
+            margin-right: 15px;
+        }
+
+        .positive-result {
+            color: #da4453;
+        }
+
+        .negative-result {
+            color: #37bc9b;
+        }
+
+        .neutral-result {
+            color: #f6bb42;
+        }
+
+        .result-content h3 {
+            margin-top: 0;
+            margin-bottom: 5px;
+            color: var(--parkinson-dark);
+        }
+
+        .result-content p {
+            margin-top: 0;
+            color: #666;
+        }
+
+        .precautions-list {
+            margin-top: 1.5rem;
+            padding-left: 20px;
+        }
+
+        .precautions-list li {
+            margin-bottom: 10px;
+            padding-left: 10px;
+        }
+
         footer {
             text-align: center;
             margin-top: 3rem;
             padding-top: 1.5rem;
             border-top: 1px solid #e0e6ed;
-            color: var(--text-light);
+            color: #666;
             font-style: italic;
             font-size: 0.9rem;
         }
-        
-        .extracted-info {
-            margin-top: 1rem;
-            padding: 1rem;
-            background-color: var(--secondary);
-            border-radius: var(--border-radius);
-        }
-        
-        /* Added animations */
+
         @keyframes fadeIn {
             from { opacity: 0; transform: translateY(20px); }
             to { opacity: 1; transform: translateY(0); }
         }
-        
-        section {
-            animation: fadeIn 0.5s ease-out forwards;
-        }
-        
-        section:nth-child(2) {
-            animation-delay: 0.1s;
-        }
-        
-        section:nth-child(3) {
-            animation-delay: 0.2s;
-        }
-        
-        /* Make the file input more intuitive */
-        .file-status {
-            margin-top: 1rem;
-            font-size: 0.9rem;
-            color: var(--text-light);
-        }
-        
-        .file-name {
-            font-weight: 500;
-            color: var(--primary);
+
+        /* Responsive adjustments */
+        @media (max-width: 768px) {
+            .parkinson-panels {
+                flex-direction: column;
+            }
+            
+            .form-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .button-group {
+                flex-direction: column;
+                gap: 10px;
+            }
         }
     </style>
 </head>
 <body>
-    <div class="container">
-        <header>
+    <div class="parkinson-container">
+        <div class="parkinson-header">
             <h1>Parkinson's Disease Prediction</h1>
-            <p>Upload medical data or enter values manually to get a prediction.</p>
-        </header>
+            <p>Early detection through advanced machine learning analysis of medical parameters</p>
+        </div>
         
-        <main>
+        <div class="parkinson-panels">
             <!-- File Upload Section -->
-            <section class="upload-section">
-                <h2>Upload Data File</h2>
+            <div class="parkinson-panel">
+                <div class="instructions">
+                    <h3>How to Use This Tool</h3>
+                    <ol>
+                        <li>Upload a medical report (PDF/DOCX) or enter values manually</li>
+                        <li>For best results, ensure all fields are filled accurately</li>
+                        <li>Click "Predict" to get an assessment of Parkinson's disease risk</li>
+                    </ol>
+                </div>
+                
+                <h2>Upload Medical Report</h2>
                 <form action="/extract/parkinsons" method="post" enctype="multipart/form-data">
                     <div class="file-upload">
-                        <input type="file" name="file" id="file" accept=".pdf,.docx">
-                        <label for="file">Choose a PDF or DOCX file</label>
-                        <div class="file-status">No file selected</div>
+                        <input type="file" name="file" id="file" class="file-input" accept=".pdf,.docx">
+                        <label for="file" class="file-label">Choose File</label>
+                        <p id="file-name">No file selected</p>
+                        <p>Supported formats: PDF, DOCX</p>
                     </div>
-                    <button type="submit" class="btn">Extract Data</button>
+                    <button type="submit" class="btn btn-secondary">Extract Data</button>
+                    
+                    {% if status_message %}
+                    <div class="status-message">
+                        <p>{{ status_message }}</p>
+                    </div>
+                    {% endif %}
+                    
+                    {% if extracted_data %}
+                    <div class="extracted-info">
+                        <p>Found {{ extracted_data|length }} values</p>
+                        <button type="button" class="btn" onclick="toggleDebugInfo()" style="background-color: #666; margin-top: 10px;">
+                            Show/Hide Extraction Details
+                        </button>
+                        <div id="debugInfo" style="display: none; margin-top: 10px; font-size: 0.8rem; max-height: 200px; overflow-y: auto;">
+                            {% for key, value in extracted_data.items() %}
+                            <div>{{ key }}: {{ value }}</div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    {% endif %}
+                    
+                    {% if error %}
+                    <div class="error-message">
+                        <p>{{ error }}</p>
+                    </div>
+                    {% endif %}
                 </form>
-                
-                {% if status_message %}
-                <div class="status-message">
-                    <p>{{ status_message }}</p>
-                </div>
-                {% endif %}
-                
-                {% if extracted_data %}
-                <div class="extracted-info">
-                    <p>Found {{ extracted_data|length }} values</p>
-                    <button type="button" class="btn" onclick="toggleDebugInfo()" style="background-color: var(--text-light); margin-top: 10px;">
-                        Show/Hide Extraction Details
-                    </button>
-                    <div id="debugInfo" style="display: none; margin-top: 10px; font-size: 0.8rem; max-height: 200px; overflow-y: auto;">
-                        {% for key, value in extracted_data.items() %}
-                        <div>{{ key }}: {{ value }}</div>
-                        {% endfor %}
-                    </div>
-                </div>
-                {% endif %}
-                
-                {% if error %}
-                <div class="error-message">
-                    <p>{{ error }}</p>
-                </div>
-                {% endif %}
-            </section>
+            </div>
             
             <!-- Data Entry Form -->
-            <section class="data-form">
-                <h2>Enter Values Manually</h2>
+            <div class="parkinson-panel">
+                <h2>Enter Medical Parameters</h2>
                 <form action="/predict/parkinsons" method="post">
                     <div class="form-grid">
                         {% for feature in features_parkinsons %}
@@ -386,31 +405,46 @@
                         </div>
                         {% endfor %}
                     </div>
-                    <button type="submit" class="btn predict-btn">Make Prediction</button>
-                </form>
-            </section>
-            
-            <!-- Results Section -->
-            {% if prediction_text %}
-            <section class="results">
-                <h2>Prediction Results</h2>
-                <div class="result-card {% if 'Positive' in prediction_text %}positive{% else %}negative{% endif %}">
-                    <p class="prediction">{{ prediction_text }}</p>
-                    
-                    {% if precautions %}
-                    <div class="precautions">
-                        <h3>Recommended Precautions</h3>
-                        <ul>
-                            {% for precaution in precautions %}
-                            <li>{{ precaution }}</li>
-                            {% endfor %}
-                        </ul>
+                    <div class="button-group">
+                        <button type="reset" class="btn btn-secondary">Reset</button>
+                        <button type="submit" class="btn btn-primary">Predict</button>
                     </div>
+                </form>
+            </div>
+        </div>
+        
+        <!-- Results Section -->
+        {% if prediction_text %}
+        <div class="result-panel">
+            <div class="result-header">
+                <div class="result-icon {% if 'Positive' in prediction_text %}positive-result{% elif 'Negative' in prediction_text %}negative-result{% else %}neutral-result{% endif %}">
+                    {% if 'Positive' in prediction_text %}
+                    ⚠️
+                    {% elif 'Negative' in prediction_text %}
+                    ✓
+                    {% else %}
+                    ℹ️
                     {% endif %}
                 </div>
-            </section>
+                <div class="result-content">
+                    <h3>Prediction Result</h3>
+                    <p>{{ prediction_text }}</p>
+                </div>
+            </div>
+            
+            {% if precautions %}
+            <div>
+                <h3>Recommendations & Precautions</h3>
+                <ul class="precautions-list">
+                    {% for precaution in precautions %}
+                    <li>{{ precaution }}</li>
+                    {% endfor %}
+                </ul>
+                <p><strong>Note:</strong> This is a predictive tool only. Please consult a healthcare professional for clinical diagnosis and treatment.</p>
+            </div>
             {% endif %}
-        </main>
+        </div>
+        {% endif %}
         
         <footer>
             <p>This is a machine learning tool and should not replace professional medical advice.</p>
@@ -420,20 +454,22 @@
     <script>
         // Display filename when selected
         const fileInput = document.getElementById('file');
-        const fileStatus = document.querySelector('.file-status');
+        const fileName = document.getElementById('file-name');
         
         fileInput.addEventListener('change', function() {
             if (this.files.length > 0) {
-                fileStatus.innerHTML = 'Selected: <span class="file-name">' + this.files[0].name + '</span>';
+                fileName.textContent = this.files[0].name;
             } else {
-                fileStatus.textContent = 'No file selected';
+                fileName.textContent = 'No file selected';
             }
         });
         
         // Make the entire upload area clickable
         const uploadArea = document.querySelector('.file-upload');
-        uploadArea.addEventListener('click', function() {
-            fileInput.click();
+        uploadArea.addEventListener('click', function(e) {
+            if (e.target !== fileInput) {
+                fileInput.click();
+            }
         });
         
         // Function to toggle debug info visibility

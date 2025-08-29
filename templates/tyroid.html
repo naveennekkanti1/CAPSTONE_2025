@@ -3,20 +3,20 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Breast Cancer Prediction</title>
+    <title>Thyroid Cancer Recurrence Prediction</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
     <style>
-        /* Breast cancer-specific styling */
+        /* Thyroid-specific styling */
         :root {
-            --cancer-primary: #e84a5f;
-            --cancer-secondary: #ff847c;
-            --cancer-accent: #fecea8;
-            --cancer-light: #f7f9f9;
-            --cancer-dark: #2a363b;
+            --thyroid-primary: #6e8efb;
+            --thyroid-secondary: #a777e3;
+            --thyroid-accent: #fbbc05;
+            --thyroid-light: #f7f9f9;
+            --thyroid-dark: #2b2e4a;
         }
 
-        .cancer-header {
-            background: linear-gradient(135deg, var(--cancer-primary), var(--cancer-secondary));
+        .thyroid-header {
+            background: linear-gradient(135deg, var(--thyroid-primary), var(--thyroid-secondary));
             color: white;
             padding: 2rem;
             text-align: center;
@@ -25,31 +25,31 @@
             box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
         }
 
-        .cancer-header h1 {
+        .thyroid-header h1 {
             margin: 0;
             font-size: 2.5rem;
         }
 
-        .cancer-header p {
+        .thyroid-header p {
             margin: 10px 0 0;
             font-size: 1.1rem;
             opacity: 0.9;
         }
 
-        .cancer-container {
+        .thyroid-container {
             max-width: 1200px;
             margin: 2rem auto;
             padding: 0 20px;
         }
 
-        .cancer-panels {
+        .thyroid-panels {
             display: flex;
             flex-wrap: wrap;
             gap: 2rem;
             margin-bottom: 2rem;
         }
 
-        .cancer-panel {
+        .thyroid-panel {
             background-color: white;
             border-radius: 10px;
             padding: 2rem;
@@ -58,10 +58,10 @@
             min-width: 300px;
         }
 
-        .cancer-panel h2 {
-            color: var(--cancer-primary);
+        .thyroid-panel h2 {
+            color: var(--thyroid-primary);
             margin-top: 0;
-            border-bottom: 2px solid var(--cancer-secondary);
+            border-bottom: 2px solid var(--thyroid-secondary);
             padding-bottom: 10px;
         }
 
@@ -85,7 +85,7 @@
             display: block;
             margin-bottom: 5px;
             font-weight: 500;
-            color: var(--cancer-dark);
+            color: var(--thyroid-dark);
         }
 
         .form-group input, .form-group select {
@@ -101,7 +101,7 @@
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            border: 2px dashed var(--cancer-secondary);
+            border: 2px dashed var(--thyroid-secondary);
             border-radius: 10px;
             padding: 2rem;
             margin-bottom: 1.5rem;
@@ -109,8 +109,8 @@
         }
 
         .file-upload:hover {
-            border-color: var(--cancer-primary);
-            background-color: rgba(255, 132, 124, 0.05);
+            border-color: var(--thyroid-primary);
+            background-color: rgba(167, 119, 227, 0.05);
         }
 
         .file-upload p {
@@ -125,7 +125,7 @@
         .file-label {
             display: inline-block;
             padding: 12px 20px;
-            background-color: var(--cancer-secondary);
+            background-color: var(--thyroid-secondary);
             color: white;
             border-radius: 5px;
             cursor: pointer;
@@ -134,7 +134,7 @@
         }
 
         .file-label:hover {
-            background-color: var(--cancer-primary);
+            background-color: var(--thyroid-primary);
         }
 
         .button-group {
@@ -154,21 +154,21 @@
         }
 
         .btn-primary {
-            background-color: var(--cancer-primary);
+            background-color: var(--thyroid-primary);
             color: white;
         }
 
         .btn-primary:hover {
-            background-color: #d03a4e;
+            background-color: #5a73cf;
         }
 
         .btn-secondary {
-            background-color: var(--cancer-secondary);
+            background-color: var(--thyroid-secondary);
             color: white;
         }
 
         .btn-secondary:hover {
-            background-color: #ff6b61;
+            background-color: #8e62c3;
         }
 
         .result-panel {
@@ -205,7 +205,7 @@
         .result-content h3 {
             margin-top: 0;
             margin-bottom: 5px;
-            color: var(--cancer-dark);
+            color: var(--thyroid-dark);
         }
 
         .result-content p {
@@ -213,19 +213,19 @@
             color: #666;
         }
 
-        .precautions-list {
+        .recommendations-list {
             margin-top: 1.5rem;
             padding-left: 20px;
         }
 
-        .precautions-list li {
+        .recommendations-list li {
             margin-bottom: 10px;
             padding-left: 10px;
         }
 
         .instructions {
-            background-color: rgba(254, 206, 168, 0.1);
-            border-left: 4px solid var(--cancer-accent);
+            background-color: rgba(251, 188, 5, 0.1);
+            border-left: 4px solid var(--thyroid-accent);
             padding: 15px;
             margin-bottom: 1.5rem;
             border-radius: 0 5px 5px 0;
@@ -233,7 +233,7 @@
 
         .instructions h3 {
             margin-top: 0;
-            color: var(--cancer-dark);
+            color: var(--thyroid-dark);
         }
 
         .instructions ol {
@@ -247,7 +247,7 @@
 
         /* Responsive adjustments */
         @media (max-width: 768px) {
-            .cancer-panels {
+            .thyroid-panels {
                 flex-direction: column;
             }
             
@@ -272,25 +272,25 @@
     </style>
 </head>
 <body>
-    <div class="cancer-container">
-        <div class="cancer-header">
-            <h1>Breast Cancer Risk Prediction</h1>
-            <p>Early detection through advanced machine learning analysis of tumor characteristics</p>
+    <div class="thyroid-container">
+        <div class="thyroid-header">
+            <h1>Thyroid Cancer Recurrence Prediction</h1>
+            <p>Early detection through advanced machine learning analysis of medical parameters</p>
         </div>
 
-        <div class="cancer-panels">
-            <div class="cancer-panel">
+        <div class="thyroid-panels">
+            <div class="thyroid-panel">
                 <div class="instructions">
                     <h3>How to Use This Tool</h3>
                     <ol>
                         <li>Enter the required values manually or upload a medical report (PDF/DOCX)</li>
                         <li>For best results, ensure all fields are filled accurately</li>
-                        <li>Click "Analyze Results" to get an assessment of breast cancer risk</li>
+                        <li>Click "Predict" to get an assessment of thyroid cancer recurrence risk</li>
                     </ol>
                 </div>
 
                 <h2>Upload Medical Report</h2>
-                <form action="/breast_cancer_extract" method="post" enctype="multipart/form-data">
+                <form action="/extract/Tyroid" method="post" enctype="multipart/form-data">
                     <div class="file-upload">
                         <input type="file" name="file" id="file" class="file-input" accept=".pdf,.docx">
                         <label for="file" class="file-label">Choose File</label>
@@ -303,26 +303,20 @@
                 </form>
             </div>
 
-            <div class="cancer-panel">
-                <h2>Enter Tumor Characteristics</h2>
-                <form action="/breast_cancer_predict" method="post">
-                    {% for feature in features %}
-                    {% if loop.index0 % 2 == 0 %}
-                    <div class="form-row">
-                    {% endif %}
-                        <div class="form-group">
-                            <label for="{{ feature }}">{{ feature.replace('_', ' ').title() }}</label>
-                            <input type="number" step="0.0001" id="{{ feature }}" name="{{ feature }}" 
-                                   value="{{ extracted_data.get(feature, '') }}" required>
-                        </div>
-                    {% if loop.index0 % 2 == 1 or loop.last %}
+            <div class="thyroid-panel">
+                <h2>Enter Medical Parameters</h2>
+                <form action="/predict/Tyroid" method="post">
+                    {% for keyword in keywords %}
+                    <div class="form-group">
+                        <label for="{{ keyword }}">{{ keyword }}</label>
+                        <input type="text" id="{{ keyword }}" name="{{ keyword }}" 
+                               value="{{ extracted_data.get(keyword, '') }}" required>
                     </div>
-                    {% endif %}
                     {% endfor %}
 
                     <div class="button-group">
                         <button type="reset" class="btn btn-secondary">Reset</button>
-                        <button type="submit" class="btn btn-primary">Analyze Results</button>
+                        <button type="submit" class="btn btn-primary">Predict</button>
                     </div>
                 </form>
             </div>
@@ -331,27 +325,27 @@
         {% if prediction_text %}
         <div class="result-panel">
             <div class="result-header">
-                <div class="result-icon {% if 'Malignant' in prediction_text %}positive-result{% elif 'Benign' in prediction_text %}negative-result{% else %}neutral-result{% endif %}">
-                    {% if 'Malignant' in prediction_text %}
+                <div class="result-icon {% if 'High' in prediction_text %}positive-result{% elif 'Low' in prediction_text %}negative-result{% else %}neutral-result{% endif %}">
+                    {% if 'High' in prediction_text %}
                     ⚠️
-                    {% elif 'Benign' in prediction_text %}
+                    {% elif 'Low' in prediction_text %}
                     ✓
                     {% else %}
                     ℹ️
                     {% endif %}
                 </div>
                 <div class="result-content">
-                    <h3>Analysis Results</h3>
+                    <h3>Prediction Result</h3>
                     <p>{{ prediction_text }}</p>
                 </div>
             </div>
 
-            {% if precautions %}
+            {% if recommendations %}
             <div>
-                <h3>Medical Recommendations</h3>
-                <ul class="precautions-list">
-                    {% for precaution in precautions %}
-                    <li>{{ precaution }}</li>
+                <h3>Recommendations</h3>
+                <ul class="recommendations-list">
+                    {% for recommendation in recommendations %}
+                    <li>{{ recommendation }}</li>
                     {% endfor %}
                 </ul>
                 <p><strong>Note:</strong> This is a predictive tool only. Please consult a healthcare professional for clinical diagnosis and treatment.</p>

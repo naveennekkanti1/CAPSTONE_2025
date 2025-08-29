@@ -310,7 +310,6 @@
         <div class="logo">
             <a href="/"><img src="{{ url_for('static', filename='images/logo.jpg') }}" alt="Logo" /></a>
         </div>
-        
     </div>
     <div class="diabetes-container">
         <div class="diabetes-header">
@@ -364,10 +363,10 @@
         {% if prediction_text %}
         <div class="result-panel">
             <div class="result-header">
-                <div class="result-icon {% if 'Positive' in prediction_text %}positive-result{% elif 'Negative' in prediction_text %}negative-result{% else %}neutral-result{% endif %}">
-                    {% if 'Positive' in prediction_text %}
+                <div class="result-icon {% if 'High Risk' in prediction_text %}positive-result{% elif 'Low Risk' in prediction_text %}negative-result{% else %}neutral-result{% endif %}">
+                    {% if 'High Risk' in prediction_text %}
                     ⚠️
-                    {% elif 'Negative' in prediction_text %}
+                    {% elif 'Low Risk' in prediction_text %}
                     ✓
                     {% else %}
                     ℹ️

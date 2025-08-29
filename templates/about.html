@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>About Us - RapiACT</title>
+    <link
+      rel="icon"
+      type="image/jpg"
+      href="{{ url_for('static', filename='images/logo.jpg') }}"
+    />
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      body {
+        font-family: "Poppins", sans-serif;
+        background-color: #011d1b;
+        color: white;
+        line-height: 1.6;
+      }
+
+      .navbar {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 15px 30px;
+        background-color: #014340;
+      }
+
+      .navbar .logo img {
+        height: 50px;
+      }
+
+      .navbar .links a {
+        color: white;
+        text-decoration: none;
+        margin: 0 15px;
+        transition: color 0.3s ease;
+      }
+
+      .navbar .links a:hover {
+        color: #00d9a6;
+      }
+
+      .about-hero {
+        text-align: center;
+        padding: 80px 30px 50px;
+        background-color: rgba(0, 166, 255, 0.1);
+      }
+
+      .about-hero h1 {
+        font-size: 3rem;
+        color: #00a6ff;
+        margin-bottom: 20px;
+      }
+
+      .about-hero p {
+        max-width: 800px;
+        margin: 0 auto;
+        color: #e0e0e0;
+        font-size: 1.2rem;
+      }
+
+      .features-section {
+        padding: 60px 30px;
+        max-width: 1200px;
+        margin: 0 auto;
+      }
+
+      .section-title {
+        text-align: center;
+        margin-bottom: 50px;
+      }
+      
+      .section-title h2 {
+        font-size: 2.5rem;
+        color: #00d9a6;
+        margin-bottom: 15px;
+      }
+
+      .section-title p {
+        color: #e0e0e0;
+        max-width: 700px;
+        margin: 0 auto;
+        font-size: 1.1rem;
+      }
+
+      .features-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+        gap: 30px;
+      }
+
+      .feature-card {
+        background-color: #014340;
+        border-radius: 10px;
+        padding: 30px;
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+      }
+
+      .feature-card:hover {
+        transform: translateY(-10px);
+        box-shadow: 0 10px 20px rgba(0, 0, 0, 0.3);
+      }
+
+      .feature-icon {
+        font-size: 2.5rem;
+        color: #00a6ff;
+        margin-bottom: 20px;
+      }
+
+      .feature-card h3 {
+        font-size: 1.5rem;
+        color: white;
+        margin-bottom: 15px;
+      }
+
+      .feature-card p {
+        color: #e0e0e0;
+      }
+
+      .mission-section {
+        text-align: center;
+        padding: 60px 30px;
+        background-color: rgba(0, 217, 166, 0.1);
+      }
+
+      .mission-section h2 {
+        font-size: 2.5rem;
+        color: #00d9a6;
+        margin-bottom: 30px;
+      }
+
+      .mission-section p {
+        max-width: 800px;
+        margin: 0 auto;
+        color: #e0e0e0;
+        font-size: 1.2rem;
+        line-height: 1.8;
+      }
+
+      .cta-section {
+        text-align: center;
+        padding: 80px 30px;
+      }
+
+      .cta-section h2 {
+        font-size: 2.5rem;
+        color: #00a6ff;
+        margin-bottom: 20px;
+      }
+
+      .cta-section p {
+        max-width: 700px;
+        margin: 0 auto 40px;
+        color: #e0e0e0;
+        font-size: 1.1rem;
+      }
+
+      .cta-btn {
+        background-color: #00d9a6;
+        color: #011d1b;
+        padding: 15px 40px;
+        border-radius: 50px;
+        font-size: 1.1rem;
+        font-weight: bold;
+        text-decoration: none;
+        display: inline-block;
+        transition: background-color 0.3s ease, transform 0.3s ease;
+      }
+
+      .cta-btn:hover {
+        background-color: #00a6ff;
+        color: white;
+        transform: scale(1.05);
+      }
+
+      footer {
+        background-color: #014340;
+        color: white;
+        text-align: center;
+        padding: 20px 0;
+        margin-top: 40px;
+      }
+
+      /* Responsive adjustments */
+      @media (max-width: 768px) {
+        .navbar {
+          flex-direction: column;
+          padding: 15px;
+        }
+        
+        .navbar .links {
+          margin-top: 15px;
+        }
+        
+        .navbar .links a {
+          margin: 0 8px;
+          font-size: 0.9rem;
+        }
+        
+        .about-hero h1 {
+          font-size: 2.2rem;
+        }
+        
+        .section-title h2, 
+        .mission-section h2, 
+        .cta-section h2 {
+          font-size: 2rem;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="navbar">
+      <div class="logo">
+        <img src="{{ url_for('static', filename='images/logo.jpg') }}" alt="RapiACT Logo" />
+      </div>
+      <div class="links">
+        <a href="/">Home</a>
+        <a href="/about">About</a>
+        <a href="/services">Services</a>
+        <a href="/all_doctors">Doctors</a>
+        <a href="/contact">Contact</a>
+      </div>
+    </div>
+
+    <div class="about-hero">
+      <h1>About RapiACT!</h1>
+      <p>A cutting-edge healthcare platform that redefines the way you access medical services.</p>
+    </div>
+
+    <div class="features-section">
+      <div class="section-title">
+        <h2>Why Choose RapiACT!?</h2>
+        <p>From smart diagnosis and AI-powered report predictions to virtual consultations and seamless doctor appointments, we bring healthcare to your fingertips.</p>
+      </div>
+      
+      <div class="features-grid">
+        <div class="feature-card">
+          <div class="feature-icon">✅</div>
+          <h3>Smart Diagnosis</h3>
+          <p>Get instant health insights based on symptoms using our advanced AI algorithms that help identify potential health issues quickly and accurately.</p>
+        </div>
+        
+        <div class="feature-card">
+          <div class="feature-icon">✅</div>
+          <h3>Online Consultation</h3>
+          <p>Connect with expert doctors anytime, anywhere through secure video calls, ensuring you receive professional medical advice without leaving your home.</p>
+        </div>
+        
+        <div class="feature-card">
+          <div class="feature-icon">✅</div>
+          <h3>AI-Powered Report Analysis</h3>
+          <p>Our advanced technology predicts health risks early by analyzing your medical reports and providing personalized insights for preventive care.</p>
+        </div>
+        
+        <div class="feature-card">
+          <div class="feature-icon">✅</div>
+          <h3>Seamless Appointments</h3>
+          <p>Easily book, reschedule, or cancel consultations with our intuitive interface that respects both your time and your healthcare provider's schedule.</p>
+        </div>
+        
+        <div class="feature-card">
+          <div class="feature-icon">✅</div>
+          <h3>Secure & Reliable</h3>
+          <p>Your health data is encrypted and protected with industry-leading security measures, ensuring complete confidentiality and privacy compliance.</p>
+        </div>
+        
+        <div class="feature-card">
+          <div class="feature-icon">✅</div>
+          <h3>Online Pharmacy</h3>
+          <p>Order medications and healthcare products with doorstep delivery, making it convenient to adhere to your treatment plans without interruption.</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="mission-section">
+      <h2>Our Mission</h2>
+      <p>We are committed to technology-driven, patient-focused healthcare, ensuring that expert medical guidance is always within your reach. With RapiACT!, managing your health is simpler, faster, and more reliable than ever before.</p>
+    </div>
+
+    <div class="cta-section">
+      <h2>Ready to Experience the Future of Healthcare?</h2>
+      <p>Join thousands of satisfied users who have transformed their healthcare experience with RapiACT!.</p>
+      <a href="/register" class="cta-btn">Get Started Today</a>
+    </div>
+
+    <footer>
+      <p>© 2025 RapiACT. All Rights Reserved.</p>
+    </footer>
+  </body>
+</html>
