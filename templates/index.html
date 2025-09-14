@@ -1,1141 +1,2394 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>RapiACT</title>
-    <link rel="icon" type="image/jpg" href="{{ url_for('static', filename='images/logo.jpg') }}">
+    <title>RapiACT - Modern Healthcare Platform</title>
+    <link rel="icon" type="image/jpg" href="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAiIGhlaWdodD0iNDAiIHZpZXdCb3g9IjAgMCA0MCA0MCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPGNpcmNsZSBjeD0iMjAiIGN5PSIyMCIgcj0iMjAiIGZpbGw9IiMwMGE2ZmYiLz4KPHN2ZyB3aWR0aD0iMjQiIGhlaWdodD0iMjQiIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0ibm9uZSIgeD0iOCIgeT0iOCI+CjxwYXRoIGQ9Im0yMiAxMyAuNS4xN2MtLjE1LjQzLS4yMS44MS0uMTcgMS4xNEwyMyAxNWwtMiAyIDIgMi0uNjcuNjdjLjA0LjMzLS4wMi43MS0uMTcgMS4xNEwyMiAyMWwtMy0xIDMtMWgtNGMtMS41IDAtMy0uNS0zLTItMS0yLTEuNS0zLjUtMS01aC0yczUgNyA1IDlzMSA0IDMgNGg0bDEgMy0uNjcuNjdjLS4xNS0uNDMtLjIxLS44MS0uMTctMS4xNEwxNyAyMWwzLTMgMi4zMy0uNjdjLS4wNC0uMzMuMDItLjcxLjE3LTEuMTRMMjMgMTZsLTItMiAyLTIiIGZpbGw9IndoaXRlIi8+CjwvcGF0aD4KPC9zdmc+Cjwvc3ZnPgo=">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <style>
+        :root {
+            /* Light Theme Colors */
+            --bg-primary: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            --bg-secondary: #ffffff;
+            --bg-card: #f8fafc;
+            --text-primary: #1a202c;
+            --text-secondary: #4a5568;
+            --text-accent: #667eea;
+            --border-color: #e2e8f0;
+            --shadow-light: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            --shadow-medium: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+            --shadow-large: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+            --gradient-primary: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            --gradient-secondary: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            --gradient-accent: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            --glassmorphism: rgba(255, 255, 255, 0.25);
+            --backdrop-blur: blur(10px);
+        }
+
+        [data-theme="dark"] {
+            /* Dark Theme Colors */
+            --bg-primary: linear-gradient(135deg, #0c0c0c 0%, #1a1a2e 100%);
+            --bg-secondary: #0f0f23;
+            --bg-card: #16213e;
+            --text-primary: #ffffff;
+            --text-secondary: #a0aec0;
+            --text-accent: #4facfe;
+            --border-color: #2d3748;
+            --shadow-light: 0 4px 6px -1px rgba(0, 0, 0, 0.3);
+            --shadow-medium: 0 10px 15px -3px rgba(0, 0, 0, 0.4);
+            --shadow-large: 0 25px 50px -12px rgba(0, 0, 0, 0.6);
+            --gradient-primary: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            --gradient-secondary: linear-gradient(135deg, #ff6b6b 0%, #ee5a24 100%);
+            --gradient-accent: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            --glassmorphism: rgba(22, 33, 62, 0.25);
+            --backdrop-blur: blur(15px);
+        }
+
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
-            font-family: 'Poppins', sans-serif;
         }
 
         body {
-            background-color: #011d1b;
-            color: white;
+            font-family: 'Inter', sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
             line-height: 1.6;
             overflow-x: hidden;
+            transition: all 0.3s ease;
         }
 
-        /* Navbar Styles - Updated with more modern look */
+        /* Loading Screen with 3D Effects */
+        .loading-screen {
+            position: fixed;
+            width: 100%;
+            height: 100%;
+            background: var(--bg-primary);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+            transition: opacity 0.5s ease;
+        }
+
+        .loading-container {
+            position: relative;
+            transform-style: preserve-3d;
+        }
+
+        .loading-sphere {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            background: var(--gradient-accent);
+            position: relative;
+            animation: rotate3D 2s linear infinite, pulse 2s ease-in-out infinite alternate;
+            box-shadow: var(--shadow-large);
+        }
+
+        .loading-sphere::before {
+            content: '';
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.3);
+            filter: blur(10px);
+        }
+
+        .loading-text {
+            position: absolute;
+            top: 150px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: var(--text-accent);
+            animation: fadeInOut 1.5s ease-in-out infinite;
+        }
+
+        @keyframes rotate3D {
+            0% { transform: rotateX(0deg) rotateY(0deg) rotateZ(0deg); }
+            100% { transform: rotateX(360deg) rotateY(360deg) rotateZ(360deg); }
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            100% { transform: scale(1.1); }
+        }
+
+        @keyframes fadeInOut {
+            0%, 100% { opacity: 0.5; }
+            50% { opacity: 1; }
+        }
+
+        /* Modern Navbar with Glassmorphism */
         .navbar {
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 95%;
+            max-width: 1200px;
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding: 20px 50px;
-            background-color: #014340;
-            position: sticky;
-            top: 0;
+            padding: 15px 30px;
+            background: var(--glassmorphism);
+            backdrop-filter: var(--backdrop-blur);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 20px;
             z-index: 1000;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-            border-radius: 0 0 15px 15px;
-        }
-
-        .navbar .logo img {
-            height: 40px;
-        }
-
-        .navbar .links {
-            display: flex;
-            align-items: center;
-        }
-
-        .navbar .links a {
-            color: white;
-            text-decoration: none;
-            margin: 0 15px;
-            font-size: 16px;
             transition: all 0.3s ease;
-            padding: 8px 12px;
-            border-radius: 6px;
+            box-shadow: var(--shadow-medium);
         }
 
-        .navbar .links a:hover {
-            color: #00d9a6;
-            background-color: rgba(255, 255, 255, 0.1);
+        .navbar:hover {
+            transform: translateX(-50%) translateY(-2px);
+            box-shadow: var(--shadow-large);
         }
 
-        /* Language Dropdown Styles */
-        .language-container {
+        .logo {
             display: flex;
             align-items: center;
-            margin-left: 15px;
+            font-size: 1.8rem;
+            font-weight: 800;
+            color: var(--text-accent);
+            text-decoration: none;
         }
-        
-        .language-icon {
-            width: 24px;
-            height: 24px;
-            margin-right: 5px;
+
+        .logo i {
+            margin-right: 10px;
+            font-size: 2rem;
+            background: var(--gradient-accent);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
         }
-        
-        #google_translate_element {
-            display: none;
+
+        .nav-links {
+            display: flex;
+            align-items: center;
+            gap: 30px;
         }
-        
-        /* Fix for Google Translate styling issues */
-        .goog-te-banner-frame {
-            display: none !important;
+
+        .nav-links a {
+            color: var(--text-primary);
+            text-decoration: none;
+            font-weight: 500;
+            position: relative;
+            padding: 8px 16px;
+            border-radius: 10px;
+            transition: all 0.3s ease;
         }
-        
-        body {
-            top: 0 !important;
+
+        .nav-links a:hover {
+            color: var(--text-accent);
+            background: rgba(255, 255, 255, 0.1);
+            transform: translateY(-2px);
         }
-        
-        /* Hide Google Translate attribution and original elements */
-        .goog-te-gadget {
-            font-family: 'Poppins', sans-serif !important;
-            font-size: 14px !important;
-            color: #e0e0e0 !important;
+
+        .nav-links a::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 50%;
+            width: 0;
+            height: 2px;
+            background: var(--gradient-accent);
+            transition: all 0.3s ease;
+            transform: translateX(-50%);
         }
-        
-        .goog-te-gadget-simple {
-            background-color: transparent !important;
-            border: none !important;
-            padding: 0 !important;
+
+        .nav-links a:hover::after {
+            width: 80%;
         }
-        
-        .goog-te-gadget-simple .goog-te-menu-value span:first-child {
+
+        .theme-toggle, .language-toggle {
+            background: var(--gradient-accent);
+            border: none;
+            padding: 10px;
+            border-radius: 50%;
+            color: white;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: var(--shadow-light);
+        }
+
+        .theme-toggle:hover, .language-toggle:hover {
+            transform: scale(1.1) rotate(15deg);
+            box-shadow: var(--shadow-medium);
+        }
+
+        /* Hero Section with 3D Elements */
+        .hero {
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .hero-content {
+            z-index: 2;
+            max-width: 800px;
+            padding: 0 20px;
+        }
+
+        .hero-title {
+            font-size: clamp(3rem, 8vw, 6rem);
+            font-weight: 900;
+            margin-bottom: 20px;
+            background: var(--gradient-accent);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            animation: slideInUp 1s ease-out;
+        }
+
+        .hero-subtitle {
+            font-size: clamp(1.2rem, 3vw, 1.5rem);
+            color: var(--text-secondary);
+            margin-bottom: 30px;
+            animation: slideInUp 1s ease-out 0.2s both;
+        }
+
+        .hero-cta {
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+            flex-wrap: wrap;
+            animation: slideInUp 1s ease-out 0.4s both;
+        }
+
+        .btn-primary, .btn-secondary {
+            padding: 15px 30px;
+            border-radius: 50px;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 1.1rem;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .btn-primary {
+            background: var(--gradient-accent);
+            color: white;
+            box-shadow: var(--shadow-medium);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-3px);
+            box-shadow: var(--shadow-large);
+        }
+
+        .btn-secondary {
+            background: var(--glassmorphism);
+            backdrop-filter: var(--backdrop-blur);
+            color: var(--text-primary);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .btn-secondary:hover {
+            transform: translateY(-3px);
+            background: var(--glassmorphism);
+        }
+
+        /* Floating 3D Elements */
+        .floating-elements {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+        }
+
+        .floating-card {
+            position: absolute;
+            width: 80px;
+            height: 80px;
+            background: var(--glassmorphism);
+            backdrop-filter: var(--backdrop-blur);
+            border-radius: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2rem;
+            color: var(--text-accent);
+            animation: float 6s ease-in-out infinite;
+            box-shadow: var(--shadow-medium);
+        }
+
+        .floating-card:nth-child(1) { top: 20%; left: 10%; animation-delay: -0s; }
+        .floating-card:nth-child(2) { top: 30%; right: 15%; animation-delay: -1s; }
+        .floating-card:nth-child(3) { bottom: 30%; left: 15%; animation-delay: -2s; }
+        .floating-card:nth-child(4) { bottom: 20%; right: 10%; animation-delay: -3s; }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0px) rotate(0deg); }
+            50% { transform: translateY(-20px) rotate(10deg); }
+        }
+
+        @keyframes slideInUp {
+            from {
+                opacity: 0;
+                transform: translateY(50px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Sections with 3D Cards */
+        .section {
+            padding: 100px 20px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .section-title {
+            text-align: center;
+            font-size: clamp(2.5rem, 5vw, 3.5rem);
+            font-weight: 700;
+            margin-bottom: 20px;
+            background: var(--gradient-accent);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .section-subtitle {
+            text-align: center;
+            color: var(--text-secondary);
+            font-size: 1.2rem;
+            margin-bottom: 60px;
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        /* Feature Cards */
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 30px;
+            margin-bottom: 60px;
+        }
+
+        .feature-card {
+            background: var(--glassmorphism);
+            backdrop-filter: var(--backdrop-blur);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 25px;
+            padding: 40px 30px;
+            text-align: center;
+            position: relative;
+            transition: all 0.3s ease;
+            transform-style: preserve-3d;
+            box-shadow: var(--shadow-medium);
+        }
+
+        .feature-card:hover {
+            transform: translateY(-10px) rotateX(5deg);
+            box-shadow: var(--shadow-large);
+        }
+
+        .feature-icon {
+            width: 80px;
+            height: 80px;
+            border-radius: 20px;
+            background: var(--gradient-accent);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 20px;
+            font-size: 2rem;
+            color: white;
+            box-shadow: var(--shadow-medium);
+            transition: all 0.3s ease;
+        }
+
+        .feature-card:hover .feature-icon {
+            transform: scale(1.1) rotate(10deg);
+        }
+
+        .feature-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+            margin-bottom: 15px;
+            color: var(--text-primary);
+        }
+
+        .feature-description {
+            color: var(--text-secondary);
+            line-height: 1.6;
+        }
+
+        /* About Section */
+        .about-content {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 60px;
+            align-items: center;
+            margin-bottom: 60px;
+        }
+
+        .about-text h3 {
+            font-size: 2rem;
+            font-weight: 600;
+            margin-bottom: 20px;
+            color: var(--text-primary);
+        }
+
+        .about-text p {
+            color: var(--text-secondary);
+            margin-bottom: 20px;
+            line-height: 1.7;
+        }
+
+        .about-features {
+            list-style: none;
+            padding: 0;
+        }
+
+        .about-features li {
+            display: flex;
+            align-items: center;
+            margin-bottom: 15px;
+            padding: 15px;
+            background: var(--glassmorphism);
+            border-radius: 15px;
+            transition: all 0.3s ease;
+        }
+
+        .about-features li:hover {
+            transform: translateX(10px);
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .about-features li i {
+            color: var(--text-accent);
+            margin-right: 15px;
+            font-size: 1.2rem;
+        }
+
+        .about-visual {
+            position: relative;
+            height: 400px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .about-card {
+            background: var(--glassmorphism);
+            backdrop-filter: var(--backdrop-blur);
+            border-radius: 25px;
+            padding: 40px;
+            text-align: center;
+            position: absolute;
+            box-shadow: var(--shadow-large);
+            transition: all 0.3s ease;
+        }
+
+        .about-card:nth-child(1) {
+            top: 0;
+            left: 0;
+            transform: rotate(-5deg);
+            background: linear-gradient(135deg, rgba(102, 126, 234, 0.2) 0%, rgba(118, 75, 162, 0.2) 100%);
+        }
+
+        .about-card:nth-child(2) {
+            top: 50px;
+            right: 0;
+            transform: rotate(5deg);
+            background: linear-gradient(135deg, rgba(79, 172, 254, 0.2) 0%, rgba(0, 242, 254, 0.2) 100%);
+        }
+
+        .about-card:nth-child(3) {
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%) rotate(-3deg);
+            background: linear-gradient(135deg, rgba(240, 147, 251, 0.2) 0%, rgba(245, 87, 108, 0.2) 100%);
+        }
+
+        .about-card:hover {
+            transform: scale(1.05) rotate(0deg) !important;
+            z-index: 10;
+        }
+
+        /* Services Grid */
+        .services-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 25px;
+        }
+
+        .service-card {
+            background: var(--bg-card);
+            border-radius: 20px;
+            padding: 30px 25px;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+            transition: all 0.3s ease;
+            border: 1px solid var(--border-color);
+            box-shadow: var(--shadow-light);
+        }
+
+        .service-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 3px;
+            background: var(--gradient-accent);
+            transition: all 0.3s ease;
+        }
+
+        .service-card:hover::before {
+            left: 0;
+        }
+
+        .service-card:hover {
+            transform: translateY(-8px);
+            box-shadow: var(--shadow-large);
+        }
+
+        .service-card i {
+            font-size: 3rem;
+            background: var(--gradient-accent);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 20px;
+        }
+
+        .service-card h3 {
+            font-size: 1.3rem;
+            font-weight: 600;
+            margin-bottom: 15px;
+            color: var(--text-primary);
+        }
+
+        .service-card p {
+            color: var(--text-secondary);
+            font-size: 0.95rem;
+            line-height: 1.6;
+        }
+
+        /* Enhanced Doctors Section */
+        .doctors-container {
+            position: relative;
+            overflow: hidden;
+            border-radius: 25px;
+            background: var(--glassmorphism);
+            backdrop-filter: var(--backdrop-blur);
+            padding: 40px 20px;
+            box-shadow: var(--shadow-medium);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .doctors-slider-wrapper {
+            overflow: hidden;
+            width: 100%;
+        }
+
+        .doctors-slider {
+            display: flex;
+            gap: 25px;
+            transition: transform 0.5s ease-in-out;
+            will-change: transform;
+        }
+
+        .doctors-slider.auto-slide {
+            animation: autoSlide 20s linear infinite;
+        }
+
+        .doctors-slider.paused {
+            animation-play-state: paused;
+        }
+
+        .doctor-card {
+            min-width: 320px;
+            background: var(--bg-card);
+            border-radius: 25px;
+            padding: 35px 25px;
+            text-align: center;
+            box-shadow: var(--shadow-medium);
+            border: 1px solid var(--border-color);
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            flex-shrink: 0;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .doctor-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: var(--gradient-accent);
+            transform: scaleX(0);
+            transition: transform 0.3s ease;
+        }
+
+        .doctor-card:hover::before {
+            transform: scaleX(1);
+        }
+
+        .doctor-card:hover {
+            transform: translateY(-15px) scale(1.03);
+            box-shadow: var(--shadow-large);
+            border-color: var(--text-accent);
+        }
+
+        .doctor-avatar {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            margin: 0 auto 25px;
+            background: var(--gradient-accent);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 3rem;
+            color: white;
+            box-shadow: var(--shadow-medium);
+            position: relative;
+            overflow: hidden;
+            transition: all 0.3s ease;
+        }
+
+        .doctor-avatar:hover {
+            transform: scale(1.1);
+            box-shadow: var(--shadow-large);
+        }
+
+        .doctor-avatar img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            border-radius: 50%;
+            transition: transform 0.3s ease;
+        }
+
+        .doctor-avatar:hover img {
+            transform: scale(1.1);
+        }
+
+        .doctor-name {
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-bottom: 12px;
+            color: var(--text-primary);
+            transition: color 0.3s ease;
+        }
+
+        .doctor-card:hover .doctor-name {
+            color: var(--text-accent);
+        }
+
+        .doctor-specialty {
+            color: var(--text-accent);
+            font-weight: 600;
+            margin-bottom: 15px;
+            font-size: 1rem;
+            padding: 8px 16px;
+            background: rgba(79, 172, 254, 0.1);
+            border-radius: 20px;
             display: inline-block;
-            color: #e0e0e0 !important;
+            border: 1px solid rgba(79, 172, 254, 0.2);
         }
-        
-        .goog-te-gadget-simple .goog-te-menu-value span:not(:first-child),
-        .goog-te-gadget-icon,
-        .goog-te-banner-frame,
-        .goog-te-gadget span:not(.goog-te-menu-value span:first-child) {
-            display: none !important;
+
+        .doctor-experience {
+            color: var(--text-secondary);
+            font-size: 0.95rem;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            margin-bottom: 15px;
         }
-        
-        .goog-te-menu-frame {
-            box-shadow: 0 0 8px rgba(0,0,0,0.3) !important;
+
+        .doctor-experience::before {
+            content: '🩺';
+            font-size: 1.2rem;
         }
-        
-        /* Language selection modal */
+
+        .doctor-rating {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 5px;
+            margin-bottom: 15px;
+        }
+
+        .doctor-rating .stars {
+            color: #ffc107;
+        }
+
+        .doctor-rating .rating-number {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+            margin-left: 5px;
+        }
+
+        .doctor-actions {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+        }
+
+        .doctor-btn {
+            padding: 8px 16px;
+            border-radius: 20px;
+            border: none;
+            cursor: pointer;
+            font-size: 0.85rem;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .doctor-btn.primary {
+            background: var(--gradient-accent);
+            color: white;
+        }
+
+        .doctor-btn.secondary {
+            background: var(--glassmorphism);
+            color: var(--text-accent);
+            border: 1px solid var(--text-accent);
+        }
+
+        .doctor-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-light);
+        }
+
+        /* Navigation Controls */
+        .slider-controls {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            background: rgba(255, 255, 255, 0.9);
+            border: none;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            font-size: 1.2rem;
+            color: var(--text-accent);
+            transition: all 0.3s ease;
+            backdrop-filter: blur(10px);
+            box-shadow: var(--shadow-medium);
+            z-index: 10;
+        }
+
+        .slider-controls:hover {
+            background: var(--text-accent);
+            color: white;
+            transform: translateY(-50%) scale(1.1);
+        }
+
+        .prev-btn {
+            left: 10px;
+        }
+
+        .next-btn {
+            right: 10px;
+        }
+
+        /* Pause/Play Button */
+        .pause-play-btn {
+            position: absolute;
+            bottom: 20px;
+            right: 20px;
+            background: rgba(255, 255, 255, 0.9);
+            border: none;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            font-size: 1rem;
+            color: var(--text-accent);
+            transition: all 0.3s ease;
+            backdrop-filter: blur(10px);
+            box-shadow: var(--shadow-light);
+        }
+
+        .pause-play-btn:hover {
+            background: var(--text-accent);
+            color: white;
+            transform: scale(1.1);
+        }
+
+        /* Progress Indicator */
+        .slider-progress {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            height: 3px;
+            background: var(--gradient-accent);
+            transition: width 0.1s linear;
+            border-radius: 0 0 25px 25px;
+            width: 0%;
+        }
+
+        /* Slide Indicator Dots */
+        .slide-indicators {
+            position: absolute;
+            bottom: 15px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 8px;
+        }
+
+        .slide-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.3);
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .slide-dot.active {
+            background: var(--text-accent);
+            transform: scale(1.2);
+        }
+
+        @keyframes autoSlide {
+            0% { transform: translateX(0); }
+            100% { transform: translateX(calc(-320px * var(--total-cards))); }
+        }
+
+        /* Loading Animation */
+        .loading {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 200px;
+            font-size: 1.1rem;
+            color: var(--text-secondary);
+        }
+
+        .loading::after {
+            content: '';
+            width: 20px;
+            height: 20px;
+            border: 2px solid var(--text-accent);
+            border-top: 2px solid transparent;
+            border-radius: 50%;
+            margin-left: 10px;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* Contact Section */
+        .contact-content {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 60px;
+            align-items: start;
+        }
+
+        .contact-info {
+            background: var(--glassmorphism);
+            backdrop-filter: var(--backdrop-blur);
+            border-radius: 25px;
+            padding: 40px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .contact-item {
+            display: flex;
+            align-items: center;
+            margin-bottom: 25px;
+            padding: 20px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            transition: all 0.3s ease;
+        }
+
+        .contact-item:hover {
+            transform: translateX(10px);
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        .contact-item i {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: var(--gradient-accent);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            margin-right: 20px;
+        }
+
+        .contact-form {
+            background: var(--bg-card);
+            border-radius: 25px;
+            padding: 40px;
+            box-shadow: var(--shadow-medium);
+            border: 1px solid var(--border-color);
+        }
+
+        .form-group {
+            margin-bottom: 25px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+            color: var(--text-primary);
+        }
+
+        .form-group input,
+        .form-group textarea {
+            width: 100%;
+            padding: 15px;
+            border: 2px solid var(--border-color);
+            border-radius: 15px;
+            background: var(--bg-secondary);
+            color: var(--text-primary);
+            font-size: 1rem;
+            transition: all 0.3s ease;
+        }
+
+        .form-group input:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: var(--text-accent);
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .submit-btn {
+            width: 100%;
+            padding: 15px;
+            background: var(--gradient-accent);
+            color: white;
+            border: none;
+            border-radius: 15px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: var(--shadow-medium);
+        }
+
+        .submit-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-large);
+        }
+
+        /* Footer */
+        .footer {
+            background: var(--bg-secondary);
+            padding: 60px 20px 20px;
+            text-align: center;
+            border-top: 1px solid var(--border-color);
+            margin-top: 100px;
+        }
+
+        .footer-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 40px;
+            margin-bottom: 40px;
+        }
+
+        .footer-section h3 {
+            font-size: 1.3rem;
+            font-weight: 600;
+            margin-bottom: 20px;
+            color: var(--text-primary);
+        }
+
+        .footer-section p,
+        .footer-section a {
+            color: var(--text-secondary);
+            text-decoration: none;
+            line-height: 1.6;
+            transition: all 0.3s ease;
+        }
+
+        .footer-section a:hover {
+            color: var(--text-accent);
+        }
+
+        .footer-bottom {
+            padding-top: 20px;
+            border-top: 1px solid var(--border-color);
+            color: var(--text-secondary);
+        }
+
+        /* Floating Action Button */
+        .fab-container {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            z-index: 1000;
+        }
+
+        .fab {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background: var(--gradient-accent);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            cursor: pointer;
+            box-shadow: var(--shadow-large);
+            transition: all 0.3s ease;
+            border: none;
+        }
+
+        .fab:hover {
+            transform: scale(1.1);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+        }
+
+        /* Language Modal */
         .language-modal {
             position: fixed;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
-            background-color: rgba(0,0,0,0.8);
+            background: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(10px);
             display: flex;
-            justify-content: center;
             align-items: center;
+            justify-content: center;
             z-index: 10000;
+            opacity: 0;
+            pointer-events: none;
+            transition: all 0.3s ease;
         }
-        
-        .language-selection {
-            background-color: #014340;
-            border-radius: 12px;
-            padding: 30px;
-            text-align: center;
+
+        .language-modal.active {
+            opacity: 1;
+            pointer-events: all;
+        }
+
+        .language-content {
+            background: var(--bg-card);
+            border-radius: 25px;
+            padding: 40px;
             max-width: 500px;
             width: 90%;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+            text-align: center;
+            box-shadow: var(--shadow-large);
+            border: 1px solid var(--border-color);
+            transform: scale(0.8);
+            transition: all 0.3s ease;
         }
-        
-        .language-selection h2 {
-            color: #00a6ff;
-            margin-bottom: 20px;
+
+        .language-modal.active .language-content {
+            transform: scale(1);
         }
-        
-        .language-selection p {
-            color: white;
-            margin-bottom: 20px;
-        }
-        
+
         .language-buttons {
-            display: flex;
-            flex-wrap: wrap;
-            justify-content: center;
-            gap: 12px;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+            gap: 15px;
+            margin-top: 30px;
         }
-        
-        .language-button {
-            background-color: #00a6ff;
-            color: white;
-            border: none;
-            padding: 12px 18px;
-            border-radius: 8px;
-            cursor: pointer;
-            transition: background-color 0.3s;
-        }
-        
-        .language-button:hover {
-            background-color: #0080c4;
-        }
-        
-        .language-selector {
-            color: white;
-            background-color: transparent;
+
+        .language-btn {
+            padding: 12px 20px;
+            background: var(--glassmorphism);
+            backdrop-filter: var(--backdrop-blur);
             border: 1px solid rgba(255, 255, 255, 0.2);
-            padding: 8px 12px;
-            border-radius: 8px;
+            border-radius: 15px;
+            color: var(--text-primary);
             cursor: pointer;
             transition: all 0.3s ease;
-            display: flex;
-            align-items: center;
-        }
-        
-        .language-selector:hover {
-            color: #00d9a6;
-            border-color: #00d9a6;
-        }
-
-        /* Hero Section - Updated with cleaner look */
-        .hero {
-            height: 90vh;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            text-align: center;
-            background: linear-gradient(to bottom right, #014340, #011d1b);
-            padding: 20px;
-        }
-
-        .hero h1 {
-            font-size: 4rem;
-            color: #00a6ff;
-            margin-bottom: 20px;
-            font-weight: 700;
-            line-height: 1.2;
-        }
-
-        .hero p {
-            font-size: 1.5rem;
-            color: #e0e0e0;
-            margin-bottom: 30px;
-            max-width: 800px;
-        }
-
-        /* Announcement Bar - Inspired by JusPay */
-        .announcement-bar {
-            background-color: #f5f9ff;
-            color: #333;
-            text-align: center;
-            padding: 15px;
-            border-radius: 12px;
-            margin: 20px auto;
-            max-width: 900px;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-        }
-
-        .announcement-bar a {
-            color: #00a6ff;
-            text-decoration: none;
             font-weight: 500;
         }
 
-        .hero .button a {
-            text-decoration: none;
-            padding: 15px 30px;
-            background-color: #00a6ff;
+        .language-btn:hover {
+            background: var(--gradient-accent);
             color: white;
-            border-radius: 8px;
-            font-size: 16px;
-            transition: background-color 0.3s ease;
-            font-weight: 600;
-            display: inline-block;
-            margin-top: 10px;
-        }
-
-        .hero .button a:hover {
-            background-color: #0080c4;
-        }
-
-        /* Section Styles - Updated for better spacing */
-        section {
-            padding: 80px 50px;
-            text-align: center;
-        }
-
-        section h2 {
-            font-size: 3rem;
-            color: #00a6ff;
-            margin-bottom: 30px;
-            font-weight: 700;
-        }
-
-        section p {
-            max-width: 800px;
-            margin: 0 auto;
-            margin-bottom: 40px;
-            font-size: 1.1rem;
-        }
-
-        .icon-section {
-            display: flex;
-            justify-content: center;
-            flex-wrap: wrap;
-            gap: 25px;
-            max-width: 1200px;
-            margin: 0 auto;
-        }
-
-        .icon-box {
-            background-color: whitesmoke;
-            border-radius: 12px;
-            padding: 25px;
-            width: 200px;
-            text-align: center;
-            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
-            transition: transform 0.3s ease, background-color 0.3s ease;
-        }
-
-        .icon-box:hover {
-            transform: translateY(-10px);
-            background-color: #87CEEB;
-        }
-
-        .icon-box img {
-            width: 70px;
-            margin-bottom: 15px;
-        }
-
-        .icon-box p {
-            color: #014340;
-            font-weight: bold;
-            font-size: 1.1rem;
-            margin-bottom: 0;
-        }
-
-        /* About Section */
-        #about {
-            background: linear-gradient(to bottom right, #014340, #011d1b);
-            color: white;
-            text-align: center;
-            padding: 80px 50px;
-            border-radius: 16px;
-            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-            max-width: 1200px;
-            margin: 0 auto;
-        }
-
-        #about h2 {
-            color: #00a6ff;
-            margin-bottom: 30px;
-        }
-
-        #about p {
-            font-size: 1.1rem;
-            color: #fff;
-            margin-bottom: 25px;
-        }
-
-        #about ul {
-            list-style: none;
-            padding: 0;
-            max-width: 800px;
-            margin: 30px auto;
-        }
-
-        #about ul li {
-            font-size: 1.1rem;
-            color: #e0e0e0;
-            margin: 15px 0;
-            text-align: left;
-            padding-left: 30px;
-            position: relative;
-        }
-
-        #about ul li strong {
-            color: #00a6ff;
-        }
-
-        /* Services Section */
-        #services {
-            background-color: rgba(1, 29, 27, 0.8);
-            border-radius: 16px;
-            max-width: 1200px;
-            margin: 40px auto;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
-        }
-
-        #services ul {
-            list-style: none;
-            max-width: 600px;
-            margin: 0 auto;
-            padding: 0;
-        }
-
-        #services ul li {
-            font-size: 1.2rem;
-            margin: 18px 0;
-            position: relative;
-            padding-left: 30px;
-            color: #e0e0e0;
-            text-align: left;
-        }
-
-        #services ul li::before {
-            content: "✔";
-            position: absolute;
-            left: 0;
-            color: #00d9a6;
-        }
-
-        /* Doctors Section */
-        #doctors {
-            background: #014340;
-            color: white;
-            border-radius: 16px;
-            max-width: 1200px;
-            margin: 40px auto;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
-        }
-
-        #doctors .doctor {
-            margin: 20px 0;
-        }
-
-        #doctors .doctor h3 {
-            color: #00d9a6;
-            margin-bottom: 10px;
-        }
-
-        /* Pharmacy Section */
-        #pharmacy {
-            background: linear-gradient(to bottom right, #011d1b, #014340);
-            color: white;
-            padding: 80px 50px;
-            border-radius: 16px;
-            max-width: 1200px;
-            margin: 40px auto;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
-        }
-
-        #pharmacy h2 {
-            color: #00a6ff;
-            margin-bottom: 30px;
-        }
-
-        .pharmacy-features {
-            display: flex;
-            flex-wrap: wrap;
-            justify-content: center;
-            gap: 30px;
-            margin-bottom: 40px;
-        }
-
-        .pharmacy-feature {
-            background-color: rgba(255, 255, 255, 0.1);
-            border-radius: 12px;
-            padding: 30px;
-            width: 300px;
-            text-align: center;
-            transition: transform 0.3s ease;
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
-        }
-
-        .pharmacy-feature:hover {
-            transform: translateY(-10px);
-            background-color: rgba(0, 166, 255, 0.1);
-        }
-
-        .pharmacy-feature img {
-            width: 60px;
-            height: 60px;
-            margin-bottom: 20px;
-        }
-
-        .pharmacy-feature h3 {
-            color: #00d9a6;
-            margin-bottom: 15px;
-        }
-
-        .pharmacy-feature p {
-            color: #e0e0e0;
-            font-size: 1rem;
-            margin-bottom: 0;
-        }
-
-        .pharmacy-cta {
-            margin-top: 40px;
-        }
-
-        .pharmacy-button {
-            display: inline-block;
-            padding: 15px 30px;
-            background-color: #00a6ff;
-            color: white;
-            text-decoration: none;
-            border-radius: 8px;
-            font-size: 16px;
-            transition: background-color 0.3s ease;
-            font-weight: 600;
-        }
-
-        .pharmacy-button:hover {
-            background-color: #0080c4;
-        }
-
-        /* Contact Section */
-        #contact {
-            background-color: rgba(1, 29, 27, 0.8);
-            border-radius: 16px;
-            max-width: 1200px;
-            margin: 40px auto;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
-        }
-
-        #contact form {
-            max-width: 600px;
-            margin: 0 auto;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-        }
-
-        #contact form input, #contact form textarea {
-            width: 100%;
-            padding: 15px;
-            margin: 10px 0;
-            border-radius: 8px;
-            border: none;
-            font-size: 1rem;
-            background-color: rgba(255, 255, 255, 0.9);
-        }
-
-        #contact form button {
-            background-color: #00a6ff;
-            color: white;
-            padding: 15px 30px;
-            border-radius: 8px;
-            border: none;
-            font-size: 16px;
-            transition: background-color 0.3s ease;
-            font-weight: 600;
-            cursor: pointer;
-            margin-top: 10px;
-        }
-
-        #contact form button:hover {
-            background-color: #0080c4;
-        }
-
-        /* Footer */
-        footer {
-            background-color: #014340;
-            color: white;
-            text-align: center;
-            padding: 30px 0;
-            margin-top: 50px;
+            transform: translateY(-2px);
         }
 
         /* Scroll Indicator */
         .scroll-indicator {
             position: fixed;
-            left: 0;
             top: 0;
-            width: 5px;
+            left: 0;
+            width: 4px;
             height: 0;
-            background: linear-gradient(to bottom, #00a6ff, #0080c4);
+            background: var(--gradient-accent);
             z-index: 9999;
+            transition: height 0.1s ease;
         }
 
-        /* Doctor Slider */
-        .doctor-slider {
-            width: 80%;
-            margin: auto;
-            overflow: hidden;
-            position: relative;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            padding: 20px 0;
-        }
-
-        .slides {
-            display: flex;
-            transition: transform 0.5s linear;
-            animation: scroll 20s linear infinite; /* Slower continuous scrolling */
-        }
-
-        .doctor-card {
-            width: 100%;
-            max-width: 280px;
-            padding: 25px;
-            background: #022f2c;
-            border-radius: 12px;
-            color: #00d9a6;
-            text-align: center;
-            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
-            margin: 15px;
-            flex-shrink: 0;
-        }
-
-        .doctor-card img {
-            width: 120px;
-            height: 120px;
-            border-radius: 50%;
-            object-fit: cover;
-            margin-bottom: 15px;
-            border: 3px solid #00a6ff;
-        }
-
-        .doctor-card h3 {
-            margin: 10px 0 5px;
-            color: #00d9a6;
-            font-size: 1.2rem;
-        }
-
-        .doctor-card p {
-            margin: 8px 0;
-            font-size: 1rem;
-            color: #e0e0e0;
-        }
-
-        /* Keyframes for infinite sliding effect */
-        @keyframes scroll {
-            0% { transform: translateX(0); }
-            100% { transform: translateX(-100%); }
-        }
-
-
-        /* See All Doctors Button */
-        .see-all-btn {
-            margin-top: 30px;
-        }
-
-        .see-all-btn a {
-            display: inline-block;
-            padding: 12px 24px;
-            background-color: #00a6ff;
-            color: white;
-            text-decoration: none;
-            border-radius: 8px;
-            font-size: 16px;
-            transition: background-color 0.3s ease;
-            font-weight: 600;
-        }
-
-        .see-all-btn a:hover {
-            background-color: #0080c4;
-        }
-
-        /* Loading Screen */
-        .loading-screen {
-            position: fixed;
-            width: 100%;
-            height: 100%;
-            background-color: #011d1b;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            z-index: 9999;
-        }
-
-        .loading-circle {
-            width: 80px;
-            height: 80px;
-            border-radius: 50%;
-            background-color: #011d1b;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            position: relative;
-            animation: growLogo 2s linear forwards;
-        }
-
-        /* Rotating border animation */
-        .loading-circle::before {
-            content: "";
-            position: absolute;
-            width: 100%;
-            height: 100%;
-            border-radius: 50%;
-            border: 4px solid transparent;
-            border-top-color: #00a6ff;
-            animation: spin 1s linear infinite;
-        }
-
-        .loading-logo {
-            width: 60px;
-            height: 60px;
-            border-radius: 50%;
-            object-fit: cover;
-        }
-
-        /* Keyframes for growing effect */
-        @keyframes growLogo {
-            0% { width: 80px; height: 80px; }
-            50% { width: 120px; height: 120px; }
-            100% { width: 160px; height: 160px; }
-        }
-
-        /* Keyframes for rotating effect */
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
+        .coming-soon {
+            font-weight: bold;
+            color: #ff9800;
+            text-transform: uppercase;
         }
 
         /* Visitor Counter */
         .visitor-counter {
             position: fixed;
-            bottom: 20px;
-            left: 20px;
-            background: rgba(255, 255, 255, 0.1);
-            padding: 10px 20px;
-            border-radius: 8px;
-            font-size: 14px;
-            color: #00d9a6;
+            bottom: 30px;
+            left: 30px;
+            background: var(--glassmorphism);
+            backdrop-filter: var(--backdrop-blur);
+            padding: 15px 20px;
+            border-radius: 15px;
+            font-size: 0.9rem;
+            color: var(--text-primary);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            box-shadow: var(--shadow-light);
         }
 
-        /* Chatbot Button */
-        .chatbot-container {
+        /* Announcement Bar */
+        .announcement-bar {
+            background: var(--gradient-secondary);
+            color: white;
+            text-align: center;
+            padding: 15px 20px;
+            border-radius: 15px;
+            margin: 120px auto 40px;
+            max-width: 800px;
+            box-shadow: var(--shadow-medium);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .announcement-bar::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+            animation: shimmer 2s infinite;
+        }
+
+        @keyframes shimmer {
+            0% { left: -100%; }
+            100% { left: 100%; }
+        }
+
+        .announcement-bar a {
+            color: white;
+            text-decoration: none;
+            font-weight: 600;
+            padding: 2px 6px;
+            border-radius: 5px;
+            background: rgba(255, 255, 255, 0.2);
+            transition: all 0.3s ease;
+        }
+
+        .announcement-bar a:hover {
+            background: rgba(255, 255, 255, 0.3);
+        }
+
+        /* Chatbot Styles */
+        .chatbot-widget {
             position: fixed;
-            bottom: 20px;
-            right: 20px;
-            width: 60px;
-            height: 60px;
-            border-radius: 50%;
-            background-color: #00a6ff;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
-            transition: transform 0.3s ease;
-        }
-
-        .chatbot-container:hover {
-            transform: scale(1.1);
-        }
-
-        .chatbot-container img {
-            width: 35px;
-        }
-
-        /* Chatbase Iframe */
-        #chatbase-widget {
-            display: none;
-            position: fixed;
-            bottom: 90px;
-            right: 20px;
+            bottom: 100px;
+            right: 30px;
             width: 350px;
             height: 500px;
-            background: white;
-            border-radius: 12px;
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+            background: var(--bg-card);
+            border-radius: 25px;
+            box-shadow: var(--shadow-large);
+            border: 1px solid var(--border-color);
+            overflow: hidden;
+            transform: translateY(20px);
+            opacity: 0;
+            pointer-events: none;
+            transition: all 0.3s ease;
+            z-index: 999;
         }
 
-        /* Main heading style inspired by JusPay */
-        .main-heading {
+        .chatbot-widget.active {
+            transform: translateY(0);
+            opacity: 1;
+            pointer-events: all;
+        }
+
+        .chatbot-header {
+            background: var(--gradient-accent);
+            color: white;
+            padding: 20px;
             text-align: center;
-            padding: 60px 20px;
+            font-weight: 600;
         }
 
-        .main-heading h1 {
-            font-size: 3.5rem;
-            font-weight: 700;
-            color: #00a6ff;
-            margin-bottom: 20px;
-            line-height: 1.2;
+        .chatbot-content {
+            height: calc(100% - 60px);
+            background: white;
         }
 
-        .main-heading p {
-            font-size: 1.2rem;
-            color: #e0e0e0;
-            max-width: 800px;
-            margin: 0 auto;
-        }
-
-        /* Media queries for responsiveness */
+        /* Mobile Responsiveness */
         @media (max-width: 768px) {
             .navbar {
-                padding: 15px 20px;
+                width: 90%;
+                padding: 10px 20px;
             }
-            
-            .navbar .links {
-                display: none;
+
+            .nav-links {
+                gap: 15px;
             }
-            
-            .hero h1 {
+
+            .nav-links a {
+                font-size: 0.9rem;
+                padding: 6px 12px;
+            }
+
+            .hero-title {
                 font-size: 2.5rem;
             }
-            
-            .hero p {
-                font-size: 1.2rem;
+
+            .hero-subtitle {
+                font-size: 1.1rem;
             }
-            
-            section {
-                padding: 50px 20px;
+
+            .hero-cta {
+                flex-direction: column;
+                align-items: center;
             }
-            
-            section h2 {
-                font-size: 2.2rem;
+
+            .floating-card {
+                display: none;
             }
-            
-            .doctor-slider {
-                width: 95%;
+
+            .about-content,
+            .contact-content {
+                grid-template-columns: 1fr;
+                gap: 40px;
             }
-            
-            .pharmacy-feature {
-                width: 100%;
-                max-width: 350px;
+
+            .about-visual {
+                height: 300px;
             }
+
+            .features-grid,
+            .services-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .doctor-card {
+                min-width: 280px;
+            }
+
+            .slider-controls {
+                width: 40px;
+                height: 40px;
+                font-size: 1rem;
+            }
+
+            .visitor-counter,
+            .fab-container {
+                bottom: 20px;
+            }
+
+            .visitor-counter {
+                left: 20px;
+                font-size: 0.8rem;
+                padding: 10px 15px;
+            }
+
+            .chatbot-widget {
+                width: 90%;
+                right: 5%;
+                height: 400px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .navbar {
+                padding: 8px 15px;
+            }
+
+            .section {
+                padding: 60px 15px;
+            }
+
+            .section-title {
+                font-size: 2rem;
+            }
+
+            .feature-card,
+            .service-card {
+                padding: 25px 20px;
+            }
+
+            .contact-form,
+            .contact-info {
+                padding: 25px;
+            }
+
+            .announcement-bar {
+                margin-top: 100px;
+                padding: 12px 15px;
+                font-size: 0.9rem;
+            }
+
+            .doctor-card {
+                min-width: 250px;
+                padding: 25px 20px;
+            }
+
+            .doctor-avatar {
+                width: 100px;
+                height: 100px;
+                font-size: 2.5rem;
+            }
+        }
+
+        /* Smooth scrolling */
+        html {
+            scroll-behavior: smooth;
+        }
+
+        /* Custom scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: var(--bg-secondary);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--gradient-accent);
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--text-accent);
         }
     </style>
 </head>
-<body>
-    <!-- Loading Screen -->
-    <div class="loading-screen">
-        <div class="loading-circle">
-            <img src="static/images/logo.jpg" alt="Logo" class="loading-logo">
-        </div>
-    </div>
+<body data-theme="dark">
 
     <!-- Scroll Indicator -->
     <div class="scroll-indicator"></div>
 
     <!-- Navbar -->
-    <div class="navbar">
-        <div class="logo">
-            <img src="static/images/logo.jpg" alt="Logo">
-        </div>
-        <div class="links">
-            <a href="/">Home</a>
+    <nav class="navbar">
+        <a href="#" class="logo">
+            <i class="fas fa-heartbeat"></i>
+            RapiACT
+        </a>
+        <div class="nav-links">
+            <a href="#home">Home</a>
             <a href="#about">About</a>
             <a href="/services">Services</a>
-            <a href="#pharmacy">Pharmacy</a>
             <a href="#doctors">Doctors</a>
             <a href="#contact">Contact</a>
-            <a href="/login">Login</a>
-            <a href="/register">Signup</a>
-            <a href="/all_doctors">Find Doctor</a>
-            <!-- Language Selector Button -->
-            <div class="language-container">
-                <img src="https://cdn-icons-png.flaticon.com/512/5754/5754941.png" alt="Language" class="language-icon">
-                <button id="language-selector" class="language-selector">Change Language</button>
-                <div id="google_translate_element" style="display: none;"></div>
-            </div>
+            <a href="/register">Register</a>
+            <button class="language-toggle" onclick="toggleLanguageModal()">
+                <i class="fas fa-globe"></i>
+            </button>
+            <button class="theme-toggle" onclick="toggleTheme()">
+                <i class="fas fa-moon"></i>
+            </button>
         </div>
-    </div>
+    </nav>
 
     <!-- Announcement Bar -->
     <div class="announcement-bar">
-        RapiACT provides AI-powered healthcare services in India!
-        <a href="#about">Click here</a> to learn more. Explore our services <a href="#services">here</a>.
+        🚀 RapiACT provides AI-powered healthcare services in India! 
+        <a href="#about">Learn More</a> • <a href="#services">Explore Services</a>
     </div>
 
     <!-- Hero Section -->
-    <div class="hero">
-        <h1>Welcome to <span>RapiACT!</span></h1>
-        <p>Your one-stop digital healthcare destination</p>
-        <div class="button">
-            <a href="#services">Get Started</a>
+    <section class="hero" id="home">
+        <div class="floating-elements">
+            <div class="floating-card">
+                <i class="fas fa-stethoscope"></i>
+            </div>
+            <div class="floating-card">
+                <i class="fas fa-pills"></i>
+            </div>
+            <div class="floating-card">
+                <i class="fas fa-user-md"></i>
+            </div>
+            <div class="floating-card">
+                <i class="fas fa-heart"></i>
+            </div>
         </div>
-    </div>
+        
+        <div class="hero-content">
+            <h1 class="hero-title">Welcome to RapiACT</h1>
+            <p class="hero-subtitle">Your comprehensive digital healthcare platform - Superior UX, Higher conversions, and Minimal healthcare operations</p>
+            <div class="hero-cta">
+                <a href="#services" class="btn-primary">
+                    <i class="fas fa-rocket"></i>
+                    Get Started
+                </a>
+                <a href="#about" class="btn-secondary">
+                    <i class="fas fa-info-circle"></i>
+                    Learn More
+                </a>
+            </div>
+        </div>
+    </section>
 
-    <!-- Main Heading -->
-    <div class="main-heading">
-        <h1>Healthcare Operating System</h1>
-        <p>Superior UX, Higher conversions, and Minimal healthcare operations</p>
-    </div>
+    <!-- Features Section -->
+    <section class="section" id="features">
+        <h2 class="section-title">Why Choose RapiACT?</h2>
+        <p class="section-subtitle">
+            Experience the future of healthcare with our cutting-edge platform
+        </p>
+
+        <div class="features-grid">
+            <div class="feature-card">
+                <div class="feature-icon">
+                    <i class="fas fa-brain"></i>
+                </div>
+                <h3 class="feature-title">AI-Powered Diagnosis</h3>
+                <p class="feature-description">
+                    Get instant health insights based on symptoms using advanced artificial
+                    intelligence technology.
+                </p>
+            </div>
+
+            <div class="feature-card">
+                <div class="feature-icon">
+                    <i class="fas fa-video"></i>
+                </div>
+                <h3 class="feature-title">Virtual Consultations</h3>
+                <p class="feature-description">
+                    Connect with expert doctors anytime, anywhere through secure video
+                    consultations.
+                </p>
+            </div>
+
+            <div class="feature-card">
+                <div class="feature-icon">
+                    <i class="fas fa-calendar-alt"></i>
+                </div>
+                <h3 class="feature-title">Easy Appointments</h3>
+                <p class="feature-description">
+                    Seamlessly book, reschedule, or cancel consultations with our intuitive
+                    system.
+                </p>
+            </div>
+
+            <div class="feature-card">
+                <div class="feature-icon">
+                    <i class="fas fa-shield-alt"></i>
+                </div>
+                <h3 class="feature-title">Secure & Private</h3>
+                <p class="feature-description">
+                    Your health data is encrypted and protected with industry-leading
+                    security measures.
+                </p>
+            </div>
+
+            <div class="feature-card">
+                <div class="feature-icon">
+                    <i class="fas fa-pills"></i>
+                </div>
+                <h3 class="feature-title">Online Pharmacy</h3>
+                <p class="feature-description">
+                    Order medications and healthcare products with doorstep delivery
+                    service.
+                </p>
+            </div>
+
+            <div class="feature-card">
+                <div class="feature-icon">
+                    <i class="fas fa-chart-line"></i>
+                </div>
+                <h3 class="feature-title">Smart Reports</h3>
+                <p class="feature-description coming-soon">🚀 Coming Soon</p>
+            </div>
+        </div>
+    </section>
 
     <!-- About Section -->
-    <section id="about" class="about-section">
-        <h2>About Us</h2>
-        <p><strong>RapiACT!</strong> is a cutting-edge healthcare platform that redefines the way you access medical services. From <strong>smart diagnosis</strong> and <strong>AI-powered report predictions</strong> to virtual consultations and seamless doctor appointments, we bring healthcare to your fingertips.</p>
+    <section class="section" id="about">
+        <h2 class="section-title">About RapiACT</h2>
+        <p class="section-subtitle">Revolutionizing healthcare through technology and innovation</p>
         
-        <h3>Why Choose RapiACT!?</h3>
-        <ul>
-            <li><strong>✅ Smart Diagnosis:</strong> Get instant health insights based on symptoms.</li>
-            <li><strong>✅ Online Consultation:</strong> Connect with expert doctors anytime, anywhere.</li>
-            <li><strong>✅ AI-Powered Report Analysis:</strong> Advanced technology predicts health risks early.</li>
-            <li><strong>✅ Seamless Appointments:</strong> Easily book, reschedule, or cancel consultations.</li>
-            <li><strong>✅ Secure & Reliable:</strong> Your health data is encrypted and protected.</li>
-            <li><strong>✅ Online Pharmacy:</strong> Order medications and healthcare products with doorstep delivery.</li>
-        </ul>
-        
-        <p>We are committed to technology-driven, patient-focused healthcare, ensuring that expert medical guidance is always within your reach. With RapiACT!, managing your health is simpler, faster, and more reliable than ever before.</p>
-        
-        <div class="button">
-            <a href="#services">Learn More</a>
+        <div class="about-content">
+            <div class="about-text">
+                <h3>Healthcare Operating System</h3>
+                <p><strong>RapiACT</strong> is a cutting-edge healthcare platform that redefines the way you access medical services. From smart diagnosis and AI-powered report predictions to virtual consultations and seamless doctor appointments, we bring healthcare to your fingertips.</p>
+                
+                <p>We are committed to technology-driven, patient-focused healthcare, ensuring that expert medical guidance is always within your reach. With RapiACT, managing your health is simpler, faster, and more reliable than ever before.</p>
+                
+                <ul class="about-features">
+                    <li><i class="fas fa-check"></i> Smart Diagnosis & Health Insights</li>
+                    <li><i class="fas fa-check"></i> 24/7 Online Consultation Access</li>
+                    <li><i class="fas fa-check"></i> AI-Powered Report Analysis</li>
+                    <li><i class="fas fa-check"></i> Seamless Appointment Management</li>
+                    <li><i class="fas fa-check"></i> Secure Data Protection</li>
+                    <li><i class="fas fa-check"></i> Integrated Pharmacy Services</li>
+                </ul>
+            </div>
+            
+            <div class="about-visual">
+                <div class="about-card">
+                    <h4>99.9% Uptime</h4>
+                    <p>Reliable service</p>
+                </div>
+                <div class="about-card">
+                    <h4>50K+ Patients</h4>
+                    <p>Trusted by thousands</p>
+                </div>
+                <div class="about-card">
+                    <h4>500+ Doctors</h4>
+                    <p>Expert medical team</p>
+                </div>
+            </div>
         </div>
     </section>
 
     <!-- Services Section -->
-    <section id="services">
-        <h2>Our Services</h2>
-        <p>Comprehensive healthcare solutions designed for your convenience and wellbeing</p>
-        <ul>
-            <li>Online Doctor Consultations</li>
-            <li>Diagnostic Test Bookings</li>
-            <li>Personalized Health Reports</li>
-            <li>Emergency Assistance</li>
-            <li>Online Pharmacy & Medication Delivery</li>
-        </ul>
-        <div class="button" style="margin-top: 30px;">
-            <a href="/services">View All Services</a>
+    <section class="section" id="services">
+        <h2 class="section-title">Our Services</h2>
+        <p class="section-subtitle">Comprehensive healthcare solutions designed for your convenience</p>
+        
+        <div class="services-grid">
+            <div class="service-card">
+                <i class="fas fa-user-md"></i>
+                <h3>Online Consultations</h3>
+                <p>Connect with qualified doctors through secure video calls and get expert medical advice from the comfort of your home.</p>
+            </div>
+            
+            <div class="service-card">
+                <i class="fas fa-flask"></i>
+                <h3>Diagnostic Tests</h3>
+                <p>Book lab tests and diagnostic procedures with home sample collection and digital report delivery.</p>
+            </div>
+            
+            <div class="service-card">
+                <i class="fas fa-file-medical"></i>
+                <h3>Health Reports</h3>
+                <p>Get personalized health reports with AI-powered insights and recommendations for better health management.</p>
+            </div>
+            
+            <div class="service-card">
+                <i class="fas fa-ambulance"></i>
+                <h3>Emergency Care</h3>
+                <p>24/7 emergency assistance with quick response times and immediate medical guidance when you need it most.</p>
+            </div>
+            
+            <div class="service-card">
+                <i class="fas fa-prescription-bottle-alt"></i>
+                <h3>Online Pharmacy</h3>
+                <p>Order prescribed medications and healthcare essentials with fast, secure delivery to your doorstep.</p>
+            </div>
+            
+            <div class="service-card">
+                <i class="fas fa-mobile-alt"></i>
+                <h3>Health Tracking</h3>
+                <p class="feature-description coming-soon">🚀 Coming Soon</p>
+            </div>
         </div>
     </section>
 
-    <!-- Pharmacy Section -->
-    <section id="pharmacy">
-        <h2>Online Pharmacy</h2>
-        <p>Get your prescribed medications and healthcare essentials delivered to your doorstep with our secure and convenient online pharmacy service.</p>
+    <!-- Enhanced Doctors Section -->
+    <section class="section" id="doctors">
+        <h2 class="section-title">Meet Our Doctors</h2>
+        <p class="section-subtitle">Connect with our team of experienced healthcare professionals</p>
         
-        <div class="pharmacy-features">
-            <div class="pharmacy-feature">
-                <img src="https://cdn-icons-png.flaticon.com/512/3140/3140343.png" alt="Prescription">
-                <h3>Digital Prescriptions</h3>
-                <p>Upload prescriptions directly from your doctor consultations or scan and upload your physical prescriptions.</p>
+        <div class="doctors-container">
+            <div class="doctors-slider-wrapper">
+                <div class="doctors-slider auto-slide" id="doctorsSlider">
+                    <div class="loading">Loading doctors...</div>
+                </div>
             </div>
             
-            <div class="pharmacy-feature">
-                <img src="https://cdn-icons-png.flaticon.com/512/2982/2982226.png" alt="Medicine">
-                <h3>Wide Range of Products</h3>
-                <p>Access prescription medications, over-the-counter drugs, wellness products, and healthcare equipment.</p>
-            </div>
+            <!-- Navigation Controls -->
+            <button class="slider-controls prev-btn" id="prevBtn">
+                <i class="fas fa-chevron-left"></i>
+            </button>
+            <button class="slider-controls next-btn" id="nextBtn">
+                <i class="fas fa-chevron-right"></i>
+            </button>
             
-            <div class="pharmacy-feature">
-                <img src="https://cdn-icons-png.flaticon.com/512/2203/2203138.png" alt="Delivery">
-                <h3>Express Delivery</h3>
-                <p>Get essential medications delivered within hours and regular orders within 24-48 hours.</p>
-            </div>
+            <!-- Pause/Play Button -->
+            <button class="pause-play-btn" id="pausePlayBtn">
+                <i class="fas fa-pause"></i>
+            </button>
+            
+            <!-- Progress Bar -->
+            <div class="slider-progress" id="progressBar"></div>
+            
+            <!-- Slide Indicators -->
+            <div class="slide-indicators" id="slideIndicators"></div>
         </div>
         
-        <div class="pharmacy-cta">
-            <a href="/pharmacy" class="pharmacy-button">Visit Pharmacy</a>
-        </div>
-    </section>
-
-    <!-- Doctors Section -->
-    <section id="doctors">
-        <h2>Meet Our Doctors</h2>
-        <p>Connect with our team of experienced and qualified healthcare professionals</p>
-        <div class="doctor-slider">
-            <div class="slides">
-                <!-- Doctors will be dynamically added here -->
-            </div>
-        </div>
-        <div class="see-all-btn">
-            <a href="/all_doctors">See All Doctors</a>
+        <div style="text-align: center; margin-top: 40px;">
+            <a href="/register" class="btn-primary">
+                <i class="fas fa-calendar-check"></i>
+                Book Appointment
+            </a>
         </div>
     </section>
 
     <!-- Contact Section -->
-    <section id="contact">
-        <h2>Contact Us</h2>
-        <p>Have questions or need assistance? We're here to help!</p>
-        <form class="contact-form" action="/submit_enquiry" method="POST">
-            <input type="text" name="name" placeholder="Your Name" required />
-            <input type="email" name="email" placeholder="Your Email" required />
-            <textarea name="message" placeholder="Your Message" rows="5" required></textarea>
-            <button type="submit">Send Message</button>
-        </form>
+    <section class="section" id="contact">
+        <h2 class="section-title">Get In Touch</h2>
+        <p class="section-subtitle">Have questions? We're here to help you 24/7</p>
+        
+        <div class="contact-content">
+            <div class="contact-info">
+                <h3 style="margin-bottom: 30px; color: var(--text-primary);">Contact Information</h3>
+                
+                <div class="contact-item">
+                    <i class="fas fa-phone"></i>
+                    <div>
+                        <h4>Phone</h4>
+                        <p>+91 1800-123-4567</p>
+                    </div>
+                </div>
+                
+                <div class="contact-item">
+                    <i class="fas fa-envelope"></i>
+                    <div>
+                        <h4>Email</h4>
+                        <p>support@rapiact.com</p>
+                    </div>
+                </div>
+                
+                <div class="contact-item">
+                    <i class="fas fa-map-marker-alt"></i>
+                    <div>
+                        <h4>Address</h4>
+                        <p>123 Health Street, Medical District, New Delhi, India</p>
+                    </div>
+                </div>
+                
+                <div class="contact-item">
+                    <i class="fas fa-clock"></i>
+                    <div>
+                        <h4>Hours</h4>
+                        <p>24/7 Emergency Support<br>9 AM - 6 PM General Inquiries</p>
+                    </div>
+                </div>
+            </div>
+            
+            <form class="contact-form" onsubmit="submitForm(event)">
+                <h3 style="margin-bottom: 30px; color: var(--text-primary);">Send us a Message</h3>
+                
+                <div class="form-group">
+                    <label for="name">Full Name</label>
+                    <input type="text" id="name" name="name" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="email">Email Address</label>
+                    <input type="email" id="email" name="email" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="phone">Phone Number</label>
+                    <input type="tel" id="phone" name="phone">
+                </div>
+                
+                <div class="form-group">
+                    <label for="subject">Subject</label>
+                    <input type="text" id="subject" name="subject" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="message">Message</label>
+                    <textarea id="message" name="message" rows="5" required></textarea>
+                </div>
+                
+                <button type="submit" class="submit-btn">
+                    <i class="fas fa-paper-plane"></i>
+                    Send Message
+                </button>
+            </form>
+        </div>
     </section>
-    
-    <div class="visitor-counter">Visitors: <span id="visitor-count">0</span></div>
-
-    <!-- Chatbot Button -->
-    <div class="chatbot-container" onclick="toggleChatbot()">
-        <img src="https://cdn-icons-png.flaticon.com/512/2950/2950707.png" alt="Chatbot">
-    </div>
-
-    <!-- Chatbase Chatbot -->
-    <iframe id="chatbase-widget" src="https://www.chatbase.co/chatbot-iframe/fSiObHG0hl0I5oV-SEFiZ"></iframe>
 
     <!-- Footer -->
-    <footer>
-        <p>© 2025 RapiACT. All Rights Reserved.</p>
+    <footer class="footer">
+        <div class="footer-content">
+            <div class="footer-section">
+                <h3>RapiACT</h3>
+                <p>Your trusted partner in digital healthcare. Providing innovative solutions for better health management and medical care accessibility.</p>
+            </div>
+            
+            <div class="footer-section">
+                <h3>Quick Links</h3>
+                <a href="#home">Home</a><br>
+                <a href="#about">About</a><br>
+                <a href="/services">Services</a><br>
+                <a href="/all_doctors">Doctors</a><br>
+                <a href="/login">Login</a>
+            </div>
+            
+            <div class="footer-section">
+                <h3>Services</h3>
+                <a href="/register">Online Consultation</a><br>
+                <a href="/services">Diagnostic Tests</a><br>
+                <a href="/services">Health Reports</a><br>
+                <a href="/services">Emergency Care</a><br>
+                <a href="/pharmacy">Online Pharmacy</a>
+            </div>
+            
+            <div class="footer-section">
+                <h3>Support</h3>
+                <a href="#contact">Help Center</a><br>
+                <a href="#contact">Privacy Policy</a><br>
+                <a href="#contact">Terms of Service</a><br>
+                <a href="#contact">FAQs</a><br>
+                <a href="#contact">24/7 Support</a>
+            </div>
+        </div>
+        
+        <div class="footer-bottom">
+            <p>&copy; 2025 RapiACT. All rights reserved. | Designed with ❤️ for better healthcare</p>
+        </div>
     </footer>
 
-<!-- Google Translate Script -->
-    <script type="text/javascript">
-        // Language codes and names
-        const languages = [
-            { code: 'en', name: 'English' },
-            { code: 'hi', name: 'हिन्दी (Hindi)' },
-            { code: 'te', name: 'తెలుగు (Telugu)' },
-            { code: 'kn', name: 'ಕನ್ನಡ (Kannada)' },
-            { code: 'ta', name: 'தமிழ் (Tamil)' }
-        ];
-        
-        // Function to initialize Google Translate
-        function googleTranslateElementInit() {
-            new google.translate.TranslateElement({
-                pageLanguage: 'en',
-                includedLanguages: 'en,hi,te,kn,ta',
-                autoDisplay: false,
-                layout: google.translate.TranslateElement.InlineLayout.HORIZONTAL
-            }, 'google_translate_element');
+    <!-- Language Modal -->
+    <div class="language-modal" id="languageModal">
+        <div class="language-content">
+            <h2>Choose Language</h2>
+            <p>Select your preferred language:</p>
+            <div class="language-buttons">
+                <button class="language-btn" onclick="changeLanguage('en')">🇺🇸 English</button>
+                <button class="language-btn" onclick="changeLanguage('hi')">🇮🇳 हिन्दी</button>
+                <button class="language-btn" onclick="changeLanguage('te')">🇮🇳 తెలుగు</button>
+                <button class="language-btn" onclick="changeLanguage('kn')">🇮🇳 ಕನ್ನಡ</button>
+                <button class="language-btn" onclick="changeLanguage('ta')">🇮🇳 தமிழ்</button>
+            </div>
+            <button class="language-btn" onclick="toggleLanguageModal()" style="margin-top: 20px; background: var(--text-accent); color: white;">Close</button>
+        </div>
+    </div>
+
+    <!-- Visitor Counter -->
+    <div class="visitor-counter">
+        <i class="fas fa-eye"></i> Visitors: <span id="visitorCount">0</span>
+    </div>
+
+    <!-- Floating Action Button -->
+    <div class="fab-container">
+        <button class="fab" onclick="toggleChatbot()">
+            <i class="fas fa-comments"></i>
+        </button>
+    </div>
+
+    <!-- Chatbot Widget -->
+    <div class="chatbot-widget" id="chatbotWidget">
+        <div class="chatbot-header">
+            <i class="fas fa-robot"></i> RapiACT Assistant
+        </div>
+        <div class="chatbot-content">
+            <iframe src="https://www.chatbase.co/chatbot-iframe/fSiObHG0hl0I5oV-SEFiZ" style="width: 100%; height: 100%; border: none;"></iframe>
+        </div>
+    </div>
+
+    <script>
+        // Theme Toggle
+        function toggleTheme() {
+            const body = document.body;
+            const themeToggle = document.querySelector('.theme-toggle i');
+            const currentTheme = body.getAttribute('data-theme');
             
-            // Hide Google Translate UI elements after initialization
-            setTimeout(() => {
-                const googleElements = document.querySelectorAll('.goog-te-gadget-icon, .goog-te-gadget span:not(.goog-te-menu-value span:first-child)');
-                googleElements.forEach(el => {
-                    el.style.display = 'none';
-                });
-            }, 1000);
-        }
-        
-        // Function to translate the page
-        function translatePage(langCode) {
-            // Save the language preference with a timestamp
-            const now = new Date().getTime();
-            localStorage.setItem('preferredLanguage', langCode);
-            localStorage.setItem('languageTimestamp', now);
-            
-            // If it's the default language, reload without translation
-            if (langCode === 'en') {
-                location.reload();
-                return;
-            }
-            
-            // Use Google's translation method
-            const iframe = document.querySelector('.goog-te-menu-frame');
-            if (iframe) {
-                const iframeDoc = iframe.contentDocument || iframe.contentWindow.document;
-                const elements = iframeDoc.querySelectorAll('a.goog-te-menu2-item');
-                
-                for (let i = 0; i < elements.length; i++) {
-                    const element = elements[i];
-                    if (element.textContent.includes(getLangName(langCode))) {
-                        element.click();
-                        break;
-                    }
-                }
+            if (currentTheme === 'light') {
+                body.setAttribute('data-theme', 'dark');
+                themeToggle.classList.replace('fa-moon', 'fa-sun');
+                localStorage.setItem('theme', 'dark');
             } else {
-                // Fallback method if iframe not available
-                const select = document.querySelector('.goog-te-combo');
-                if (select) {
-                    select.value = langCode;
-                    select.dispatchEvent(new Event('change'));
-                }
+                body.setAttribute('data-theme', 'light');
+                themeToggle.classList.replace('fa-sun', 'fa-moon');
+                localStorage.setItem('theme', 'light');
             }
         }
-        
-        // Helper function to get language name from code
-        function getLangName(code) {
-            const lang = languages.find(l => l.code === code);
-            return lang ? lang.name : 'English';
+
+        // Load saved theme
+        function loadTheme() {
+            const savedTheme = localStorage.getItem('theme') || 'light';
+            const themeToggle = document.querySelector('.theme-toggle i');
+            document.body.setAttribute('data-theme', savedTheme);
+            
+            if (savedTheme === 'dark') {
+                themeToggle.classList.replace('fa-moon', 'fa-sun');
+            }
         }
-        
-        // Function to show the language selection modal
-        function showLanguageModal() {
-            // Create modal elements
-            const modal = document.createElement('div');
-            modal.className = 'language-modal';
+
+        // Language Modal
+        function toggleLanguageModal() {
+            const modal = document.getElementById('languageModal');
+            modal.classList.toggle('active');
+        }
+
+        function changeLanguage(langCode) {
+            // In a real implementation, this would trigger translation
+            console.log(`Changing language to: ${langCode}`);
+            localStorage.setItem('selectedLanguage', langCode);
+            toggleLanguageModal();
             
-            const modalContent = document.createElement('div');
-            modalContent.className = 'language-selection';
-            
-            const heading = document.createElement('h2');
-            heading.textContent = 'Choose Your Language';
-            
-            const description = document.createElement('p');
-            description.textContent = 'Please select your preferred language to continue:';
-            
-            const buttonsContainer = document.createElement('div');
-            buttonsContainer.className = 'language-buttons';
-            
-            // Add language buttons
-            languages.forEach(lang => {
-                const button = document.createElement('button');
-                button.className = 'language-button';
-                button.textContent = lang.name;
-                button.addEventListener('click', () => {
-                    translatePage(lang.code);
-                    modal.remove();
+            // Show confirmation
+            alert(`Language changed to ${langCode}. In a real implementation, this would translate the content.`);
+        }
+
+        // Chatbot Toggle
+        function toggleChatbot() {
+            const chatbot = document.getElementById('chatbotWidget');
+            chatbot.classList.toggle('active');
+        }
+
+        // Scroll Indicator
+        function updateScrollIndicator() {
+            const scrollTop = window.pageYOffset;
+            const documentHeight = document.documentElement.scrollHeight - window.innerHeight;
+            const scrollPercent = (scrollTop / documentHeight) * 100;
+            document.querySelector('.scroll-indicator').style.height = scrollPercent + '%';
+        }
+
+        // Smooth Scroll for Navigation
+        function setupSmoothScroll() {
+            document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+                anchor.addEventListener('click', function (e) {
+                    e.preventDefault();
+                    const target = document.querySelector(this.getAttribute('href'));
+                    if (target) {
+                        target.scrollIntoView({
+                            behavior: 'smooth',
+                            block: 'start'
+                        });
+                    }
                 });
-                buttonsContainer.appendChild(button);
             });
-            
-            // Assemble and show the modal
-            modalContent.appendChild(heading);
-            modalContent.appendChild(description);
-            modalContent.appendChild(buttonsContainer);
-            modal.appendChild(modalContent);
-            document.body.appendChild(modal);
         }
-        
-        // Set up event listeners when document is loaded
-        document.addEventListener('DOMContentLoaded', function () {
-            // Handle language selector button click
-            const languageSelector = document.getElementById('language-selector');
-            if (languageSelector) {
-                languageSelector.addEventListener('click', showLanguageModal);
-            }
-            
-            // Original scroll indicator code
-            window.addEventListener('scroll', () => {
-                const scrollTop = window.scrollY;
-                const windowHeight = document.documentElement.scrollHeight - window.innerHeight;
-                const scrollPercentage = (scrollTop / windowHeight) * 100;
-                document.querySelector('.scroll-indicator').style.height = scrollPercentage + '%';
-            });
-            
-            // Original doctors loading code
-            fetch("/get_doctors")
-                .then(response => response.json())
-                .then(doctors => {
-                    const slidesContainer = document.querySelector(".slides");
 
-                    doctors.forEach(doctor => {
-                        let photoSrc = 'static/images/logo.jpg'; // Default image
+        // Handle language selector click
+fetch("/get_doctors")
+  .then(response => response.json())
+  .then(doctors => {
+    console.log("Doctors fetched:", doctors); // debug log
+    const slider = document.getElementById("doctorsSlider");
 
-                        // Ensure the doctor._id is a string
-                        if (doctor._id && typeof doctor._id === "object" && "$oid" in doctor._id) {
-                            photoSrc = `/user_photo/${doctor._id.$oid}`;
-                        } else if (doctor._id && typeof doctor._id === "string") {
-                            photoSrc = `/user_photo/${doctor._id}`;
-                        }
+    doctors.forEach(doctor => {
+      console.log("Rendering doctor:", doctor); // debug log
 
-                        const doctorCard = document.createElement("div");
-                        doctorCard.classList.add("doctor-card");
-                        doctorCard.innerHTML = `
-                            <img src="${photoSrc}" alt="Doctor">
-                            <h3>${doctor.name}</h3>
-                            <p>Specialization: ${doctor.specialization}</p>
-                            <p>Experience: ${doctor.years_experience} years</p>
-                        `;
-                        slidesContainer.appendChild(doctorCard);
-                    });
-                })
-                .catch(error => console.error("Error fetching doctors:", error));
+      let photoSrc = 'static/images/logo.jpg';
+
+      if (doctor._id && typeof doctor._id === "object" && "$oid" in doctor._id) {
+        photoSrc = `/user_photo/${doctor._id.$oid}`;
+      } else if (typeof doctor._id === "string") {
+        photoSrc = `/user_photo/${doctor._id}`;
+      }
+
+      const div = document.createElement("div");
+      div.className = "doctor-card";
+      div.innerHTML = `
+        <div class="doctor-avatar">
+          <img src="${photoSrc}" alt="Doctor">
+        </div>
+        <div class="doctor-name">${doctor.name}</div>
+        <div class="doctor-specialty">${doctor.specialization}</div>
+        <div class="doctor-experience">${doctor.years_experience} years experience</div>
+      `;
+      slider.appendChild(div);
+    });
+  })
+  .catch(err => {
+    console.error("Failed to load doctors:", err);
+  });
+
+
+
+
+        // Contact Form Submission
+        function submitForm(event) {
+            event.preventDefault();
             
-            // Original loading screen code
+            // Get form data
+            const formData = new FormData(event.target);
+            const data = Object.fromEntries(formData);
+            
+            // Simulate form submission
+            const submitBtn = event.target.querySelector('.submit-btn');
+            const originalText = submitBtn.innerHTML;
+            
+            submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Sending...';
+            submitBtn.disabled = true;
+            
             setTimeout(() => {
-                document.querySelector('.loading-screen').style.display = 'none';
-            }, 2000); // 2 second delay before hiding the loading screen
-            
-            // Visitor counter
+                alert('Thank you for your message! We will get back to you soon.');
+                event.target.reset();
+                submitBtn.innerHTML = originalText;
+                submitBtn.disabled = false;
+            }, 2000);
+        }
+
+        // Initialize Visitor Counter
+        function initVisitorCounter() {
             let count = localStorage.getItem('visitorCount') || 0;
             count = parseInt(count) + 1;
             localStorage.setItem('visitorCount', count);
-            document.getElementById('visitor-count').textContent = count;
+            document.getElementById('visitorCount').textContent = count.toLocaleString();
+        }
+
+    
+
+        // Intersection Observer for Animations
+        function setupAnimations() {
+            const observerOptions = {
+                threshold: 0.1,
+                rootMargin: '0px 0px -50px 0px'
+            };
+
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        entry.target.style.opacity = '1';
+                        entry.target.style.transform = 'translateY(0)';
+                    }
+                });
+            }, observerOptions);
+
+            // Observe all sections and cards
+            document.querySelectorAll('.section, .feature-card, .service-card, .doctor-card').forEach(el => {
+                el.style.opacity = '0';
+                el.style.transform = 'translateY(30px)';
+                el.style.transition = 'opacity 0.6s ease, transform 0.6s ease';
+                observer.observe(el);
+            });
+        }
+
+        // Mobile Menu Toggle
+        function setupMobileMenu() {
+            const navbar = document.querySelector('.navbar');
+            let lastScrollY = window.scrollY;
+
+            // Hide/show navbar on scroll
+            window.addEventListener('scroll', () => {
+                const currentScrollY = window.scrollY;
+                
+                if (currentScrollY > lastScrollY && currentScrollY > 100) {
+                    navbar.style.transform = 'translateX(-50%) translateY(-100%)';
+                } else {
+                    navbar.style.transform = 'translateX(-50%) translateY(0)';
+                }
+                
+                lastScrollY = currentScrollY;
+            });
+        }
+
+        // Parallax Effect for Hero Section
+        function setupParallax() {
+            const hero = document.querySelector('.hero');
+            const floatingElements = document.querySelectorAll('.floating-card');
             
-            // Check for saved language preference
-            const savedLanguage = localStorage.getItem('preferredLanguage');
-            const timestamp = localStorage.getItem('languageTimestamp');
-            const now = new Date().getTime();
-            const oneDay = 24 * 60 * 60 * 1000; // One day in milliseconds
+            window.addEventListener('scroll', () => {
+                const scrolled = window.pageYOffset;
+                const rate = scrolled * -0.5;
+                
+                if (hero.getBoundingClientRect().bottom >= 0) {
+                    floatingElements.forEach((element, index) => {
+                        const speed = 0.5 + (index * 0.1);
+                        element.style.transform = `translateY(${scrolled * speed}px) rotate(${scrolled * 0.05}deg)`;
+                    });
+                }
+            });
+        }
+
+        // Typing Animation for Hero Title
+        function setupTypingAnimation() {
+            const heroTitle = document.querySelector('.hero-title');
+            const originalText = heroTitle.textContent;
+            heroTitle.textContent = '';
             
-            // Apply saved language if it's less than a day old
-            if (savedLanguage && timestamp && (now - timestamp < oneDay)) {
-                translatePage(savedLanguage);
-            }
-        });
-        
-        // Chatbot toggle function
-        function toggleChatbot() {
-            const chatbotWidget = document.getElementById('chatbase-widget');
-            if (chatbotWidget.style.display === 'none' || chatbotWidget.style.display === '') {
-                chatbotWidget.style.display = 'block';
-            } else {
-                chatbotWidget.style.display = 'none';
+            let i = 0;
+            const typeWriter = () => {
+                if (i < originalText.length) {
+                    heroTitle.textContent += originalText.charAt(i);
+                    i++;
+                    setTimeout(typeWriter, 100);
+                }
+            };
+            
+            // Start typing animation after loading screen
+            setTimeout(typeWriter, 2500);
+        }
+
+        // Card Hover Effects
+        function setupCardEffects() {
+            const cards = document.querySelectorAll('.feature-card, .service-card, .doctor-card');
+            
+            cards.forEach(card => {
+                card.addEventListener('mouseenter', function() {
+                    this.style.transform = 'translateY(-10px) rotateX(5deg) scale(1.02)';
+                });
+                
+                card.addEventListener('mouseleave', function() {
+                    this.style.transform = 'translateY(0) rotateX(0deg) scale(1)';
+                });
+            });
+        }
+
+
+        // Redirect to Register Page
+        function redirectToRegister() {
+            trackEvent('online_consultation_clicked');
+            // Redirect to register page
+            window.location.href = '/register';
+        }
+
+        // Keyboard Navigation
+        function setupKeyboardNav() {
+            document.addEventListener('keydown', (e) => {
+                // Close modals with Escape key
+                if (e.key === 'Escape') {
+                    const languageModal = document.getElementById('languageModal');
+                    const chatbot = document.getElementById('chatbotWidget');
+                    
+                    if (languageModal.classList.contains('active')) {
+                        toggleLanguageModal();
+                    }
+                    
+                    if (chatbot.classList.contains('active')) {
+                        toggleChatbot();
+                    }
+                }
+                
+                // Theme toggle with Ctrl+Shift+T
+                if (e.ctrlKey && e.shiftKey && e.key === 'T') {
+                    e.preventDefault();
+                    toggleTheme();
+                }
+            });
+        }
+
+        // Performance Optimization
+        function optimizePerformance() {
+            // Lazy load images
+            const images = document.querySelectorAll('img[data-src]');
+            const imageObserver = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        const img = entry.target;
+                        img.src = img.dataset.src;
+                        img.removeAttribute('data-src');
+                        imageObserver.unobserve(img);
+                    }
+                });
+            });
+            
+            images.forEach(img => imageObserver.observe(img));
+            
+            // Throttle scroll events
+            let ticking = false;
+            const throttledScroll = () => {
+                if (!ticking) {
+                    requestAnimationFrame(() => {
+                        updateScrollIndicator();
+                        ticking = false;
+                    });
+                    ticking = true;
+                }
+            };
+            
+            window.addEventListener('scroll', throttledScroll, { passive: true });
+        }
+
+        // Error Handling
+        function setupErrorHandling() {
+            window.addEventListener('error', (e) => {
+                console.error('RapiACT Error:', e.error);
+                // In production, you might want to send this to an error reporting service
+            });
+            
+            // Handle unhandled promise rejections
+            window.addEventListener('unhandledrejection', (e) => {
+                console.error('Unhandled Promise Rejection:', e.reason);
+                e.preventDefault();
+            });
+        }
+
+        // Analytics Simulation
+        function trackEvent(eventName, properties = {}) {
+            // In a real application, this would send data to your analytics service
+            console.log(`Analytics Event: ${eventName}`, properties);
+        }
+
+        // Accessibility Features
+        function setupAccessibility() {
+            // Skip to content link
+            const skipLink = document.createElement('a');
+            skipLink.href = '#home';
+            skipLink.className = 'skip-link';
+            skipLink.textContent = 'Skip to main content';
+            skipLink.style.cssText = `
+                position: absolute;
+                top: -40px;
+                left: 6px;
+                background: var(--gradient-accent);
+                color: white;
+                padding: 8px;
+                text-decoration: none;
+                border-radius: 4px;
+                z-index: 10000;
+                transition: top 0.3s;
+            `;
+            
+            skipLink.addEventListener('focus', () => {
+                skipLink.style.top = '6px';
+            });
+            
+            skipLink.addEventListener('blur', () => {
+                skipLink.style.top = '-40px';
+            });
+            
+            document.body.insertBefore(skipLink, document.body.firstChild);
+            
+            // Focus management for modals
+            const focusableElements = 'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])';
+            
+            document.getElementById('languageModal').addEventListener('keydown', (e) => {
+                const modal = e.currentTarget;
+                const focusables = modal.querySelectorAll(focusableElements);
+                const firstFocusable = focusables[0];
+                const lastFocusable = focusables[focusables.length - 1];
+                
+                if (e.key === 'Tab') {
+                    if (e.shiftKey) {
+                        if (document.activeElement === firstFocusable) {
+                            lastFocusable.focus();
+                            e.preventDefault();
+                        }
+                    } else {
+                        if (document.activeElement === lastFocusable) {
+                            firstFocusable.focus();
+                            e.preventDefault();
+                        }
+                    }
+                }
+            });
+        }
+
+        // Service Worker Registration
+        function registerServiceWorker() {
+            if ('serviceWorker' in navigator) {
+                window.addEventListener('load', () => {
+                    navigator.serviceWorker.register('/sw.js')
+                        .then(registration => {
+                            console.log('SW registered: ', registration);
+                        })
+                        .catch(registrationError => {
+                            console.log('SW registration failed: ', registrationError);
+                        });
+                });
             }
         }
+
+        // Progressive Web App Installation
+        function setupPWA() {
+            let deferredPrompt;
+            
+            window.addEventListener('beforeinstallprompt', (e) => {
+                e.preventDefault();
+                deferredPrompt = e;
+                
+                // Show custom install button
+                const installBtn = document.createElement('button');
+                installBtn.className = 'install-btn';
+                installBtn.innerHTML = '<i class="fas fa-download"></i> Install App';
+                installBtn.style.cssText = `
+                    position: fixed;
+                    top: 100px;
+                    right: 20px;
+                    background: var(--gradient-accent);
+                    color: white;
+                    border: none;
+                    padding: 12px 20px;
+                    border-radius: 25px;
+                    cursor: pointer;
+                    font-weight: 600;
+                    z-index: 1000;
+                    box-shadow: var(--shadow-medium);
+                    transition: all 0.3s ease;
+                `;
+                
+                installBtn.addEventListener('click', async () => {
+                    if (deferredPrompt) {
+                        deferredPrompt.prompt();
+                        const { outcome } = await deferredPrompt.userChoice;
+                        console.log(`User response to the install prompt: ${outcome}`);
+                        deferredPrompt = null;
+                        installBtn.remove();
+                    }
+                });
+                
+                document.body.appendChild(installBtn);
+                
+                setTimeout(() => {
+                    installBtn.remove();
+                }, 10000); // Remove after 10 seconds
+            });
+        }
+
+        // Initialize Everything
+        function init() {
+            loadTheme();
+            hideLoadingScreen();
+            setupSmoothScroll();
+            populateDoctors();
+            initVisitorCounter();
+            setupAnimations();
+            setupMobileMenu();
+            setupParallax();
+            setupTypingAnimation();
+            setupCardEffects();
+            setupNavbarScroll();
+            setupKeyboardNav();
+            optimizePerformance();
+            setupErrorHandling();
+            setupAccessibility();
+            registerServiceWorker();
+            setupPWA();
+            
+            // Track page view
+            trackEvent('page_view', { page: 'home' });
+        }
+
+        // DOM Content Loaded
+        document.addEventListener('DOMContentLoaded', init);
+
+        // Page Visibility API
+        document.addEventListener('visibilitychange', () => {
+            if (document.visibilityState === 'visible') {
+                trackEvent('page_visible');
+            } else {
+                trackEvent('page_hidden');
+            }
+        });
+
+        // Network Status
+        window.addEventListener('online', () => {
+            console.log('Network: Online');
+            trackEvent('network_online');
+        });
+
+        window.addEventListener('offline', () => {
+            console.log('Network: Offline');
+            trackEvent('network_offline');
+        });
+
+        // Additional Utility Functions
+        function showNotification(message, type = 'info') {
+            const notification = document.createElement('div');
+            notification.className = `notification notification-${type}`;
+            notification.textContent = message;
+            notification.style.cssText = `
+                position: fixed;
+                top: 20px;
+                right: 20px;
+                background: var(--gradient-accent);
+                color: white;
+                padding: 15px 20px;
+                border-radius: 10px;
+                z-index: 10000;
+                box-shadow: var(--shadow-large);
+                opacity: 0;
+                transform: translateY(-20px);
+                transition: all 0.3s ease;
+            `;
+            
+            document.body.appendChild(notification);
+            
+            // Animate in
+            setTimeout(() => {
+                notification.style.opacity = '1';
+                notification.style.transform = 'translateY(0)';
+            }, 100);
+            
+            // Remove after delay
+            setTimeout(() => {
+                notification.style.opacity = '0';
+                notification.style.transform = 'translateY(-20px)';
+                setTimeout(() => {
+                    notification.remove();
+                }, 300);
+            }, 3000);
+        }
+
+        // Smooth reveal animation for elements
+        function revealOnScroll() {
+            const reveals = document.querySelectorAll('.reveal');
+            
+            reveals.forEach(element => {
+                const elementTop = element.getBoundingClientRect().top;
+                const elementVisible = 150;
+                
+                if (elementTop < window.innerHeight - elementVisible) {
+                    element.classList.add('active');
+                }
+            });
+        }
+
+        window.addEventListener('scroll', revealOnScroll);
+
+        // Console Easter Egg
+        console.log(`
+        🏥 RapiACT Healthcare Platform
+        ============================
+        
+        Welcome to RapiACT! 
+        
+        Built with ❤️ for better healthcare accessibility.
+        
+        Keyboard Shortcuts:
+        - Ctrl+Shift+T: Toggle Theme
+        - Escape: Close Modals
+        
+        Have a great day! 🌟
+        `);
     </script>
-    
-    <!-- Google Translate API -->
-    <script type="text/javascript" src="//translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script>
 </body>
 </html>
