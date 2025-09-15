@@ -897,6 +897,40 @@ def doctor_register():
         send_welcome_email1(name, email, "doctor")
 
         return jsonify({"message": "Registration successful! Await admin approval.", "redirect_url": url_for('login')})
+    
+@app.route('/doctor/<doctor_id>')
+def doctor_profile(doctor_id):
+    try:
+        oid = ObjectId(doctor_id)
+    except Exception:
+        return render_template("404.html", message="Invalid doctor ID"), 404
+
+    doctor = users_collection.find_one({"_id": oid, "role": "doctor"})
+    if not doctor:
+        return render_template("404.html", message="Doctor not found"), 404
+
+    # Convert ObjectId to string for template rendering
+    doctor['_id'] = str(doctor['_id'])
+    if 'photo' in doctor:
+        doctor['photo_url'] = url_for('user_photo', user_id=doctor['_id'])
+    else:
+        doctor['photo_url'] = url_for('static', filename='images/logo.jpg')
+
+    # Fetch related doctors by same specialization, excluding current doctor
+    related_docs_cursor = users_collection.find({
+        "role": "doctor",
+        "specialization": doctor.get("specialization"),
+        "_id": {"$ne": oid},
+        "account_status": "approved"  # or your filter criteria
+    }).limit(6)
+
+    related_doctors = []
+    for d in related_docs_cursor:
+        d['_id'] = str(d['_id'])
+        related_doctors.append(d)
+
+    return render_template("doctor_profile.html", doctor=doctor, related_doctors=related_doctors)
+
 
 def send_welcome_email1(name, email, role):
     try:
@@ -3428,61 +3462,65 @@ def email_status():
 @app.route('/pharmacy')
 @app.route('/pharmacy/')
 def pharmacy():
-    if 'user_id' not in session:
-        flash("Please login to access the pharmacy.", "danger")
-        return redirect(url_for('login'))
-    
-    user = mongo.db.users.find_one({'_id': ObjectId(session['user_id'])})
-    
-    # Handle search functionality
+    user = None
+    if 'user_id' in session:
+        user = mongo.db.users.find_one({'_id': ObjectId(session['user_id'])})
+        if user:
+            user['_id'] = str(user['_id'])
+    else:
+        # Viewing products allowed without login
+        user = None
+
     search_query = request.args.get('search', '')
+    filter_query = {}
     if search_query:
-        # Search in name and description fields
-        search_filter = {
+        filter_query = {
             "$or": [
                 {"name": {"$regex": search_query, "$options": "i"}},
                 {"description": {"$regex": search_query, "$options": "i"}}
             ]
         }
-        products = list(mongo.db.pharmacy_products.find(search_filter))
-    else:
-        products = list(mongo.db.pharmacy_products.find())
+    products = list(mongo.db.pharmacy_products.find(filter_query))
 
-    # Convert binary image data to base64 string for rendering in Jinja2
+    # Convert images to base64 strings for display
     for product in products:
-        if product.get("image"):
-            product["image"] = base64.b64encode(product["image"]).decode("utf-8")  # Convert to base64 string
-    
-    patient_prescriptions = []
+        if product.get('image'):
+            product['image'] = base64.b64encode(product['image']).decode('utf-8')
+
+    patient_recommended = []
     if session.get('role') == 'patient':
         patient_id = ObjectId(session['user_id'])
-        patient_prescriptions = list(mongo.db.prescriptions.find({"patient_id": patient_id, "status": "recommended"}))
-        
-        for prescription in patient_prescriptions:
-            product = mongo.db.pharmacy_products.find_one({"_id": prescription.get("product_id")})
-            if product:
-                prescription.update({
-                    "product_name": product.get("name"),
-                    "product_description": product.get("description"),
-                    "product_image": base64.b64encode(product["image"]).decode("utf-8") if product.get("image") else "",
-                    "product_price": product.get("price", 0)
+        patient_recommended = list(mongo.db.prescriptions.find({
+            'patient_id': patient_id,
+            'status': 'recommended'
+        }))
+        for pres in patient_recommended:
+            prod = mongo.db.pharmacy_products.find_one({'_id': pres.get('product_id')})
+            if prod:
+                pres.update({
+                    'product_name': prod.get('name'),
+                    'product_description': prod.get('description'),
+                    'product_price': prod.get('price', 0),
+                    'product_image': base64.b64encode(prod.get('image', b'')).decode('utf-8') if prod.get('image') else '',
+                    'payment_verified': pres.get('payment_status') == 'verified'
                 })
-                
-                # Check if payment is verified
-                prescription["payment_verified"] = prescription.get("payment_status") == "verified"
             else:
-                prescription.update({
-                    "product_name": "Unknown Product",
-                    "product_description": "No description available",
-                    "product_image": "",
-                    "product_price": 0,
-                    "payment_verified": False
+                pres.update({
+                    'product_name': 'Unknown',
+                    'product_description': 'No description',
+                    'product_price': 0,
+                    'product_image': '',
+                    'payment_verified': False
                 })
-    
-    return render_template('pharmacy.html', products=products, prescriptions=patient_prescriptions, 
-                          is_patient=(session.get('role') == 'patient'), user=user, search_query=search_query)
 
-
+    return render_template(
+        'pharmacy.html', products=products,
+        recommended=patient_recommended,
+        user=user,
+        is_authenticated=('user_id' in session),
+        is_patient=(session.get('role') == 'patient'),
+        search_query=search_query
+    )
 
 @app.route('/admin_dashboard/add_medicine', methods=['GET', 'POST'])
 def add_medicine():

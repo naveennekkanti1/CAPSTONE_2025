@@ -1,215 +1,331 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
+<head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
     <title>Services - RapiACT</title>
-    <link
-      rel="icon"
-      type="image/jpg"
-      href="{{ url_for('static', filename='images/logo.jpg') }}"
-    />
+    <link rel="icon" type="image/jpg" href="static/images/logo.jpg"/>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet"/>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet"/>
     <style>
-      * {
-        margin: 0;
-        padding: 0;
-        box-sizing: border-box;
-      }
-
-      body {
-        font-family: "Poppins", sans-serif;
-        background-color: #011d1b;
-        color: white;
-        line-height: 1.6;
-      }
-
-      .navbar {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        padding: 15px 30px;
-        background-color: #014340;
-      }
-
-      .navbar .logo img {
-        height: 50px;
-      }
-
-      .navbar .links a {
-        color: white;
-        text-decoration: none;
-        margin: 0 15px;
-        transition: color 0.3s ease;
-      }
-
-      .navbar .links a:hover {
-        color: #00d9a6;
-      }
-
-      .services-container {
-        text-align: center;
-        padding: 60px 30px;
-      }
-
-      .services-container h2 {
-        font-size: 2.5rem;
-        color: #00a6ff;
-        margin-bottom: 20px;
-      }
-
-      .services-grid {
-        display: flex;
-        flex-wrap: wrap;
-        justify-content: center;
-        gap: 20px;
-        padding: 20px;
-      }
-
-      .service-card {
-        background-color: #014340;
-        border-radius: 10px;
-        padding: 20px;
-        width: 280px;
-        text-align: center;
-        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-        transition: transform 0.3s ease, background-color 0.3s ease;
-      }
-
-      .service-card:hover {
-        transform: translateY(-10px);
-        background-color: #00a6ff;
-      }
-
-      .service-card img {
-        width: 60px;
-        margin-bottom: 10px;
-      }
-
-      .service-card h3 {
-        color: white;
-        margin-bottom: 10px;
-      }
-
-      .service-card p {
-        color: #e0e0e0;
-      }
-
-      /* Contact Section */
-      #contact {
-        text-align: center;
-        padding: 60px 30px;
-        background-color: #014340;
-        margin-top: 40px;
-        border-radius: 10px;
-      }
-
-      #contact h2 {
-        font-size: 2.5rem;
-        color: #00d9a6;
-        margin-bottom: 20px;
-      }
-
-      .contact-form {
-        max-width: 600px;
-        margin: 0 auto;
-        display: flex;
-        flex-direction: column;
-        gap: 15px;
-      }
-
-      .contact-form input,
-      .contact-form textarea {
-        width: 100%;
-        padding: 15px;
-        border-radius: 10px;
-        border: none;
-        font-size: 1rem;
-        background-color: #f4f4f4;
-        color: #333;
-      }
-
-      .contact-form textarea {
-        resize: none;
-        height: 120px;
-      }
-
-      .contact-form button {
-        background-color: #00a6ff;
-        color: white;
-        padding: 15px 30px;
-        border-radius: 50px;
-        border: none;
-        font-size: 16px;
-        transition: background-color 0.3s ease;
-        cursor: pointer;
-      }
-
-      .contact-form button:hover {
-        background-color: #0080c4;
-      }
-
-      footer {
-        background-color: #014340;
-        color: white;
-        text-align: center;
-        padding: 20px 0;
-        margin-top: 40px;
-      }
+        :root {
+            --bg-primary: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            --bg-secondary: #ffffff;
+            --bg-card: #f8fafc;
+            --text-primary: #1a202c;
+            --text-secondary: #4a5568;
+            --text-accent: #667eea;
+            --border-color: #e2e8f0;
+            --shadow-light: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            --shadow-medium: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+            --shadow-large: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+            --gradient-primary: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            --gradient-accent: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            --glassmorphism: rgba(255,255,255,0.25);
+            --backdrop-blur: blur(10px);
+        }
+        [data-theme="dark"] {
+            --bg-primary: linear-gradient(135deg, #0c0c0c 0%, #1a1a2e 100%);
+            --bg-secondary: #0f0f23;
+            --bg-card: #16213e;
+            --text-primary: #ffffff;
+            --text-secondary: #a0aec0;
+            --text-accent: #4facfe;
+            --border-color: #2d3748;
+            --shadow-light: 0 4px 6px -1px rgba(0, 0, 0, 0.3);
+            --shadow-medium: 0 10px 15px -3px rgba(0, 0, 0, 0.4);
+            --shadow-large: 0 25px 50px -12px rgba(0, 0, 0, 0.6);
+            --gradient-primary: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            --gradient-accent: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            --glassmorphism: rgba(22,33,62,0.25);
+            --backdrop-blur: blur(15px);
+        }
+        body {
+            font-family: 'Inter', sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            margin: 0;
+            min-height: 100vh;
+        }
+        .navbar {
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 95%;
+            max-width: 1200px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px 30px;
+            background: var(--glassmorphism);
+            backdrop-filter: var(--backdrop-blur);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 20px;
+            z-index: 1000;
+            box-shadow: var(--shadow-medium);
+        }
+        .navbar .logo {
+            display: flex;
+            align-items: center;
+            font-size: 1.8rem;
+            font-weight: 800;
+            color: var(--text-accent);
+            text-decoration: none;
+        }
+        .navbar .logo i {
+            margin-right: 10px;
+            font-size: 2rem;
+            background: var(--gradient-accent);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+                    background-clip: text;
+        }
+        .nav-links {
+            display: flex;
+            align-items: center;
+            gap: 30px;
+        }
+        .nav-links a {
+            color: var(--text-primary);
+            text-decoration: none;
+            font-weight: 500;
+            position: relative;
+            padding: 8px 16px;
+            border-radius: 10px;
+            transition: all 0.3s ease;
+        }
+        .nav-links a:hover {
+            color: var(--text-accent);
+            background: rgba(255,255,255,0.1);
+        }
+        .nav-links a::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 50%;
+            width: 0;
+            height: 2px;
+            background: var(--gradient-accent);
+            transition: all 0.3s ease;
+            transform: translateX(-50%);
+        }
+        .nav-links a:hover::after {
+            width: 80%;
+        }
+        .section {
+            padding: 120px 20px 80px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        .section-title {
+            text-align: center;
+            font-size: clamp(2.5rem, 5vw, 3.5rem);
+            font-weight: 700;
+            margin-bottom: 20px;
+            background: var(--gradient-accent);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        .section-subtitle {
+            text-align: center;
+            color: var(--text-secondary);
+            font-size: 1.2rem;
+            margin-bottom: 60px;
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+        .services-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(320px,1fr));
+            gap: 30px;
+            margin-bottom: 60px;
+        }
+        .service-card {
+            background: var(--glassmorphism);
+            backdrop-filter: var(--backdrop-blur);
+            border: 1px solid rgba(255,255,255,0.2);
+            border-radius: 25px;
+            padding: 40px 30px;
+            text-align: center;
+            position: relative;
+            transition: all 0.3s ease;
+            box-shadow: var(--shadow-medium);
+            cursor: pointer;
+        }
+        .service-card:hover {
+            transform: translateY(-10px) rotateX(5deg);
+            background: var(--gradient-accent);
+            color: white;
+            box-shadow: var(--shadow-large);
+        }
+        .service-card img, .service-card i {
+            width: 64px;
+            height: 64px;
+            margin-bottom: 15px;
+            background: var(--gradient-accent);
+            border-radius: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            object-fit: contain;
+        }
+        .service-card i {
+            font-size: 2rem;
+            color: white;
+        }
+        .service-card h3 {
+            font-size: 1.4rem;
+            font-weight: 600;
+            margin-bottom: 10px;
+            color: var(--text-primary);
+        }
+        .service-card p {
+            color: var(--text-secondary);
+        }
+        /* Contact Section */
+        #contact {
+            padding: 80px 20px;
+            background: var(--glassmorphism);
+            border-radius: 25px;
+            max-width: 900px;
+            margin: 60px auto 30px auto;
+            box-shadow: var(--shadow-medium);
+        }
+        #contact h2 {
+            text-align: center;
+            font-size: clamp(2rem, 4vw, 2.5rem);
+            background: var(--gradient-accent);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 30px;
+        }
+        .contact-form {
+            max-width: 480px;
+            margin: 0 auto;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+        .contact-form input,
+        .contact-form textarea {
+            width: 100%;
+            padding: 18px;
+            border-radius: 15px;
+            border: 2px solid var(--border-color);
+            background: var(--bg-secondary);
+            color: var(--text-primary);
+            font-size: 1rem;
+            transition: all 0.3s ease;
+        }
+        .contact-form input:focus,
+        .contact-form textarea:focus {
+            outline: none;
+            border-color: var(--text-accent);
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+        .contact-form textarea {
+            resize: none;
+        }
+        .contact-form button {
+            padding: 15px;
+            background: var(--gradient-accent);
+            color: white;
+            border: none;
+            border-radius: 15px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            box-shadow: var(--shadow-medium);
+            transition: all 0.3s ease;
+        }
+        .contact-form button:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-large);
+        }
+        footer {
+            background: var(--bg-secondary);
+            padding: 45px 20px 20px;
+            text-align: center;
+            border-top: 1px solid var(--border-color);
+            color: var(--text-secondary);
+            margin-top: 80px;
+            border-radius: 25px 25px 0 0;
+            box-shadow: var(--shadow-light);
+            max-width: 1200px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+        @media (max-width: 768px) {
+            .navbar {
+                width: 96%;
+                padding: 10px 12px;
+            }
+            .services-grid {
+                grid-template-columns: 1fr;
+            }
+            #contact, .section {
+                padding: 35px 8px;
+            }
+        }
     </style>
-  </head>
-  <body>
-    <div class="navbar">
-      <div class="logo">
-        <img src="static/images/logo.jpg" alt="Logo" />
-      </div>
-      <div class="links">
-        <a href="/">Home</a>
-        <a href="/about">About</a>
-        <a href="/services">Services</a>
-        <a href="/all_doctors">Doctors</a>
-        <a href="/contact">Contact</a>
-      </div>
-    </div>
-
-    <div class="services-container">
-      <h2>Our Services</h2>
-      <div class="services-grid">
-        <div class="service-card" onclick="location.href='/login';" style="cursor: pointer;">
-          <img src="static/images/consultation.png" alt="Consultation" />
-          <h3>Online Doctor Consultation</h3>
-          <p>Get expert medical advice from top doctors online.</p>
+</head>
+<body data-theme="dark">
+    <!-- Navbar -->
+    <nav class="navbar">
+        <a href="/" class="logo"><i class="fas fa-heartbeat"></i>RapiACT</a>
+        <div class="nav-links">
+            <a href="/">Home</a>
+            <a href="/about">About</a>
+            <a href="/services">Services</a>
+            <a href="/all_doctors">Doctors</a>
+            <a href="/contact">Contact</a>
         </div>
-        <div class="service-card">
-          <img src="static/images/diagnostics.jpeg" alt="Diagnostics" />
-          <h3>Diagnostic Test Bookings</h3>
-          <p>Book lab tests and get reports delivered online.</p>
+    </nav>
+    
+    <section class="section" style="padding-top:140px" id="services">
+        <h2 class="section-title">Our Services</h2>
+        <p class="section-subtitle">Comprehensive healthcare solutions designed for your convenience</p>
+        
+        <div class="services-grid">
+            <div class="service-card" onclick="location.href='/login'">
+                <img src="static/images/consultation.png" alt="Consultation"/>
+                <h3>Online Doctor Consultation</h3>
+                <p>Get expert medical advice from top doctors online.</p>
+            </div>
+            <div class="service-card">
+                <img src="static/images/diagnostics.jpeg" alt="Diagnostics"/>
+                <h3>Diagnostic Test Bookings</h3>
+                <p>Book lab tests and get reports delivered online.</p>
+            </div>
+            <div class="service-card" onclick="location.href='/predictions'">
+                <img src="static/images/health-report.png" alt="Health Reports"/>
+                <h3>Personalized Health Reports</h3>
+                <p>Receive AI-driven health insights tailored for you.</p>
+            </div>
+            <div class="service-card">
+                <img src="static/images/emergency.png" alt="Emergency"/>
+                <h3>Emergency Assistance</h3>
+                <p>24/7 emergency medical support at your fingertips.</p>
+            </div>
         </div>
-        <div class="service-card" onclick="location.href='/predictions';" style="cursor:pointer;">
-          <img src="static/images/health-report.png" alt="Health Reports" />
-          <h3>Personalized Health Reports</h3>
-          <p>Receive AI-driven health insights tailored for you.</p>
-        </div>
-        <div class="service-card">
-          <img src="static/images/emergency.png" alt="Emergency" />
-          <h3>Emergency Assistance</h3>
-          <p>24/7 emergency medical support at your fingertips.</p>
-        </div>
-      </div>
-    </div>
-
-    <!-- Contact Section -->
-    <section id="contact">
-      <h2>Contact Us</h2>
-      <form class="contact-form" action="/submit_enquiry" method="POST">
-        <input type="text" name="name" placeholder="Your Name" required />
-        <input type="email" name="email" placeholder="Your Email" required />
-        <textarea name="message" placeholder="Your Message" required></textarea>
-        <button type="submit">Send Message</button>
-      </form>
     </section>
-
+    
+    <section id="contact">
+        <h2>Contact Us</h2>
+        <form class="contact-form" action="/submit_enquiry" method="POST">
+            <input type="text" name="name" placeholder="Your Name" required/>
+            <input type="email" name="email" placeholder="Your Email" required/>
+            <textarea name="message" placeholder="Your Message" required></textarea>
+            <button type="submit"><i class="fas fa-paper-plane"></i> Send Message</button>
+        </form>
+    </section>
+    
     <footer>
-      <p>© 2025 RapiACT. All Rights Reserved.</p>
+        <p>&copy; 2025 RapiACT. All Rights Reserved.</p>
     </footer>
-  </body>
+</body>
 </html>

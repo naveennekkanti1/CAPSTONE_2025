@@ -1,235 +1,310 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
     <title>AI Predictions - RapiACT</title>
-    <link
-      rel="icon"
-      type="image/jpg"
-      href="{{ url_for('static', filename='images/logo.jpg') }}"
-    />
+    <link rel="icon" type="image/jpg" href="static/images/logo.jpg"/>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet"/>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet"/>
     <style>
-      * {
-        margin: 0;
-        padding: 0;
-        box-sizing: border-box;
-      }
+        :root {
+            --bg-primary: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            --bg-secondary: #ffffff;
+            --bg-card: #f8fafc;
+            --text-primary: #1a202c;
+            --text-secondary: #4a5568;
+            --text-accent: #667eea;
+            --border-color: #e2e8f0;
+            --shadow-light: 0 4px 6px -1px rgba(0,0,0,0.1);
+            --shadow-medium: 0 10px 15px -3px rgba(0,0,0,0.1);
+            --shadow-large: 0 25px 50px -12px rgba(0,0,0,0.25);
+            --gradient-primary: linear-gradient(135deg,#667eea 0%,#764ba2 100%);
+            --gradient-accent: linear-gradient(135deg,#4facfe 0%,#00f2fe 100%);
+            --glassmorphism: rgba(255,255,255,0.25);
+            --backdrop-blur: blur(10px);
+        }
+        [data-theme="dark"] {
+            --bg-primary: linear-gradient(135deg,#0c0c0c 0%,#1a1a2e 100%);
+            --bg-secondary: #0f0f23;
+            --bg-card: #16213e;
+            --text-primary: #ffffff;
+            --text-secondary: #a0aec0;
+            --text-accent: #4facfe;
+            --border-color: #2d3748;
+            --shadow-light: 0 4px 6px -1px rgba(0,0,0,0.3);
+            --shadow-medium: 0 10px 15px -3px rgba(0,0,0,0.4);
+            --shadow-large: 0 25px 50px -12px rgba(0,0,0,0.6);
+            --gradient-primary: linear-gradient(135deg,#667eea 0%,#764ba2 100%);
+            --gradient-accent: linear-gradient(135deg,#4facfe 0%,#00f2fe 100%);
+            --glassmorphism: rgba(22,33,62,0.25);
+            --backdrop-blur: blur(15px);
+        }
+        body {
+            font-family: 'Inter', sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            min-height: 100vh;
+        }
+        /* Navbar from index.html */
+        .navbar {
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 95%;
+            max-width: 1200px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px 30px;
+            background: var(--glassmorphism);
+            backdrop-filter: var(--backdrop-blur);
+            border: 1px solid rgba(255,255,255,0.2);
+            border-radius: 20px;
+            z-index: 1000;
+            box-shadow: var(--shadow-medium);
+        }
+        .navbar .logo {
+            display: flex;
+            align-items: center;
+            font-size: 1.8rem;
+            font-weight: 800;
+            color: var(--text-accent);
+            text-decoration: none;
+        }
+        .navbar .logo i {
+            margin-right: 10px;
+            font-size: 2rem;
+            background: var(--gradient-accent);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        .nav-links {
+            display: flex;
+            align-items: center;
+            gap: 30px;
+        }
+        .nav-links a {
+            color: var(--text-primary);
+            text-decoration: none;
+            font-weight: 500;
+            position: relative;
+            padding: 8px 16px;
+            border-radius: 10px;
+            transition: all 0.3s ease;
+        }
+        .nav-links a:hover {
+            color: var(--text-accent);
+            background: rgba(255,255,255,0.1);
+        }
+        .nav-links a::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 50%;
+            width: 0;
+            height: 2px;
+            background: var(--gradient-accent);
+            transition: all 0.3s ease;
+            transform: translateX(-50%);
+        }
+        .nav-links a:hover::after {
+            width: 80%;
+        }
 
-      body {
-        font-family: "Poppins", sans-serif;
-        background-color: #011d1b;
-        color: white;
-        line-height: 1.6;
-      }
-
-      .navbar {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        padding: 15px 30px;
-        background-color: #014340;
-      }
-
-      .navbar .logo img {
-        height: 50px;
-      }
-
-      .navbar .links a {
-        color: white;
-        text-decoration: none;
-        margin: 0 15px;
-        transition: color 0.3s ease;
-      }
-
-      .navbar .links a:hover {
-        color: #00d9a6;
-      }
-
-      .predictions-container {
-        text-align: center;
-        padding: 60px 30px;
-      }
-
-      .predictions-container h2 {
-        font-size: 2.5rem;
-        color: #00a6ff;
-        margin-bottom: 20px;
-      }
-
-      .predictions-container p {
-        max-width: 800px;
-        margin: 0 auto 40px;
-        color: #e0e0e0;
-        font-size: 1.1rem;
-      }
-
-      .predictions-grid {
-        display: flex;
-        flex-wrap: wrap;
-        justify-content: center;
-        gap: 25px;
-        padding: 20px;
-        max-width: 1200px;
-        margin: 0 auto;
-      }
-
-      .prediction-card {
-        background-color: #014340;
-        border-radius: 10px;
-        padding: 30px 20px;
-        width: 280px;
-        text-align: center;
-        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-        transition: transform 0.3s ease, background-color 0.3s ease;
-        cursor: pointer;
-        position: relative;
-        overflow: hidden;
-      }
-
-      .prediction-card:hover {
-        transform: translateY(-10px);
-        background-color: #00a6ff;
-        box-shadow: 0 8px 16px rgba(0, 0, 0, 0.3);
-      }
-
-      .prediction-card img {
-        width: 80px;
-        height: 80px;
-        object-fit: cover;
-        border-radius: 50%;
-        margin-bottom: 15px;
-        border: 3px solid #00d9a6;
-        transition: transform 0.3s ease;
-      }
-
-      .prediction-card:hover img {
-        transform: scale(1.1);
-      }
-
-      .prediction-card h3 {
-        color: white;
-        margin-bottom: 10px;
-        font-size: 1.3rem;
-      }
-
-      .prediction-card p {
-        color: #e0e0e0;
-        margin-bottom: 20px;
-        font-size: 0.9rem;
-      }
-
-      .predict-btn {
-        background-color: #00d9a6;
-        color: #011d1b;
-        padding: 10px 20px;
-        border-radius: 50px;
-        border: none;
-        font-size: 16px;
-        font-weight: bold;
-        transition: background-color 0.3s ease;
-        cursor: pointer;
-        display: inline-block;
-        text-decoration: none;
-      }
-
-      .predict-btn:hover {
-        background-color: #00a6ff;
-        color: white;
-      }
-
-      footer {
-        background-color: #014340;
-        color: white;
-        text-align: center;
-        padding: 20px 0;
-        margin-top: 40px;
-      }
+        .section {
+            padding: 120px 20px 80px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        .section-title {
+            text-align: center;
+            font-size: clamp(2.5rem, 5vw, 3.5rem);
+            font-weight: 700;
+            margin-bottom: 20px;
+            background: var(--gradient-accent);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        .section-subtitle {
+            text-align: center;
+            color: var(--text-secondary);
+            font-size: 1.2rem;
+            margin-bottom: 60px;
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+        .predictions-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(320px,1fr));
+            gap: 30px;
+            margin-bottom: 60px;
+        }
+        .prediction-card {
+            background: var(--glassmorphism);
+            backdrop-filter: var(--backdrop-blur);
+            border: 1px solid rgba(255,255,255,0.2);
+            border-radius: 25px;
+            padding: 40px 30px;
+            text-align: center;
+            position: relative;
+            transition: all 0.3s ease;
+            box-shadow: var(--shadow-medium);
+            cursor: pointer;
+        }
+        .prediction-card:hover {
+            transform: translateY(-10px) rotateX(5deg);
+            background: var(--gradient-accent);
+            color: white;
+            box-shadow: var(--shadow-large);
+        }
+        .prediction-card img {
+            width: 80px;
+            height: 80px;
+            object-fit: cover;
+            border-radius: 50%;
+            margin-bottom: 15px;
+            border: 3px solid #00d9a6;
+            background: var(--gradient-accent);
+            transition: transform 0.3s ease;
+        }
+        .prediction-card:hover img {
+            transform: scale(1.1);
+            border-color: #fff;
+        }
+        .prediction-card h3 {
+            font-size: 1.4rem;
+            font-weight: 600;
+            margin-bottom: 10px;
+            color: var(--text-primary);
+        }
+        .prediction-card:hover h3 { color: #fff; }
+        .prediction-card p {
+            color: var(--text-secondary);
+            margin-bottom: 20px;
+            font-size: 1rem;
+        }
+        .prediction-card .predict-btn {
+            padding: 10px 24px;
+            border-radius: 50px;
+            border: none;
+            font-size: 1rem;
+            font-weight: 600;
+            background: var(--gradient-accent);
+            color: #fff;
+            box-shadow: var(--shadow-light);
+            cursor: pointer;
+            transition: background 0.3s, color 0.3s;
+            text-decoration: none;
+            margin-top: 5px;
+            display: inline-block;
+        }
+        .prediction-card .predict-btn:hover {
+            background: var(--gradient-primary);
+            color: #fff;
+        }
+        footer {
+            background: var(--bg-secondary);
+            padding: 45px 20px 20px;
+            text-align: center;
+            border-top: 1px solid var(--border-color);
+            color: var(--text-secondary);
+            margin-top: 80px;
+            border-radius: 25px 25px 0 0;
+            box-shadow: var(--shadow-light);
+            max-width: 1200px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+        @media (max-width: 768px) {
+            .navbar {
+                width: 96%;
+                padding: 10px 12px;
+            }
+            .predictions-grid {
+                grid-template-columns: 1fr;
+            }
+            .section {
+                padding: 35px 6px;
+            }
+        }
     </style>
-  </head>
-  <body>
-    <div class="navbar">
-      <div class="logo">
-        <img src="static/images/logo.jpg" alt="Logo" />
-      </div>
-      <div class="links">
-        <a href="/">Home</a>
-        <a href="/about">About</a>
-        <a href="/services">Services</a>
-        <a href="/all_doctors">Doctors</a>
-        <a href="/contact">Contact</a>
-      </div>
-    </div>
-
-    <div class="predictions-container">
-      <h2>AI Health Predictions</h2>
-      <p>
-        Use our advanced AI models to analyze your health conditions and receive
-        personalized risk assessments for various diseases. Simply select a
-        prediction model to get started.
-      </p>
-      
-      <div class="predictions-grid">
-        <div class="prediction-card" onclick="location.href='/diabetes';">
-          <img src="static/images/blood.png" alt="Diabetes" />
-          <h3>Diabetes</h3>
-          <p>Predict diabetes risk by analyzing blood sugar levels and lifestyle factors.</p>
-          <a href="/diabetes" class="predict-btn">Predict Now</a>
+</head>
+<body data-theme="dark">
+    <!-- Navbar -->
+    <nav class="navbar">
+        <a href="/" class="logo"><i class="fas fa-heartbeat"></i>RapiACT</a>
+        <div class="nav-links">
+            <a href="/">Home</a>
+            <a href="/about">About</a>
+            <a href="/services">Services</a>
+            <a href="/all_doctors">Doctors</a>
+            <a href="/contact">Contact</a>
         </div>
+    </nav>
 
-        <div class="prediction-card" onclick="location.href='/parkinsons';">
-          <img src="static/images/Brain.jpg" alt="parkinsons" />
-          <h3>Parkinson's Disease</h3>
-          <p>Use machine learning to predict Parkinson's based on speech and motor symptoms.</p>
-          <a href="/parkinsons" class="predict-btn">Predict Now</a>
+    <section class="section" style="padding-top:140px">
+        <h2 class="section-title">AI Health Predictions</h2>
+        <p class="section-subtitle">
+            Use our advanced AI models to analyze your health conditions and receive personalized risk assessments for various diseases. Simply select a prediction model to get started.
+        </p>
+        <div class="predictions-grid">
+            <div class="prediction-card" onclick="location.href='/diabetes'">
+                <img src="static/images/blood.png" alt="Diabetes"/>
+                <h3>Diabetes</h3>
+                <p>Predict diabetes risk by analyzing blood sugar levels and lifestyle factors.</p>
+                <a href="/diabetes" class="predict-btn">Predict Now</a>
+            </div>
+            <div class="prediction-card" onclick="location.href='/parkinsons'">
+                <img src="static/images/Brain.jpg" alt="Parkinson's"/>
+                <h3>Parkinson's Disease</h3>
+                <p>Use machine learning to predict Parkinson's based on speech and motor symptoms.</p>
+                <a href="/parkinsons" class="predict-btn">Predict Now</a>
+            </div>
+            <div class="prediction-card" onclick="location.href='/model2'">
+                <img src="static/images/heart.jpg" alt="Heart Disease"/>
+                <h3>Heart Disease</h3>
+                <p>Predict heart disease risk based on key symptoms and cardiovascular factors.</p>
+                <a href="/model2" class="predict-btn">Predict Now</a>
+            </div>
+            <div class="prediction-card" onclick="location.href='/model3'">
+                <img src="static/images/kidney.jpg" alt="Kidney Disease"/>
+                <h3>Kidney Disease</h3>
+                <p>Detect kidney disease early: swelling, fatigue, nausea, urine changes, cramps.</p>
+                <a href="/model3" class="predict-btn">Predict Now</a>
+            </div>
+            <div class="prediction-card" onclick="location.href='/lung_cancer'">
+                <img src="static/images/lung.jpg" alt="Lung Cancer"/>
+                <h3>Lung Cancer</h3>
+                <p>Assess lung cancer risk based on respiratory symptoms and risk factors.</p>
+                <a href="/lung_cancer" class="predict-btn">Predict Now</a>
+            </div>
+            <div class="prediction-card" onclick="location.href='/breast_cancer'">
+                <img src="static/images/breast.jpg" alt="Breast Cancer"/>
+                <h3>Breast Cancer Prediction</h3>
+                <p>Analyze tumor characteristics to assess malignancy risk using our enhanced ML model.</p>
+                <a href="/breast_cancer" class="predict-btn">Analyze Now</a>
+            </div>
+            <div class="prediction-card" onclick="location.href='/Tyroid'">
+                <img src="static/images/tyroid.jpeg" alt="Thyroid"/>
+                <h3>Thyroid Prediction</h3>
+                <p>Assess thyroid disorder risk using AI-driven analysis of health data.</p>
+                <a href="/Tyroid" class="predict-btn">Analyze Now</a>
+            </div>
+            <div class="prediction-card" onclick="location.href='/liver'">
+                <img src="static/images/Liver.PNG" alt="Liver"/>
+                <h3>Liver Disease Prediction</h3>
+                <p>Early detection of liver disorders through key biomarkers and patient data analysis.</p>
+                <a href="/liver" class="predict-btn">Analyze Now</a>
+            </div>
         </div>
-
-        <div class="prediction-card" onclick="location.href='/model2';">
-          <img src="static/images/heart.jpg" alt="Heart Disease" />
-          <h3>Heart Disease</h3>
-          <p>Predict heart disease risk based on key symptoms and cardiovascular factors.</p>
-          <a href="/model2" class="predict-btn">Predict Now</a>
-        </div>
-
-        <div class="prediction-card" onclick="location.href='/model3';">
-          <img src="static/images/kidney.jpg" alt="Liver Disease" />
-          <h3>Kidney Disease</h3>
-          <p>Detect kidney disease early: swelling, fatigue, nausea, urine changes, cramps.</p>
-          <a href="/model3" class="predict-btn">Predict Now</a>
-        </div>
-        
-        <div class="prediction-card" onclick="location.href='/lung_cancer';">
-          <img src="static/images/lung.jpg" alt="Lung Cancer" />
-          <h3>Lung Cancer</h3>
-          <p>Assess lung cancer risk based on respiratory symptoms and risk factors.</p>
-          <a href="/lung_cancer" class="predict-btn">Predict Now</a>
-        </div>
-
-        <div class="prediction-card" onclick="location.href='/breast_cancer';">
-          <img src="static/images/breast.jpg" alt="Breast Cancer" />
-          <h3>Breast Cancer Prediction</h3>
-          <p>Analyze tumor characteristics to assess malignancy risk using our enhanced ML model.</p>
-          <a href="/breast_cancer" class="predict-btn">Analyze Now</a>
-        </div>
-
-        <div class="prediction-card" onclick="location.href='/Tyroid';">
-          <img src="static/images/tyroid.jpeg" alt="Thyroid" />
-          <h3>Thyroid Prediction</h3>
-          <p>Analyze tumor characteristics to assess malignancy risk using our enhanced ML model.</p>
-          <a href="/Tyroid" class="predict-btn">Analyze Now</a>
-        </div>
-
-        <div class="prediction-card" onclick="location.href='/liver';">
-          <img src="static/images/Liver.PNG" alt="Liver" />
-          <h3>Liver Disease Prediction</h3>
-          <p>Early detection of liver disorders through key biomarkers and patient data analysis.</p>
-          <a href="/liver" class="predict-btn">Analyze Now</a>
-        </div>
-      </div>
-    </div>
-
+    </section>
     <footer>
-      <p>© 2025 RapiACT. All Rights Reserved.</p>
+        <p>&copy; 2025 RapiACT. All Rights Reserved.</p>
     </footer>
-  </body>
+</body>
 </html>
