@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Not Found | RapiACT</title>
+    <style>
+        html, body { background:#16213e; color:#fff; font-family: 'Inter', sans-serif; margin:0; }
+        .error-container { max-width:520px; margin:110px auto; text-align:center; padding:50px 35px; background:rgba(255,255,255,0.04); border-radius:21px; box-shadow:0 10px 30px rgba(44,62,80,0.09);}
+        h1 {font-size:2.7rem; margin-bottom:18px; color:#ff6161;}
+        p {color:#a0aec0;}
+        a {color:#4facfe; text-decoration:none;}
+    </style>
+</head>
+<body>
+    <div class="error-container">
+        <h1>Oops!</h1>
+        <p>{{ message or "The page you are looking for was not found." }}</p>
+        <a href="/">Return to Home</a>
+    </div>
+</body>
+</html>
