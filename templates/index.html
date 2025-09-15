@@ -226,72 +226,72 @@
     </div>
 
     <script>
-        // Set countdown date (2 days from now)
-        const countdownDate = new Date().getTime() + (2 * 24 * 60 * 60 * 1000);
+    // Fixed countdown date: 15 September 2025, 11:15 AM IST
+    const countdownDate = new Date("Sep 16, 2025 11:15:00 GMT+0530").getTime();
+
+    // Create floating particles
+    function createParticles() {
+        const particlesContainer = document.querySelector('.particles');
         
-        // Create floating particles
-        function createParticles() {
-            const particlesContainer = document.querySelector('.particles');
+        setInterval(() => {
+            const particle = document.createElement('div');
+            particle.className = 'particle';
+            particle.style.left = Math.random() * 100 + '%';
+            particle.style.animationDuration = (Math.random() * 3 + 3) + 's';
+            particle.style.animationDelay = Math.random() * 2 + 's';
+            particlesContainer.appendChild(particle);
             
-            setInterval(() => {
-                const particle = document.createElement('div');
-                particle.className = 'particle';
-                particle.style.left = Math.random() * 100 + '%';
-                particle.style.animationDuration = (Math.random() * 3 + 3) + 's';
-                particle.style.animationDelay = Math.random() * 2 + 's';
-                particlesContainer.appendChild(particle);
-                
-                // Remove particle after animation
-                setTimeout(() => {
-                    particle.remove();
-                }, 6000);
-            }, 300);
+            // Remove particle after animation
+            setTimeout(() => {
+                particle.remove();
+            }, 6000);
+        }, 300);
+    }
+    
+    // Update countdown
+    function updateCountdown() {
+        const now = new Date().getTime();
+        const distance = countdownDate - now;
+        
+        if (distance < 0) {
+            document.getElementById('countdown').innerHTML = '<div class="expired">🎉 Will Live SOON 🎉</div>';
+            return;
         }
         
-        // Update countdown
-        function updateCountdown() {
-            const now = new Date().getTime();
-            const distance = countdownDate - now;
-            
-            if (distance < 0) {
-                document.getElementById('countdown').innerHTML = '<div class="expired">🎉 TIME\'S UP! 🎉</div>';
-                return;
-            }
-            
-            const days = Math.floor(distance / (1000 * 60 * 60 * 24));
-            const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-            const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
-            const seconds = Math.floor((distance % (1000 * 60)) / 1000);
-            
-            document.getElementById('days').textContent = days.toString().padStart(2, '0');
-            document.getElementById('hours').textContent = hours.toString().padStart(2, '0');
-            document.getElementById('minutes').textContent = minutes.toString().padStart(2, '0');
-            document.getElementById('seconds').textContent = seconds.toString().padStart(2, '0');
-            
-            // Add extra pulse animation when seconds change
-            if (seconds !== updateCountdown.lastSecond) {
-                document.getElementById('seconds').parentElement.style.animation = 'none';
-                setTimeout(() => {
-                    document.getElementById('seconds').parentElement.style.animation = 'pulse 2s infinite ease-in-out';
-                }, 10);
-                updateCountdown.lastSecond = seconds;
-            }
+        const days = Math.floor(distance / (1000 * 60 * 60 * 24));
+        const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+        const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+        const seconds = Math.floor((distance % (1000 * 60)) / 1000);
+        
+        document.getElementById('days').textContent = days.toString().padStart(2, '0');
+        document.getElementById('hours').textContent = hours.toString().padStart(2, '0');
+        document.getElementById('minutes').textContent = minutes.toString().padStart(2, '0');
+        document.getElementById('seconds').textContent = seconds.toString().padStart(2, '0');
+        
+        // Add extra pulse animation when seconds change
+        if (seconds !== updateCountdown.lastSecond) {
+            document.getElementById('seconds').parentElement.style.animation = 'none';
+            setTimeout(() => {
+                document.getElementById('seconds').parentElement.style.animation = 'pulse 2s infinite ease-in-out';
+            }, 10);
+            updateCountdown.lastSecond = seconds;
         }
-        
-        // Initialize
-        createParticles();
-        updateCountdown();
-        setInterval(updateCountdown, 1000);
-        
-        // Add click effects to time units
-        document.querySelectorAll('.time-unit').forEach(unit => {
-            unit.addEventListener('click', () => {
-                unit.style.transform = 'scale(0.95)';
-                setTimeout(() => {
-                    unit.style.transform = '';
-                }, 150);
-            });
+    }
+    
+    // Initialize
+    createParticles();
+    updateCountdown();
+    setInterval(updateCountdown, 1000);
+    
+    // Add click effects to time units
+    document.querySelectorAll('.time-unit').forEach(unit => {
+        unit.addEventListener('click', () => {
+            unit.style.transform = 'scale(0.95)';
+            setTimeout(() => {
+                unit.style.transform = '';
+            }, 150);
         });
-    </script>
+    });
+</script>
 </body>
 </html>
