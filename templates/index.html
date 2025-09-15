@@ -3,1206 +3,92 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>RapiACT - Modern Healthcare Platform</title>
-    <link rel="icon" type="image/jpg" href="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAiIGhlaWdodD0iNDAiIHZpZXdCb3g9IjAgMCA0MCA0MCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPGNpcmNsZSBjeD0iMjAiIGN5PSIyMCIgcj0iMjAiIGZpbGw9IiMwMGE2ZmYiLz4KPHN2ZyB3aWR0aD0iMjQiIGhlaWdodD0iMjQiIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0ibm9uZSIgeD0iOCIgeT0iOCI+CjxwYXRoIGQ9Im0yMiAxMyAuNS4xN2MtLjE1LjQzLS4yMS44MS0uMTcgMS4xNEwyMyAxNWwtMiAyIDIgMi0uNjcuNjdjLjA0LjMzLS4wMi43MS0uMTcgMS4xNEwyMiAyMWwtMy0xIDMtMWgtNGMtMS41IDAtMy0uNS0zLTItMS0yLTEuNS0zLjUtMS01aC0yczUgNyA1IDlzMSA0IDMgNGg0bDEgMy0uNjcuNjdjLS4xNS0uNDMtLjIxLS44MS0uMTctMS4xNEwxNyAyMWwzLTMgMi4zMy0uNjdjLS4wNC0uMzMuMDItLjcxLjE3LTEuMTRMMjMgMTZsLTItMiAyLTIiIGZpbGw9IndoaXRlIi8+CjwvcGF0aD4KPC9zdmc+Cjwvc3ZnPgo=">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <title>Countdown Timer</title>
     <style>
-        :root {
-            /* Light Theme Colors */
-            --bg-primary: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            --bg-secondary: #ffffff;
-            --bg-card: #f8fafc;
-            --text-primary: #1a202c;
-            --text-secondary: #4a5568;
-            --text-accent: #667eea;
-            --border-color: #e2e8f0;
-            --shadow-light: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
-            --shadow-medium: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
-            --shadow-large: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
-            --gradient-primary: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            --gradient-secondary: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
-            --gradient-accent: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
-            --glassmorphism: rgba(255, 255, 255, 0.25);
-            --backdrop-blur: blur(10px);
-        }
-
-        [data-theme="dark"] {
-            /* Dark Theme Colors */
-            --bg-primary: linear-gradient(135deg, #0c0c0c 0%, #1a1a2e 100%);
-            --bg-secondary: #0f0f23;
-            --bg-card: #16213e;
-            --text-primary: #ffffff;
-            --text-secondary: #a0aec0;
-            --text-accent: #4facfe;
-            --border-color: #2d3748;
-            --shadow-light: 0 4px 6px -1px rgba(0, 0, 0, 0.3);
-            --shadow-medium: 0 10px 15px -3px rgba(0, 0, 0, 0.4);
-            --shadow-large: 0 25px 50px -12px rgba(0, 0, 0, 0.6);
-            --gradient-primary: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            --gradient-secondary: linear-gradient(135deg, #ff6b6b 0%, #ee5a24 100%);
-            --gradient-accent: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
-            --glassmorphism: rgba(22, 33, 62, 0.25);
-            --backdrop-blur: blur(15px);
-        }
-
+        @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&display=swap');
+        
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
         }
-
+        
         body {
-            font-family: 'Inter', sans-serif;
-            background: var(--bg-primary);
-            color: var(--text-primary);
-            line-height: 1.6;
-            overflow-x: hidden;
-            transition: all 0.3s ease;
-        }
-
-        /* Loading Screen with 3D Effects */
-        .loading-screen {
-            position: fixed;
-            width: 100%;
-            height: 100%;
-            background: var(--bg-primary);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            z-index: 9999;
-            transition: opacity 0.5s ease;
-        }
-
-        .loading-container {
-            position: relative;
-            transform-style: preserve-3d;
-        }
-
-        .loading-sphere {
-            width: 120px;
-            height: 120px;
-            border-radius: 50%;
-            background: var(--gradient-accent);
-            position: relative;
-            animation: rotate3D 2s linear infinite, pulse 2s ease-in-out infinite alternate;
-            box-shadow: var(--shadow-large);
-        }
-
-        .loading-sphere::before {
-            content: '';
-            position: absolute;
-            top: 10px;
-            left: 10px;
-            width: 100px;
-            height: 100px;
-            border-radius: 50%;
-            background: rgba(255, 255, 255, 0.3);
-            filter: blur(10px);
-        }
-
-        .loading-text {
-            position: absolute;
-            top: 150px;
-            left: 50%;
-            transform: translateX(-50%);
-            font-size: 1.5rem;
-            font-weight: 600;
-            color: var(--text-accent);
-            animation: fadeInOut 1.5s ease-in-out infinite;
-        }
-
-        @keyframes rotate3D {
-            0% { transform: rotateX(0deg) rotateY(0deg) rotateZ(0deg); }
-            100% { transform: rotateX(360deg) rotateY(360deg) rotateZ(360deg); }
-        }
-
-        @keyframes pulse {
-            0% { transform: scale(1); }
-            100% { transform: scale(1.1); }
-        }
-
-        @keyframes fadeInOut {
-            0%, 100% { opacity: 0.5; }
-            50% { opacity: 1; }
-        }
-
-        /* Modern Navbar with Glassmorphism */
-        .navbar {
-            position: fixed;
-            top: 20px;
-            left: 50%;
-            transform: translateX(-50%);
-            width: 95%;
-            max-width: 1200px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 15px 30px;
-            background: var(--glassmorphism);
-            backdrop-filter: var(--backdrop-blur);
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            border-radius: 20px;
-            z-index: 1000;
-            transition: all 0.3s ease;
-            box-shadow: var(--shadow-medium);
-        }
-
-        .navbar:hover {
-            transform: translateX(-50%) translateY(-2px);
-            box-shadow: var(--shadow-large);
-        }
-
-        .logo {
-            display: flex;
-            align-items: center;
-            font-size: 1.8rem;
-            font-weight: 800;
-            color: var(--text-accent);
-            text-decoration: none;
-        }
-
-        .logo i {
-            margin-right: 10px;
-            font-size: 2rem;
-            background: var(--gradient-accent);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-        }
-
-        .nav-links {
-            display: flex;
-            align-items: center;
-            gap: 30px;
-        }
-
-        .nav-links a {
-            color: var(--text-primary);
-            text-decoration: none;
-            font-weight: 500;
-            position: relative;
-            padding: 8px 16px;
-            border-radius: 10px;
-            transition: all 0.3s ease;
-        }
-
-        .nav-links a:hover {
-            color: var(--text-accent);
-            background: rgba(255, 255, 255, 0.1);
-            transform: translateY(-2px);
-        }
-
-        .nav-links a::after {
-            content: '';
-            position: absolute;
-            bottom: 0;
-            left: 50%;
-            width: 0;
-            height: 2px;
-            background: var(--gradient-accent);
-            transition: all 0.3s ease;
-            transform: translateX(-50%);
-        }
-
-        .nav-links a:hover::after {
-            width: 80%;
-        }
-
-        .theme-toggle, .language-toggle {
-            background: var(--gradient-accent);
-            border: none;
-            padding: 10px;
-            border-radius: 50%;
-            color: white;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            width: 40px;
-            height: 40px;
+            min-height: 100vh;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             display: flex;
             align-items: center;
             justify-content: center;
-            box-shadow: var(--shadow-light);
+            font-family: 'Orbitron', monospace;
+            overflow: hidden;
         }
-
-        .theme-toggle:hover, .language-toggle:hover {
-            transform: scale(1.1) rotate(15deg);
-            box-shadow: var(--shadow-medium);
-        }
-
-        /* Hero Section with 3D Elements */
-        .hero {
-            height: 100vh;
-            display: flex;
-            align-items: center;
-            justify-content: center;
+        
+        .countdown-container {
             text-align: center;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(20px);
+            border-radius: 30px;
+            padding: 4rem 3rem;
+            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.2);
+            border: 1px solid rgba(255, 255, 255, 0.2);
             position: relative;
             overflow: hidden;
         }
-
-        .hero-content {
-            z-index: 2;
-            max-width: 800px;
-            padding: 0 20px;
+        
+        .countdown-container::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: linear-gradient(45deg, transparent, rgba(255, 255, 255, 0.05), transparent);
+            animation: shimmer 3s infinite linear;
         }
-
-        .hero-title {
-            font-size: clamp(3rem, 8vw, 6rem);
+        
+        @keyframes shimmer {
+            0% { transform: translateX(-100%) translateY(-100%) rotate(45deg); }
+            100% { transform: translateX(100%) translateY(100%) rotate(45deg); }
+        }
+        
+        h1 {
+            color: white;
+            font-size: 2.5rem;
             font-weight: 900;
-            margin-bottom: 20px;
-            background: var(--gradient-accent);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-            animation: slideInUp 1s ease-out;
+            margin-bottom: 3rem;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+            letter-spacing: 2px;
+            position: relative;
+            z-index: 2;
         }
-
-        .hero-subtitle {
-            font-size: clamp(1.2rem, 3vw, 1.5rem);
-            color: var(--text-secondary);
-            margin-bottom: 30px;
-            animation: slideInUp 1s ease-out 0.2s both;
-        }
-
-        .hero-cta {
+        
+        .countdown {
             display: flex;
-            gap: 20px;
             justify-content: center;
+            gap: 2rem;
+            position: relative;
+            z-index: 2;
             flex-wrap: wrap;
-            animation: slideInUp 1s ease-out 0.4s both;
         }
-
-        .btn-primary, .btn-secondary {
-            padding: 15px 30px;
-            border-radius: 50px;
-            text-decoration: none;
-            font-weight: 600;
-            font-size: 1.1rem;
-            transition: all 0.3s ease;
-            position: relative;
-            overflow: hidden;
-            display: inline-flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        .btn-primary {
-            background: var(--gradient-accent);
-            color: white;
-            box-shadow: var(--shadow-medium);
-        }
-
-        .btn-primary:hover {
-            transform: translateY(-3px);
-            box-shadow: var(--shadow-large);
-        }
-
-        .btn-secondary {
-            background: var(--glassmorphism);
-            backdrop-filter: var(--backdrop-blur);
-            color: var(--text-primary);
-            border: 1px solid rgba(255, 255, 255, 0.2);
-        }
-
-        .btn-secondary:hover {
-            transform: translateY(-3px);
-            background: var(--glassmorphism);
-        }
-
-        /* Floating 3D Elements */
-        .floating-elements {
-            position: absolute;
-            width: 100%;
-            height: 100%;
-            pointer-events: none;
-        }
-
-        .floating-card {
-            position: absolute;
-            width: 80px;
-            height: 80px;
-            background: var(--glassmorphism);
-            backdrop-filter: var(--backdrop-blur);
+        
+        .time-unit {
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.15), rgba(255, 255, 255, 0.05));
             border-radius: 20px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 2rem;
-            color: var(--text-accent);
-            animation: float 6s ease-in-out infinite;
-            box-shadow: var(--shadow-medium);
-        }
-
-        .floating-card:nth-child(1) { top: 20%; left: 10%; animation-delay: -0s; }
-        .floating-card:nth-child(2) { top: 30%; right: 15%; animation-delay: -1s; }
-        .floating-card:nth-child(3) { bottom: 30%; left: 15%; animation-delay: -2s; }
-        .floating-card:nth-child(4) { bottom: 20%; right: 10%; animation-delay: -3s; }
-
-        @keyframes float {
-            0%, 100% { transform: translateY(0px) rotate(0deg); }
-            50% { transform: translateY(-20px) rotate(10deg); }
-        }
-
-        @keyframes slideInUp {
-            from {
-                opacity: 0;
-                transform: translateY(50px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-
-        /* Sections with 3D Cards */
-        .section {
-            padding: 100px 20px;
-            max-width: 1200px;
-            margin: 0 auto;
-        }
-
-        .section-title {
-            text-align: center;
-            font-size: clamp(2.5rem, 5vw, 3.5rem);
-            font-weight: 700;
-            margin-bottom: 20px;
-            background: var(--gradient-accent);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-        }
-
-        .section-subtitle {
-            text-align: center;
-            color: var(--text-secondary);
-            font-size: 1.2rem;
-            margin-bottom: 60px;
-            max-width: 600px;
-            margin-left: auto;
-            margin-right: auto;
-        }
-
-        /* Feature Cards */
-        .features-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 30px;
-            margin-bottom: 60px;
-        }
-
-        .feature-card {
-            background: var(--glassmorphism);
-            backdrop-filter: var(--backdrop-blur);
+            padding: 2rem 1.5rem;
+            min-width: 120px;
             border: 1px solid rgba(255, 255, 255, 0.2);
-            border-radius: 25px;
-            padding: 40px 30px;
-            text-align: center;
-            position: relative;
             transition: all 0.3s ease;
-            transform-style: preserve-3d;
-            box-shadow: var(--shadow-medium);
-        }
-
-        .feature-card:hover {
-            transform: translateY(-10px) rotateX(5deg);
-            box-shadow: var(--shadow-large);
-        }
-
-        .feature-icon {
-            width: 80px;
-            height: 80px;
-            border-radius: 20px;
-            background: var(--gradient-accent);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            margin: 0 auto 20px;
-            font-size: 2rem;
-            color: white;
-            box-shadow: var(--shadow-medium);
-            transition: all 0.3s ease;
-        }
-
-        .feature-card:hover .feature-icon {
-            transform: scale(1.1) rotate(10deg);
-        }
-
-        .feature-title {
-            font-size: 1.5rem;
-            font-weight: 600;
-            margin-bottom: 15px;
-            color: var(--text-primary);
-        }
-
-        .feature-description {
-            color: var(--text-secondary);
-            line-height: 1.6;
-        }
-
-        /* About Section */
-        .about-content {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 60px;
-            align-items: center;
-            margin-bottom: 60px;
-        }
-
-        .about-text h3 {
-            font-size: 2rem;
-            font-weight: 600;
-            margin-bottom: 20px;
-            color: var(--text-primary);
-        }
-
-        .about-text p {
-            color: var(--text-secondary);
-            margin-bottom: 20px;
-            line-height: 1.7;
-        }
-
-        .about-features {
-            list-style: none;
-            padding: 0;
-        }
-
-        .about-features li {
-            display: flex;
-            align-items: center;
-            margin-bottom: 15px;
-            padding: 15px;
-            background: var(--glassmorphism);
-            border-radius: 15px;
-            transition: all 0.3s ease;
-        }
-
-        .about-features li:hover {
-            transform: translateX(10px);
-            background: rgba(255, 255, 255, 0.1);
-        }
-
-        .about-features li i {
-            color: var(--text-accent);
-            margin-right: 15px;
-            font-size: 1.2rem;
-        }
-
-        .about-visual {
-            position: relative;
-            height: 400px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .about-card {
-            background: var(--glassmorphism);
-            backdrop-filter: var(--backdrop-blur);
-            border-radius: 25px;
-            padding: 40px;
-            text-align: center;
-            position: absolute;
-            box-shadow: var(--shadow-large);
-            transition: all 0.3s ease;
-        }
-
-        .about-card:nth-child(1) {
-            top: 0;
-            left: 0;
-            transform: rotate(-5deg);
-            background: linear-gradient(135deg, rgba(102, 126, 234, 0.2) 0%, rgba(118, 75, 162, 0.2) 100%);
-        }
-
-        .about-card:nth-child(2) {
-            top: 50px;
-            right: 0;
-            transform: rotate(5deg);
-            background: linear-gradient(135deg, rgba(79, 172, 254, 0.2) 0%, rgba(0, 242, 254, 0.2) 100%);
-        }
-
-        .about-card:nth-child(3) {
-            bottom: 0;
-            left: 50%;
-            transform: translateX(-50%) rotate(-3deg);
-            background: linear-gradient(135deg, rgba(240, 147, 251, 0.2) 0%, rgba(245, 87, 108, 0.2) 100%);
-        }
-
-        .about-card:hover {
-            transform: scale(1.05) rotate(0deg) !important;
-            z-index: 10;
-        }
-
-        /* Services Grid */
-        .services-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 25px;
-        }
-
-        .service-card {
-            background: var(--bg-card);
-            border-radius: 20px;
-            padding: 30px 25px;
-            text-align: center;
-            position: relative;
-            overflow: hidden;
-            transition: all 0.3s ease;
-            border: 1px solid var(--border-color);
-            box-shadow: var(--shadow-light);
-        }
-
-        .service-card::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: -100%;
-            width: 100%;
-            height: 3px;
-            background: var(--gradient-accent);
-            transition: all 0.3s ease;
-        }
-
-        .service-card:hover::before {
-            left: 0;
-        }
-
-        .service-card:hover {
-            transform: translateY(-8px);
-            box-shadow: var(--shadow-large);
-        }
-
-        .service-card i {
-            font-size: 3rem;
-            background: var(--gradient-accent);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-            margin-bottom: 20px;
-        }
-
-        .service-card h3 {
-            font-size: 1.3rem;
-            font-weight: 600;
-            margin-bottom: 15px;
-            color: var(--text-primary);
-        }
-
-        .service-card p {
-            color: var(--text-secondary);
-            font-size: 0.95rem;
-            line-height: 1.6;
-        }
-
-        /* Enhanced Doctors Section */
-        .doctors-container {
-            position: relative;
-            overflow: hidden;
-            border-radius: 25px;
-            background: var(--glassmorphism);
-            backdrop-filter: var(--backdrop-blur);
-            padding: 40px 20px;
-            box-shadow: var(--shadow-medium);
-            border: 1px solid rgba(255, 255, 255, 0.2);
-        }
-
-        .doctors-slider-wrapper {
-            overflow: hidden;
-            width: 100%;
-        }
-
-        .doctors-slider {
-            display: flex;
-            gap: 25px;
-            transition: transform 0.5s ease-in-out;
-            will-change: transform;
-        }
-
-        .doctors-slider.auto-slide {
-            animation: autoSlide 20s linear infinite;
-        }
-
-        .doctors-slider.paused {
-            animation-play-state: paused;
-        }
-
-        .doctor-card {
-            min-width: 320px;
-            background: var(--bg-card);
-            border-radius: 25px;
-            padding: 35px 25px;
-            text-align: center;
-            box-shadow: var(--shadow-medium);
-            border: 1px solid var(--border-color);
-            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-            flex-shrink: 0;
             position: relative;
             overflow: hidden;
         }
-
-        .doctor-card::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            height: 4px;
-            background: var(--gradient-accent);
-            transform: scaleX(0);
-            transition: transform 0.3s ease;
-        }
-
-        .doctor-card:hover::before {
-            transform: scaleX(1);
-        }
-
-        .doctor-card:hover {
-            transform: translateY(-15px) scale(1.03);
-            box-shadow: var(--shadow-large);
-            border-color: var(--text-accent);
-        }
-
-        .doctor-avatar {
-            width: 120px;
-            height: 120px;
-            border-radius: 50%;
-            margin: 0 auto 25px;
-            background: var(--gradient-accent);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 3rem;
-            color: white;
-            box-shadow: var(--shadow-medium);
-            position: relative;
-            overflow: hidden;
-            transition: all 0.3s ease;
-        }
-
-        .doctor-avatar:hover {
-            transform: scale(1.1);
-            box-shadow: var(--shadow-large);
-        }
-
-        .doctor-avatar img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-            border-radius: 50%;
-            transition: transform 0.3s ease;
-        }
-
-        .doctor-avatar:hover img {
-            transform: scale(1.1);
-        }
-
-        .doctor-name {
-            font-size: 1.5rem;
-            font-weight: 700;
-            margin-bottom: 12px;
-            color: var(--text-primary);
-            transition: color 0.3s ease;
-        }
-
-        .doctor-card:hover .doctor-name {
-            color: var(--text-accent);
-        }
-
-        .doctor-specialty {
-            color: var(--text-accent);
-            font-weight: 600;
-            margin-bottom: 15px;
-            font-size: 1rem;
-            padding: 8px 16px;
-            background: rgba(79, 172, 254, 0.1);
-            border-radius: 20px;
-            display: inline-block;
-            border: 1px solid rgba(79, 172, 254, 0.2);
-        }
-
-        .doctor-experience {
-            color: var(--text-secondary);
-            font-size: 0.95rem;
-            font-weight: 500;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 8px;
-            margin-bottom: 15px;
-        }
-
-        .doctor-experience::before {
-            content: '🩺';
-            font-size: 1.2rem;
-        }
-
-        .doctor-rating {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 5px;
-            margin-bottom: 15px;
-        }
-
-        .doctor-rating .stars {
-            color: #ffc107;
-        }
-
-        .doctor-rating .rating-number {
-            color: var(--text-secondary);
-            font-size: 0.9rem;
-            margin-left: 5px;
-        }
-
-        .doctor-actions {
-            display: flex;
-            gap: 10px;
-            justify-content: center;
-        }
-
-        .doctor-btn {
-            padding: 8px 16px;
-            border-radius: 20px;
-            border: none;
-            cursor: pointer;
-            font-size: 0.85rem;
-            font-weight: 500;
-            transition: all 0.3s ease;
-            display: flex;
-            align-items: center;
-            gap: 5px;
-        }
-
-        .doctor-btn.primary {
-            background: var(--gradient-accent);
-            color: white;
-        }
-
-        .doctor-btn.secondary {
-            background: var(--glassmorphism);
-            color: var(--text-accent);
-            border: 1px solid var(--text-accent);
-        }
-
-        .doctor-btn:hover {
-            transform: translateY(-2px);
-            box-shadow: var(--shadow-light);
-        }
-
-        /* Navigation Controls */
-        .slider-controls {
-            position: absolute;
-            top: 50%;
-            transform: translateY(-50%);
-            background: rgba(255, 255, 255, 0.9);
-            border: none;
-            width: 50px;
-            height: 50px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            font-size: 1.2rem;
-            color: var(--text-accent);
-            transition: all 0.3s ease;
-            backdrop-filter: blur(10px);
-            box-shadow: var(--shadow-medium);
-            z-index: 10;
-        }
-
-        .slider-controls:hover {
-            background: var(--text-accent);
-            color: white;
-            transform: translateY(-50%) scale(1.1);
-        }
-
-        .prev-btn {
-            left: 10px;
-        }
-
-        .next-btn {
-            right: 10px;
-        }
-
-        /* Pause/Play Button */
-        .pause-play-btn {
-            position: absolute;
-            bottom: 20px;
-            right: 20px;
-            background: rgba(255, 255, 255, 0.9);
-            border: none;
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            font-size: 1rem;
-            color: var(--text-accent);
-            transition: all 0.3s ease;
-            backdrop-filter: blur(10px);
-            box-shadow: var(--shadow-light);
-        }
-
-        .pause-play-btn:hover {
-            background: var(--text-accent);
-            color: white;
-            transform: scale(1.1);
-        }
-
-        /* Progress Indicator */
-        .slider-progress {
-            position: absolute;
-            bottom: 0;
-            left: 0;
-            height: 3px;
-            background: var(--gradient-accent);
-            transition: width 0.1s linear;
-            border-radius: 0 0 25px 25px;
-            width: 0%;
-        }
-
-        /* Slide Indicator Dots */
-        .slide-indicators {
-            position: absolute;
-            bottom: 15px;
-            left: 50%;
-            transform: translateX(-50%);
-            display: flex;
-            gap: 8px;
-        }
-
-        .slide-dot {
-            width: 10px;
-            height: 10px;
-            border-radius: 50%;
-            background: rgba(255, 255, 255, 0.3);
-            cursor: pointer;
-            transition: all 0.3s ease;
-        }
-
-        .slide-dot.active {
-            background: var(--text-accent);
-            transform: scale(1.2);
-        }
-
-        @keyframes autoSlide {
-            0% { transform: translateX(0); }
-            100% { transform: translateX(calc(-320px * var(--total-cards))); }
-        }
-
-        /* Loading Animation */
-        .loading {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 200px;
-            font-size: 1.1rem;
-            color: var(--text-secondary);
-        }
-
-        .loading::after {
-            content: '';
-            width: 20px;
-            height: 20px;
-            border: 2px solid var(--text-accent);
-            border-top: 2px solid transparent;
-            border-radius: 50%;
-            margin-left: 10px;
-            animation: spin 1s linear infinite;
-        }
-
-        @keyframes spin {
-            to { transform: rotate(360deg); }
-        }
-
-        /* Contact Section */
-        .contact-content {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 60px;
-            align-items: start;
-        }
-
-        .contact-info {
-            background: var(--glassmorphism);
-            backdrop-filter: var(--backdrop-blur);
-            border-radius: 25px;
-            padding: 40px;
-            border: 1px solid rgba(255, 255, 255, 0.2);
-        }
-
-        .contact-item {
-            display: flex;
-            align-items: center;
-            margin-bottom: 25px;
-            padding: 20px;
-            background: rgba(255, 255, 255, 0.1);
-            border-radius: 15px;
-            transition: all 0.3s ease;
-        }
-
-        .contact-item:hover {
-            transform: translateX(10px);
-            background: rgba(255, 255, 255, 0.2);
-        }
-
-        .contact-item i {
-            width: 50px;
-            height: 50px;
-            border-radius: 50%;
-            background: var(--gradient-accent);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: white;
-            margin-right: 20px;
-        }
-
-        .contact-form {
-            background: var(--bg-card);
-            border-radius: 25px;
-            padding: 40px;
-            box-shadow: var(--shadow-medium);
-            border: 1px solid var(--border-color);
-        }
-
-        .form-group {
-            margin-bottom: 25px;
-        }
-
-        .form-group label {
-            display: block;
-            margin-bottom: 8px;
-            font-weight: 500;
-            color: var(--text-primary);
-        }
-
-        .form-group input,
-        .form-group textarea {
-            width: 100%;
-            padding: 15px;
-            border: 2px solid var(--border-color);
-            border-radius: 15px;
-            background: var(--bg-secondary);
-            color: var(--text-primary);
-            font-size: 1rem;
-            transition: all 0.3s ease;
-        }
-
-        .form-group input:focus,
-        .form-group textarea:focus {
-            outline: none;
-            border-color: var(--text-accent);
-            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
-        }
-
-        .submit-btn {
-            width: 100%;
-            padding: 15px;
-            background: var(--gradient-accent);
-            color: white;
-            border: none;
-            border-radius: 15px;
-            font-size: 1.1rem;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            box-shadow: var(--shadow-medium);
-        }
-
-        .submit-btn:hover {
-            transform: translateY(-2px);
-            box-shadow: var(--shadow-large);
-        }
-
-        /* Footer */
-        .footer {
-            background: var(--bg-secondary);
-            padding: 60px 20px 20px;
-            text-align: center;
-            border-top: 1px solid var(--border-color);
-            margin-top: 100px;
-        }
-
-        .footer-content {
-            max-width: 1200px;
-            margin: 0 auto;
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 40px;
-            margin-bottom: 40px;
-        }
-
-        .footer-section h3 {
-            font-size: 1.3rem;
-            font-weight: 600;
-            margin-bottom: 20px;
-            color: var(--text-primary);
-        }
-
-        .footer-section p,
-        .footer-section a {
-            color: var(--text-secondary);
-            text-decoration: none;
-            line-height: 1.6;
-            transition: all 0.3s ease;
-        }
-
-        .footer-section a:hover {
-            color: var(--text-accent);
-        }
-
-        .footer-bottom {
-            padding-top: 20px;
-            border-top: 1px solid var(--border-color);
-            color: var(--text-secondary);
-        }
-
-        /* Floating Action Button */
-        .fab-container {
-            position: fixed;
-            bottom: 30px;
-            right: 30px;
-            z-index: 1000;
-        }
-
-        .fab {
-            width: 60px;
-            height: 60px;
-            border-radius: 50%;
-            background: var(--gradient-accent);
-            color: white;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 1.5rem;
-            cursor: pointer;
-            box-shadow: var(--shadow-large);
-            transition: all 0.3s ease;
-            border: none;
-        }
-
-        .fab:hover {
-            transform: scale(1.1);
-            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
-        }
-
-        /* Language Modal */
-        .language-modal {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0, 0, 0, 0.8);
-            backdrop-filter: blur(10px);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            z-index: 10000;
-            opacity: 0;
-            pointer-events: none;
-            transition: all 0.3s ease;
-        }
-
-        .language-modal.active {
-            opacity: 1;
-            pointer-events: all;
-        }
-
-        .language-content {
-            background: var(--bg-card);
-            border-radius: 25px;
-            padding: 40px;
-            max-width: 500px;
-            width: 90%;
-            text-align: center;
-            box-shadow: var(--shadow-large);
-            border: 1px solid var(--border-color);
-            transform: scale(0.8);
-            transition: all 0.3s ease;
-        }
-
-        .language-modal.active .language-content {
-            transform: scale(1);
-        }
-
-        .language-buttons {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
-            gap: 15px;
-            margin-top: 30px;
-        }
-
-        .language-btn {
-            padding: 12px 20px;
-            background: var(--glassmorphism);
-            backdrop-filter: var(--backdrop-blur);
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            border-radius: 15px;
-            color: var(--text-primary);
-            cursor: pointer;
-            transition: all 0.3s ease;
-            font-weight: 500;
-        }
-
-        .language-btn:hover {
-            background: var(--gradient-accent);
-            color: white;
-            transform: translateY(-2px);
-        }
-
-        /* Scroll Indicator */
-        .scroll-indicator {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 4px;
-            height: 0;
-            background: var(--gradient-accent);
-            z-index: 9999;
-            transition: height 0.1s ease;
-        }
-
-        .coming-soon {
-            font-weight: bold;
-            color: #ff9800;
-            text-transform: uppercase;
-        }
-
-        /* Visitor Counter */
-        .visitor-counter {
-            position: fixed;
-            bottom: 30px;
-            left: 30px;
-            background: var(--glassmorphism);
-            backdrop-filter: var(--backdrop-blur);
-            padding: 15px 20px;
-            border-radius: 15px;
-            font-size: 0.9rem;
-            color: var(--text-primary);
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            box-shadow: var(--shadow-light);
-        }
-
-        /* Announcement Bar */
-        .announcement-bar {
-            background: var(--gradient-secondary);
-            color: white;
-            text-align: center;
-            padding: 15px 20px;
-            border-radius: 15px;
-            margin: 120px auto 40px;
-            max-width: 800px;
-            box-shadow: var(--shadow-medium);
-            position: relative;
-            overflow: hidden;
-        }
-
-        .announcement-bar::before {
+        
+        .time-unit:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.25), rgba(255, 255, 255, 0.1));
+        }
+        
+        .time-unit::before {
             content: '';
             position: absolute;
             top: 0;
@@ -1210,1052 +96,202 @@
             width: 100%;
             height: 100%;
             background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
-            animation: shimmer 2s infinite;
+            transition: left 0.5s ease;
         }
-
-        @keyframes shimmer {
-            0% { left: -100%; }
-            100% { left: 100%; }
+        
+        .time-unit:hover::before {
+            left: 100%;
         }
-
-        .announcement-bar a {
-            color: white;
-            text-decoration: none;
-            font-weight: 600;
-            padding: 2px 6px;
-            border-radius: 5px;
-            background: rgba(255, 255, 255, 0.2);
+        
+        .number {
+            font-size: 3.5rem;
+            font-weight: 700;
+            color: #fff;
+            display: block;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.4);
+            margin-bottom: 0.5rem;
+            line-height: 1;
+            position: relative;
+            z-index: 2;
             transition: all 0.3s ease;
         }
-
-        .announcement-bar a:hover {
-            background: rgba(255, 255, 255, 0.3);
+        
+        .label {
+            font-size: 0.9rem;
+            color: rgba(255, 255, 255, 0.8);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            font-weight: 400;
+            position: relative;
+            z-index: 2;
         }
-
-        /* Chatbot Styles */
-        .chatbot-widget {
-            position: fixed;
-            bottom: 100px;
-            right: 30px;
-            width: 350px;
-            height: 500px;
-            background: var(--bg-card);
-            border-radius: 25px;
-            box-shadow: var(--shadow-large);
-            border: 1px solid var(--border-color);
-            overflow: hidden;
-            transform: translateY(20px);
-            opacity: 0;
+        
+        .expired {
+            color: #ff6b6b;
+            font-size: 2rem;
+            font-weight: 700;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+        }
+        
+        .particles {
+            position: absolute;
+            width: 100%;
+            height: 100%;
             pointer-events: none;
-            transition: all 0.3s ease;
-            z-index: 999;
+            overflow: hidden;
         }
-
-        .chatbot-widget.active {
-            transform: translateY(0);
-            opacity: 1;
-            pointer-events: all;
+        
+        .particle {
+            position: absolute;
+            width: 4px;
+            height: 4px;
+            background: rgba(255, 255, 255, 0.6);
+            border-radius: 50%;
+            animation: float 6s infinite linear;
         }
-
-        .chatbot-header {
-            background: var(--gradient-accent);
-            color: white;
-            padding: 20px;
-            text-align: center;
-            font-weight: 600;
+        
+        @keyframes float {
+            0% {
+                transform: translateY(100vh) rotate(0deg);
+                opacity: 1;
+            }
+            100% {
+                transform: translateY(-10px) rotate(360deg);
+                opacity: 0;
+            }
         }
-
-        .chatbot-content {
-            height: calc(100% - 60px);
-            background: white;
+        
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
         }
-
-        /* Mobile Responsiveness */
+        
+        .pulse {
+            animation: pulse 2s infinite ease-in-out;
+        }
+        
         @media (max-width: 768px) {
-            .navbar {
-                width: 90%;
-                padding: 10px 20px;
+            .countdown-container {
+                padding: 2rem 1.5rem;
+                margin: 1rem;
             }
-
-            .nav-links {
-                gap: 15px;
+            
+            h1 {
+                font-size: 1.8rem;
+                margin-bottom: 2rem;
             }
-
-            .nav-links a {
-                font-size: 0.9rem;
-                padding: 6px 12px;
+            
+            .countdown {
+                gap: 1rem;
             }
-
-            .hero-title {
+            
+            .time-unit {
+                padding: 1.5rem 1rem;
+                min-width: 100px;
+            }
+            
+            .number {
                 font-size: 2.5rem;
             }
-
-            .hero-subtitle {
-                font-size: 1.1rem;
-            }
-
-            .hero-cta {
-                flex-direction: column;
-                align-items: center;
-            }
-
-            .floating-card {
-                display: none;
-            }
-
-            .about-content,
-            .contact-content {
-                grid-template-columns: 1fr;
-                gap: 40px;
-            }
-
-            .about-visual {
-                height: 300px;
-            }
-
-            .features-grid,
-            .services-grid {
-                grid-template-columns: 1fr;
-            }
-
-            .doctor-card {
-                min-width: 280px;
-            }
-
-            .slider-controls {
-                width: 40px;
-                height: 40px;
-                font-size: 1rem;
-            }
-
-            .visitor-counter,
-            .fab-container {
-                bottom: 20px;
-            }
-
-            .visitor-counter {
-                left: 20px;
+            
+            .label {
                 font-size: 0.8rem;
-                padding: 10px 15px;
             }
-
-            .chatbot-widget {
-                width: 90%;
-                right: 5%;
-                height: 400px;
-            }
-        }
-
-        @media (max-width: 480px) {
-            .navbar {
-                padding: 8px 15px;
-            }
-
-            .section {
-                padding: 60px 15px;
-            }
-
-            .section-title {
-                font-size: 2rem;
-            }
-
-            .feature-card,
-            .service-card {
-                padding: 25px 20px;
-            }
-
-            .contact-form,
-            .contact-info {
-                padding: 25px;
-            }
-
-            .announcement-bar {
-                margin-top: 100px;
-                padding: 12px 15px;
-                font-size: 0.9rem;
-            }
-
-            .doctor-card {
-                min-width: 250px;
-                padding: 25px 20px;
-            }
-
-            .doctor-avatar {
-                width: 100px;
-                height: 100px;
-                font-size: 2.5rem;
-            }
-        }
-
-        /* Smooth scrolling */
-        html {
-            scroll-behavior: smooth;
-        }
-
-        /* Custom scrollbar */
-        ::-webkit-scrollbar {
-            width: 8px;
-        }
-
-        ::-webkit-scrollbar-track {
-            background: var(--bg-secondary);
-        }
-
-        ::-webkit-scrollbar-thumb {
-            background: var(--gradient-accent);
-            border-radius: 4px;
-        }
-
-        ::-webkit-scrollbar-thumb:hover {
-            background: var(--text-accent);
         }
     </style>
 </head>
-<body data-theme="dark">
-
-    <!-- Scroll Indicator -->
-    <div class="scroll-indicator"></div>
-
-    <!-- Navbar -->
-    <nav class="navbar">
-        <a href="#" class="logo">
-            <i class="fas fa-heartbeat"></i>
-            RapiACT
-        </a>
-        <div class="nav-links">
-            <a href="#home">Home</a>
-            <a href="#about">About</a>
-            <a href="/services">Services</a>
-            <a href="#doctors">Doctors</a>
-            <a href="#contact">Contact</a>
-            <a href="/register">Register</a>
-            <button class="language-toggle" onclick="toggleLanguageModal()">
-                <i class="fas fa-globe"></i>
-            </button>
-            <button class="theme-toggle" onclick="toggleTheme()">
-                <i class="fas fa-moon"></i>
-            </button>
-        </div>
-    </nav>
-
-    <!-- Announcement Bar -->
-    <div class="announcement-bar">
-        🚀 RapiACT provides AI-powered healthcare services in India! 
-        <a href="#about">Learn More</a> • <a href="#services">Explore Services</a>
-    </div>
-
-    <!-- Hero Section -->
-    <section class="hero" id="home">
-        <div class="floating-elements">
-            <div class="floating-card">
-                <i class="fas fa-stethoscope"></i>
+<body>
+    <div class="particles"></div>
+    
+    <div class="countdown-container">
+        <h1>Going Live with the New UI🚀</h1>
+        <div class="countdown" id="countdown">
+            <div class="time-unit pulse">
+                <span class="number" id="days">00</span>
+                <span class="label">Days</span>
             </div>
-            <div class="floating-card">
-                <i class="fas fa-pills"></i>
+            <div class="time-unit pulse">
+                <span class="number" id="hours">00</span>
+                <span class="label">Hours</span>
             </div>
-            <div class="floating-card">
-                <i class="fas fa-user-md"></i>
+            <div class="time-unit pulse">
+                <span class="number" id="minutes">00</span>
+                <span class="label">Minutes</span>
             </div>
-            <div class="floating-card">
-                <i class="fas fa-heart"></i>
+            <div class="time-unit pulse">
+                <span class="number" id="seconds">00</span>
+                <span class="label">Seconds</span>
             </div>
-        </div>
-        
-        <div class="hero-content">
-            <h1 class="hero-title">Welcome to RapiACT</h1>
-            <p class="hero-subtitle">Your comprehensive digital healthcare platform - Superior UX, Higher conversions, and Minimal healthcare operations</p>
-            <div class="hero-cta">
-                <a href="#services" class="btn-primary">
-                    <i class="fas fa-rocket"></i>
-                    Get Started
-                </a>
-                <a href="#about" class="btn-secondary">
-                    <i class="fas fa-info-circle"></i>
-                    Learn More
-                </a>
-            </div>
-        </div>
-    </section>
-
-    <!-- Features Section -->
-    <section class="section" id="features">
-        <h2 class="section-title">Why Choose RapiACT?</h2>
-        <p class="section-subtitle">
-            Experience the future of healthcare with our cutting-edge platform
-        </p>
-
-        <div class="features-grid">
-            <div class="feature-card">
-                <div class="feature-icon">
-                    <i class="fas fa-brain"></i>
-                </div>
-                <h3 class="feature-title">AI-Powered Diagnosis</h3>
-                <p class="feature-description">
-                    Get instant health insights based on symptoms using advanced artificial
-                    intelligence technology.
-                </p>
-            </div>
-
-            <div class="feature-card">
-                <div class="feature-icon">
-                    <i class="fas fa-video"></i>
-                </div>
-                <h3 class="feature-title">Virtual Consultations</h3>
-                <p class="feature-description">
-                    Connect with expert doctors anytime, anywhere through secure video
-                    consultations.
-                </p>
-            </div>
-
-            <div class="feature-card">
-                <div class="feature-icon">
-                    <i class="fas fa-calendar-alt"></i>
-                </div>
-                <h3 class="feature-title">Easy Appointments</h3>
-                <p class="feature-description">
-                    Seamlessly book, reschedule, or cancel consultations with our intuitive
-                    system.
-                </p>
-            </div>
-
-            <div class="feature-card">
-                <div class="feature-icon">
-                    <i class="fas fa-shield-alt"></i>
-                </div>
-                <h3 class="feature-title">Secure & Private</h3>
-                <p class="feature-description">
-                    Your health data is encrypted and protected with industry-leading
-                    security measures.
-                </p>
-            </div>
-
-            <div class="feature-card">
-                <div class="feature-icon">
-                    <i class="fas fa-pills"></i>
-                </div>
-                <h3 class="feature-title">Online Pharmacy</h3>
-                <p class="feature-description">
-                    Order medications and healthcare products with doorstep delivery
-                    service.
-                </p>
-            </div>
-
-            <div class="feature-card">
-                <div class="feature-icon">
-                    <i class="fas fa-chart-line"></i>
-                </div>
-                <h3 class="feature-title">Smart Reports</h3>
-                <p class="feature-description coming-soon">🚀 Coming Soon</p>
-            </div>
-        </div>
-    </section>
-
-    <!-- About Section -->
-    <section class="section" id="about">
-        <h2 class="section-title">About RapiACT</h2>
-        <p class="section-subtitle">Revolutionizing healthcare through technology and innovation</p>
-        
-        <div class="about-content">
-            <div class="about-text">
-                <h3>Healthcare Operating System</h3>
-                <p><strong>RapiACT</strong> is a cutting-edge healthcare platform that redefines the way you access medical services. From smart diagnosis and AI-powered report predictions to virtual consultations and seamless doctor appointments, we bring healthcare to your fingertips.</p>
-                
-                <p>We are committed to technology-driven, patient-focused healthcare, ensuring that expert medical guidance is always within your reach. With RapiACT, managing your health is simpler, faster, and more reliable than ever before.</p>
-                
-                <ul class="about-features">
-                    <li><i class="fas fa-check"></i> Smart Diagnosis & Health Insights</li>
-                    <li><i class="fas fa-check"></i> 24/7 Online Consultation Access</li>
-                    <li><i class="fas fa-check"></i> AI-Powered Report Analysis</li>
-                    <li><i class="fas fa-check"></i> Seamless Appointment Management</li>
-                    <li><i class="fas fa-check"></i> Secure Data Protection</li>
-                    <li><i class="fas fa-check"></i> Integrated Pharmacy Services</li>
-                </ul>
-            </div>
-            
-            <div class="about-visual">
-                <div class="about-card">
-                    <h4>99.9% Uptime</h4>
-                    <p>Reliable service</p>
-                </div>
-                <div class="about-card">
-                    <h4>50K+ Patients</h4>
-                    <p>Trusted by thousands</p>
-                </div>
-                <div class="about-card">
-                    <h4>500+ Doctors</h4>
-                    <p>Expert medical team</p>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <!-- Services Section -->
-    <section class="section" id="services">
-        <h2 class="section-title">Our Services</h2>
-        <p class="section-subtitle">Comprehensive healthcare solutions designed for your convenience</p>
-        
-        <div class="services-grid">
-            <div class="service-card">
-                <i class="fas fa-user-md"></i>
-                <h3>Online Consultations</h3>
-                <p>Connect with qualified doctors through secure video calls and get expert medical advice from the comfort of your home.</p>
-            </div>
-            
-            <div class="service-card">
-                <i class="fas fa-flask"></i>
-                <h3>Diagnostic Tests</h3>
-                <p>Book lab tests and diagnostic procedures with home sample collection and digital report delivery.</p>
-            </div>
-            
-            <div class="service-card">
-                <i class="fas fa-file-medical"></i>
-                <h3>Health Reports</h3>
-                <p>Get personalized health reports with AI-powered insights and recommendations for better health management.</p>
-            </div>
-            
-            <div class="service-card">
-                <i class="fas fa-ambulance"></i>
-                <h3>Emergency Care</h3>
-                <p>24/7 emergency assistance with quick response times and immediate medical guidance when you need it most.</p>
-            </div>
-            
-            <div class="service-card">
-                <i class="fas fa-prescription-bottle-alt"></i>
-                <h3>Online Pharmacy</h3>
-                <p>Order prescribed medications and healthcare essentials with fast, secure delivery to your doorstep.</p>
-            </div>
-            
-            <div class="service-card">
-                <i class="fas fa-mobile-alt"></i>
-                <h3>Health Tracking</h3>
-                <p>Monitor your health metrics, track symptoms, and maintain comprehensive health records digitally.</p>
-            </div>
-        </div>
-    </section>
-
-    <!-- Enhanced Doctors Section -->
-    <section class="section" id="doctors">
-    <h2 class="section-title">Meet Our Doctors</h2>
-    <p class="section-subtitle">Connect with our team of experienced healthcare professionals</p>
-
-    <div class="doctors-container">
-        <div class="doctors-slider-wrapper">
-            <div class="doctors-slider auto-slide" id="doctorsSlider">
-                <div class="loading">Loading doctors...</div>
-            </div>
-        </div>
-
-        <button class="slider-controls prev-btn" id="prevBtn">
-            <i class="fas fa-chevron-left"></i>
-        </button>
-        <button class="slider-controls next-btn" id="nextBtn">
-            <i class="fas fa-chevron-right"></i>
-        </button>
-
-        <button class="pause-play-btn" id="pausePlayBtn">
-            <i class="fas fa-pause"></i>
-        </button>
-
-        <div class="slider-progress" id="progressBar"></div>
-
-        <div class="slide-indicators" id="slideIndicators"></div>
-    </div>
-
-    <div style="text-align: center; margin-top: 40px;">
-        <a href="/register" class="btn-primary">
-            <i class="fas fa-calendar-check"></i>
-            Book Appointment
-        </a>
-    </div>
-</section>
-
-    <!-- Contact Section -->
-    <section class="section" id="contact">
-        <h2 class="section-title">Get In Touch</h2>
-        <p class="section-subtitle">Have questions? We're here to help you 24/7</p>
-        
-        <div class="contact-content">
-            <div class="contact-info">
-                <h3 style="margin-bottom: 30px; color: var(--text-primary);">Contact Information</h3>
-                
-                <div class="contact-item">
-                    <i class="fas fa-phone"></i>
-                    <div>
-                        <h4>Phone</h4>
-                        <p>+91 1800-123-4567</p>
-                    </div>
-                </div>
-                
-                <div class="contact-item">
-                    <i class="fas fa-envelope"></i>
-                    <div>
-                        <h4>Email</h4>
-                        <p>support@rapiact.com</p>
-                    </div>
-                </div>
-                
-                <div class="contact-item">
-                    <i class="fas fa-map-marker-alt"></i>
-                    <div>
-                        <h4>Address</h4>
-                        <p>123 Health Street, Medical District, New Delhi, India</p>
-                    </div>
-                </div>
-                
-                <div class="contact-item">
-                    <i class="fas fa-clock"></i>
-                    <div>
-                        <h4>Hours</h4>
-                        <p>24/7 Emergency Support<br>9 AM - 6 PM General Inquiries</p>
-                    </div>
-                </div>
-            </div>
-            
-            <form class="contact-form" onsubmit="submitForm(event)">
-                <h3 style="margin-bottom: 30px; color: var(--text-primary);">Send us a Message</h3>
-                
-                <div class="form-group">
-                    <label for="name">Full Name</label>
-                    <input type="text" id="name" name="name" required>
-                </div>
-                
-                <div class="form-group">
-                    <label for="email">Email Address</label>
-                    <input type="email" id="email" name="email" required>
-                </div>
-                
-                <div class="form-group">
-                    <label for="phone">Phone Number</label>
-                    <input type="tel" id="phone" name="phone">
-                </div>
-                
-                <div class="form-group">
-                    <label for="subject">Subject</label>
-                    <input type="text" id="subject" name="subject" required>
-                </div>
-                
-                <div class="form-group">
-                    <label for="message">Message</label>
-                    <textarea id="message" name="message" rows="5" required></textarea>
-                </div>
-                
-                <button type="submit" class="submit-btn">
-                    <i class="fas fa-paper-plane"></i>
-                    Send Message
-                </button>
-            </form>
-        </div>
-    </section>
-
-    <!-- Footer -->
-    <footer class="footer">
-        <div class="footer-content">
-            <div class="footer-section">
-                <h3>RapiACT</h3>
-                <p>Your trusted partner in digital healthcare. Providing innovative solutions for better health management and medical care accessibility.</p>
-            </div>
-            
-            <div class="footer-section">
-                <h3>Quick Links</h3>
-                <a href="#home">Home</a><br>
-                <a href="#about">About</a><br>
-                <a href="/services">Services</a><br>
-                <a href="/all_doctors">Doctors</a><br>
-                <a href="/login">Login</a>
-            </div>
-            
-            <div class="footer-section">
-                <h3>Services</h3>
-                <a href="/register">Online Consultation</a><br>
-                <a href="/services">Diagnostic Tests</a><br>
-                <a href="/services">Health Reports</a><br>
-                <a href="/services">Emergency Care</a><br>
-                <a href="/pharmacy">Online Pharmacy</a>
-            </div>
-            
-            <div class="footer-section">
-                <h3>Support</h3>
-                <a href="#contact">Help Center</a><br>
-                <a href="#contact">Privacy Policy</a><br>
-                <a href="#contact">Terms of Service</a><br>
-                <a href="#contact">FAQs</a><br>
-                <a href="#contact">24/7 Support</a>
-            </div>
-        </div>
-        
-        <div class="footer-bottom">
-            <p>&copy; 2025 RapiACT. All rights reserved. | Designed with ❤️ for better healthcare</p>
-        </div>
-    </footer>
-
-    <!-- Language Modal -->
-    <div class="language-modal" id="languageModal">
-        <div class="language-content">
-            <h2>Choose Language</h2>
-            <p>Select your preferred language:</p>
-            <div class="language-buttons">
-                <button class="language-btn" onclick="changeLanguage('en')">🇺🇸 English</button>
-                <button class="language-btn" onclick="changeLanguage('hi')">🇮🇳 हिन्दी</button>
-                <button class="language-btn" onclick="changeLanguage('te')">🇮🇳 తెలుగు</button>
-                <button class="language-btn" onclick="changeLanguage('kn')">🇮🇳 ಕನ್ನಡ</button>
-                <button class="language-btn" onclick="changeLanguage('ta')">🇮🇳 தமிழ்</button>
-            </div>
-            <button class="language-btn" onclick="toggleLanguageModal()" style="margin-top: 20px; background: var(--text-accent); color: white;">Close</button>
-        </div>
-    </div>
-
-    <!-- Visitor Counter -->
-    <div class="visitor-counter">
-        <i class="fas fa-eye"></i> Visitors: <span id="visitorCount">0</span>
-    </div>
-
-    <!-- Floating Action Button -->
-    <div class="fab-container">
-        <button class="fab" onclick="toggleChatbot()">
-            <i class="fas fa-comments"></i>
-        </button>
-    </div>
-
-    <!-- Chatbot Widget -->
-    <div class="chatbot-widget" id="chatbotWidget">
-        <div class="chatbot-header">
-            <i class="fas fa-robot"></i> RapiACT Assistant
-        </div>
-        <div class="chatbot-content">
-            <iframe src="https://www.chatbase.co/chatbot-iframe/fSiObHG0hl0I5oV-SEFiZ" style="width: 100%; height: 100%; border: none;"></iframe>
         </div>
     </div>
 
     <script>
-        // Enhanced Doctors Slider with Auto-slide functionality
-        let doctorsData = [];
-        let currentSlide = 0;
-        let isAutoPlaying = true;
-        let autoSlideInterval;
-        let totalCards = 0;
-
-        // Theme Toggle
-        function toggleTheme() {
-            const body = document.body;
-            const themeToggle = document.querySelector('.theme-toggle i');
-            const currentTheme = body.getAttribute('data-theme');
-            
-            if (currentTheme === 'light') {
-                body.setAttribute('data-theme', 'dark');
-                themeToggle.classList.replace('fa-moon', 'fa-sun');
-                localStorage.setItem('theme', 'dark');
-            } else {
-                body.setAttribute('data-theme', 'light');
-                themeToggle.classList.replace('fa-sun', 'fa-moon');
-                localStorage.setItem('theme', 'light');
-            }
-        }
-
-        // Load saved theme
-        function loadTheme() {
-            const savedTheme = localStorage.getItem('theme') || 'dark';
-            const themeToggle = document.querySelector('.theme-toggle i');
-            document.body.setAttribute('data-theme', savedTheme);
-            
-            if (savedTheme === 'dark') {
-                themeToggle.classList.replace('fa-moon', 'fa-sun');
-            }
-        }
-
-        // Language Modal
-        function toggleLanguageModal() {
-            const modal = document.getElementById('languageModal');
-            modal.classList.toggle('active');
-        }
-
-        function changeLanguage(langCode) {
-            console.log(`Changing language to: ${langCode}`);
-            localStorage.setItem('selectedLanguage', langCode);
-            toggleLanguageModal();
-            alert(`Language changed to ${langCode}. In a real implementation, this would translate the content.`);
-        }
-
-        // Chatbot Toggle
-        function toggleChatbot() {
-            const chatbot = document.getElementById('chatbotWidget');
-            chatbot.classList.toggle('active');
-        }
-
-        // Scroll Indicator
-        function updateScrollIndicator() {
-            const scrollTop = window.pageYOffset;
-            const documentHeight = document.documentElement.scrollHeight - window.innerHeight;
-            const scrollPercent = (scrollTop / documentHeight) * 100;
-            document.querySelector('.scroll-indicator').style.height = scrollPercent + '%';
-        }
-
-        // Enhanced Doctors Section Functions
-        function getDoctorId(doctor) {
-        if (!doctor._id) return '';
-        if (typeof doctor._id === 'string') return doctor._id;
-        if (typeof doctor._id === 'object' && doctor._id.$oid) return doctor._id.$oid;
-        return '';
-    }
-
-    // Create doctor card safely with proper id string in attributes
-    function createDoctorCard(doctor) {
-        const docId = getDoctorId(doctor);
-        let photoSrc = 'static/images/logo.jpg';
-        if (docId) photoSrc = `/user_photo/${docId}`;
-
-        // Random rating for demo purposes
-        const rating = (Math.random() * 2 + 3).toFixed(1);
-        const reviewCount = Math.floor(Math.random() * 500) + 50;
-
-        return `
-        <div class="doctor-card">
-            <div class="doctor-avatar">
-                <img src="${photoSrc}" alt="Dr. ${doctor.name}" onerror="this.style.display='none'; this.parentElement.innerHTML='<i class=&quot;fas fa-user-md&quot;></i>';">
-            </div>
-            <div class="doctor-name">Dr. ${doctor.name}</div>
-            <div class="doctor-specialty">${doctor.specialization}</div>
-            <div class="doctor-experience">${doctor.years_experience} years experience</div>
-            <div class="doctor-rating">
-                <span class="stars">
-                    ${Array(Math.floor(rating)).fill('★').join('')}${rating % 1 >= 0.5 ? '☆' : ''}
-                </span>
-                <span class="rating-number">${rating} (${reviewCount} reviews)</span>
-            </div>
-            <div class="doctor-actions">
-                <button class="doctor-btn primary" onclick="bookAppointment('${docId}')">
-                    <i class="fas fa-calendar-plus"></i> Book Now
-                </button>
-                <button class="doctor-btn secondary" onclick="viewProfile('${docId}')">
-                    <i class="fas fa-user"></i> Profile
-                </button>
-            </div>
-        </div>
-        `;
-    }
-
-    function loadDoctors() {
-        fetch('/get_doctors')
-            .then(res => res.json())
-            .then(doctors => {
-                const slider = document.getElementById('doctorsSlider');
-                if (!doctors.length) {
-                    slider.innerHTML = '<div class="loading">No doctors available at the moment.</div>';
-                    return;
-                }
-                slider.innerHTML = '';
-                slider.classList.add('auto-slide');
-
-                doctors.forEach(doc => slider.innerHTML += createDoctorCard(doc));
-                // Duplicate for seamless scrolling
-                doctors.slice(0, 3).forEach(doc => slider.innerHTML += createDoctorCard(doc));
-
-                totalCards = doctors.length;
-                setupAutoSlide();
-                setupSliderControls();
-                setupProgressBar();
-            })
-            .catch(() => {
-                const slider = document.getElementById('doctorsSlider');
-                slider.innerHTML = '<div class="loading">Failed to load doctors. Please try again later.</div>';
-            });
-    }
-
-    function bookAppointment(doctorId) {
-        if (!doctorId) return;
-        window.location.href = '/register';
-    }
-
-    function viewProfile(doctorId) {
-        if (!doctorId) return;
-        window.location.href = `/doctor/${doctorId}`;
-    }
-
-    // Other page JS functions (slide navigation, auto sliding, theme toggle, etc) remain unchanged
-
-    document.addEventListener('DOMContentLoaded', () => {
-        loadDoctors();
-        // other initializations...
-    });
-
-        function setupAutoSlide() {
-            const slider = document.getElementById("doctorsSlider");
-            const pausePlayBtn = document.getElementById("pausePlayBtn");
-            
-            if (totalCards === 0) return;
-
-            // Set CSS custom property for animation
-            document.documentElement.style.setProperty('--total-cards', totalCards);
-            
-            autoSlideInterval = setInterval(() => {
-                if (isAutoPlaying) {
-                    nextSlide();
-                }
-            }, 4000);
-
-            // Pause on hover
-            slider.addEventListener('mouseenter', () => {
-                if (isAutoPlaying) {
-                    slider.classList.add('paused');
-                }
-            });
-
-            slider.addEventListener('mouseleave', () => {
-                if (isAutoPlaying) {
-                    slider.classList.remove('paused');
-                }
-            });
-        }
-
-        function setupSliderControls() {
-            const prevBtn = document.getElementById("prevBtn");
-            const nextBtn = document.getElementById("nextBtn");
-            const pausePlayBtn = document.getElementById("pausePlayBtn");
-
-            prevBtn.addEventListener('click', prevSlide);
-            nextBtn.addEventListener('click', nextSlide);
-            pausePlayBtn.addEventListener('click', toggleAutoSlide);
-        }
-
-        function nextSlide() {
-            const slider = document.getElementById("doctorsSlider");
-            currentSlide = (currentSlide + 1) % totalCards;
-            const translateX = -(currentSlide * 345); // card width + gap
-            slider.style.transform = `translateX(${translateX}px)`;
-            updateProgressBar();
-        }
-
-        function prevSlide() {
-            const slider = document.getElementById("doctorsSlider");
-            currentSlide = currentSlide === 0 ? totalCards - 1 : currentSlide - 1;
-            const translateX = -(currentSlide * 345);
-            slider.style.transform = `translateX(${translateX}px)`;
-            updateProgressBar();
-        }
-
-        function toggleAutoSlide() {
-            const slider = document.getElementById("doctorsSlider");
-            const pausePlayBtn = document.getElementById("pausePlayBtn");
-            const icon = pausePlayBtn.querySelector('i');
-            
-            isAutoPlaying = !isAutoPlaying;
-            
-            if (isAutoPlaying) {
-                slider.classList.remove('paused');
-                icon.classList.replace('fa-play', 'fa-pause');
-            } else {
-                slider.classList.add('paused');
-                icon.classList.replace('fa-pause', 'fa-play');
-            }
-        }
-
-        function setupProgressBar() {
-            const progressBar = document.getElementById("progressBar");
-            let progress = 0;
+        // Set countdown date (2 days from now)
+        const countdownDate = new Date().getTime() + (2 * 24 * 60 * 60 * 1000);
+        
+        // Create floating particles
+        function createParticles() {
+            const particlesContainer = document.querySelector('.particles');
             
             setInterval(() => {
-                if (isAutoPlaying) {
-                    progress += 0.625; // 100% / 4000ms * 25ms
-                    if (progress >= 100) {
-                        progress = 0;
-                    }
-                    progressBar.style.width = progress + '%';
-                }
-            }, 25);
-        }
-
-        function updateProgressBar() {
-            const progressBar = document.getElementById("progressBar");
-            const progress = (currentSlide / totalCards) * 100;
-            progressBar.style.width = progress + '%';
-        }
-
-        // Doctor interaction functions
-        function bookAppointment(doctorId) {
-            console.log(`Booking appointment with doctor ID: ${doctorId}`);
-            // Redirect to booking page or show booking modal
-            window.location.href = '/register';
-        }
-
-        function viewProfile(doctorId) {
-            console.log(`Viewing profile for doctor ID: ${doctorId}`);
-            // Redirect to doctor profile page
-            window.location.href = `/doctor/${doctorId}`;
-        }
-
-        // Contact Form Submission
-        function submitForm(event) {
-            event.preventDefault();
-            
-            const formData = new FormData(event.target);
-            const data = Object.fromEntries(formData);
-            
-            const submitBtn = event.target.querySelector('.submit-btn');
-            const originalText = submitBtn.innerHTML;
-            
-            submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Sending...';
-            submitBtn.disabled = true;
-            
-            setTimeout(() => {
-                alert('Thank you for your message! We will get back to you soon.');
-                event.target.reset();
-                submitBtn.innerHTML = originalText;
-                submitBtn.disabled = false;
-            }, 2000);
-        }
-
-        // Initialize Visitor Counter
-        function initVisitorCounter() {
-            let count = localStorage.getItem('visitorCount') || 0;
-            count = parseInt(count) + 1;
-            localStorage.setItem('visitorCount', count);
-            document.getElementById('visitorCount').textContent = count.toLocaleString();
-        }
-
-        // Smooth Scroll for Navigation
-        function setupSmoothScroll() {
-            document.querySelectorAll('a[href^="#"]').forEach(anchor => {
-                anchor.addEventListener('click', function (e) {
-                    e.preventDefault();
-                    const target = document.querySelector(this.getAttribute('href'));
-                    if (target) {
-                        target.scrollIntoView({
-                            behavior: 'smooth',
-                            block: 'start'
-                        });
-                    }
-                });
-            });
-        }
-
-        // Intersection Observer for Animations
-        function setupAnimations() {
-            const observerOptions = {
-                threshold: 0.1,
-                rootMargin: '0px 0px -50px 0px'
-            };
-
-            const observer = new IntersectionObserver((entries) => {
-                entries.forEach(entry => {
-                    if (entry.isIntersecting) {
-                        entry.target.style.opacity = '1';
-                        entry.target.style.transform = 'translateY(0)';
-                    }
-                });
-            }, observerOptions);
-
-            document.querySelectorAll('.section, .feature-card, .service-card').forEach(el => {
-                el.style.opacity = '0';
-                el.style.transform = 'translateY(30px)';
-                el.style.transition = 'opacity 0.6s ease, transform 0.6s ease';
-                observer.observe(el);
-            });
-        }
-
-        // Mobile Menu and Responsive Features
-        function setupMobileFeatures() {
-            const navbar = document.querySelector('.navbar');
-            let lastScrollY = window.scrollY;
-
-            window.addEventListener('scroll', () => {
-                const currentScrollY = window.scrollY;
+                const particle = document.createElement('div');
+                particle.className = 'particle';
+                particle.style.left = Math.random() * 100 + '%';
+                particle.style.animationDuration = (Math.random() * 3 + 3) + 's';
+                particle.style.animationDelay = Math.random() * 2 + 's';
+                particlesContainer.appendChild(particle);
                 
-                if (currentScrollY > lastScrollY && currentScrollY > 100) {
-                    navbar.style.transform = 'translateX(-50%) translateY(-100%)';
-                } else {
-                    navbar.style.transform = 'translateX(-50%) translateY(0)';
-                }
-                
-                lastScrollY = currentScrollY;
-                updateScrollIndicator();
-            });
+                // Remove particle after animation
+                setTimeout(() => {
+                    particle.remove();
+                }, 6000);
+            }, 300);
         }
-
-        // Keyboard Navigation
-        function setupKeyboardNav() {
-            document.addEventListener('keydown', (e) => {
-                if (e.key === 'Escape') {
-                    const languageModal = document.getElementById('languageModal');
-                    const chatbot = document.getElementById('chatbotWidget');
-                    
-                    if (languageModal.classList.contains('active')) {
-                        toggleLanguageModal();
-                    }
-                    
-                    if (chatbot.classList.contains('active')) {
-                        toggleChatbot();
-                    }
-                }
-                
-                if (e.ctrlKey && e.shiftKey && e.key === 'T') {
-                    e.preventDefault();
-                    toggleTheme();
-                }
-
-                // Slider navigation with arrow keys
-                if (e.key === 'ArrowLeft' && document.querySelector('#doctors').getBoundingClientRect().top < window.innerHeight) {
-                    prevSlide();
-                }
-                
-                if (e.key === 'ArrowRight' && document.querySelector('#doctors').getBoundingClientRect().top < window.innerHeight) {
-                    nextSlide();
-                }
-            });
-        }
-
-        // Error Handling
-        function setupErrorHandling() {
-            window.addEventListener('error', (e) => {
-                console.error('RapiACT Error:', e.error);
-            });
+        
+        // Update countdown
+        function updateCountdown() {
+            const now = new Date().getTime();
+            const distance = countdownDate - now;
             
-            window.addEventListener('unhandledrejection', (e) => {
-                console.error('Unhandled Promise Rejection:', e.reason);
-                e.preventDefault();
-            });
-        }
-
-        // Initialize Everything
-        function init() {
-            loadTheme();
-            setupSmoothScroll();
-            loadDoctors();
-            initVisitorCounter();
-            setupAnimations();
-            setupMobileFeatures();
-            setupKeyboardNav();
-            setupErrorHandling();
-            
-            console.log('RapiACT Healthcare Platform initialized successfully!');
-        }
-
-        // DOM Content Loaded
-        document.addEventListener('DOMContentLoaded', init);
-
-        // Page Visibility API for performance
-        document.addEventListener('visibilitychange', () => {
-            if (document.visibilityState === 'visible') {
-                if (isAutoPlaying) {
-                    document.getElementById('doctorsSlider').classList.remove('paused');
-                }
-            } else {
-                document.getElementById('doctorsSlider').classList.add('paused');
+            if (distance < 0) {
+                document.getElementById('countdown').innerHTML = '<div class="expired">🎉 TIME\'S UP! 🎉</div>';
+                return;
             }
+            
+            const days = Math.floor(distance / (1000 * 60 * 60 * 24));
+            const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+            const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+            const seconds = Math.floor((distance % (1000 * 60)) / 1000);
+            
+            document.getElementById('days').textContent = days.toString().padStart(2, '0');
+            document.getElementById('hours').textContent = hours.toString().padStart(2, '0');
+            document.getElementById('minutes').textContent = minutes.toString().padStart(2, '0');
+            document.getElementById('seconds').textContent = seconds.toString().padStart(2, '0');
+            
+            // Add extra pulse animation when seconds change
+            if (seconds !== updateCountdown.lastSecond) {
+                document.getElementById('seconds').parentElement.style.animation = 'none';
+                setTimeout(() => {
+                    document.getElementById('seconds').parentElement.style.animation = 'pulse 2s infinite ease-in-out';
+                }, 10);
+                updateCountdown.lastSecond = seconds;
+            }
+        }
+        
+        // Initialize
+        createParticles();
+        updateCountdown();
+        setInterval(updateCountdown, 1000);
+        
+        // Add click effects to time units
+        document.querySelectorAll('.time-unit').forEach(unit => {
+            unit.addEventListener('click', () => {
+                unit.style.transform = 'scale(0.95)';
+                setTimeout(() => {
+                    unit.style.transform = '';
+                }, 150);
+            });
         });
-
-        // Console welcome message
-        console.log(`
-        🏥 RapiACT Healthcare Platform
-        ============================
-        
-        Enhanced Doctors Section Features:
-        - Auto-sliding carousel with controls
-        - Pause/play functionality
-        - Progress indicator
-        - Responsive navigation
-        - Keyboard shortcuts (Arrow keys, Escape, Ctrl+Shift+T)
-        
-        Built with ❤️ for better healthcare accessibility.
-        `);
     </script>
 </body>
 </html>
