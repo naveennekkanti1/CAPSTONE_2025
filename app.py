@@ -3462,13 +3462,17 @@ def email_status():
 @app.route('/pharmacy')
 @app.route('/pharmacy/')
 def pharmacy():
+    # Check if this is an AJAX request for JSON data
+    if request.headers.get('Accept') == 'application/json':
+        return get_pharmacy_products_json()
+    
+    # Original template rendering for page load
     user = None
     if 'user_id' in session:
         user = mongo.db.users.find_one({'_id': ObjectId(session['user_id'])})
         if user:
             user['_id'] = str(user['_id'])
     else:
-        # Viewing products allowed without login
         user = None
 
     search_query = request.args.get('search', '')
@@ -3480,10 +3484,12 @@ def pharmacy():
                 {"description": {"$regex": search_query, "$options": "i"}}
             ]
         }
+    
     products = list(mongo.db.pharmacy_products.find(filter_query))
 
-    # Convert images to base64 strings for display
+    # Convert ObjectId to string and images to base64 for template
     for product in products:
+        product['_id'] = str(product['_id'])
         if product.get('image'):
             product['image'] = base64.b64encode(product['image']).decode('utf-8')
 
@@ -3495,6 +3501,7 @@ def pharmacy():
             'status': 'recommended'
         }))
         for pres in patient_recommended:
+            pres['_id'] = str(pres['_id'])
             prod = mongo.db.pharmacy_products.find_one({'_id': pres.get('product_id')})
             if prod:
                 pres.update({
@@ -3514,13 +3521,285 @@ def pharmacy():
                 })
 
     return render_template(
-        'pharmacy.html', products=products,
+        'pharmacy.html', 
+        products=products,
         recommended=patient_recommended,
         user=user,
         is_authenticated=('user_id' in session),
         is_patient=(session.get('role') == 'patient'),
         search_query=search_query
     )
+
+def get_pharmacy_products_json():
+    """Return pharmacy products as JSON for AJAX requests"""
+    try:
+        search_query = request.args.get('search', '')
+        filter_query = {}
+        
+        if search_query:
+            filter_query = {
+                "$or": [
+                    {"name": {"$regex": search_query, "$options": "i"}},
+                    {"description": {"$regex": search_query, "$options": "i"}},
+                    {"category": {"$regex": search_query, "$options": "i"}}
+                ]
+            }
+        
+        # Add additional filters if needed
+        if request.args.get('category'):
+            filter_query['category'] = request.args.get('category')
+            
+        if request.args.get('min_price'):
+            filter_query['price'] = {'$gte': float(request.args.get('min_price'))}
+            
+        if request.args.get('max_price'):
+            price_filter = filter_query.get('price', {})
+            price_filter['$lte'] = float(request.args.get('max_price'))
+            filter_query['price'] = price_filter
+
+        # Query products
+        products = list(mongo.db.pharmacy_products.find(filter_query))
+        
+        # Process products for JSON response
+        processed_products = []
+        for product in products:
+            processed_product = {
+                '_id': str(product['_id']),
+                'id': str(product['_id']),  # For compatibility
+                'name': product.get('name', ''),
+                'description': product.get('description', ''),
+                'price': float(product.get('price', 0)),
+                'stock_quantity': int(product.get('stock_quantity', 0)),
+                'category': product.get('category', 'General'),
+                'manufacturer': product.get('manufacturer', ''),
+                'requires_prescription': product.get('requires_prescription', False),
+                'image': None
+            }
+            
+            # Handle image conversion
+            if product.get('image'):
+                processed_product['image'] = base64.b64encode(product['image']).decode('utf-8')
+            
+            processed_products.append(processed_product)
+        
+        # Get patient recommendations if logged in
+        recommended_products = []
+        if session.get('role') == 'patient' and 'user_id' in session:
+            patient_id = ObjectId(session['user_id'])
+            recommendations = list(mongo.db.prescriptions.find({
+                'patient_id': patient_id,
+                'status': 'recommended'
+            }))
+            
+            for rec in recommendations:
+                prod = mongo.db.pharmacy_products.find_one({'_id': rec.get('product_id')})
+                if prod:
+                    rec_product = {
+                        '_id': str(prod['_id']),
+                        'prescription_id': str(rec['_id']),
+                        'name': prod.get('name'),
+                        'description': prod.get('description'),
+                        'price': float(prod.get('price', 0)),
+                        'dosage': rec.get('dosage', ''),
+                        'duration': rec.get('duration', ''),
+                        'instructions': rec.get('instructions', ''),
+                        'payment_verified': rec.get('payment_status') == 'verified',
+                        'image': None
+                    }
+                    
+                    if prod.get('image'):
+                        rec_product['image'] = base64.b64encode(prod['image']).decode('utf-8')
+                    
+                    recommended_products.append(rec_product)
+        
+        response_data = {
+            'success': True,
+            'products': processed_products,
+            'recommended': recommended_products,
+            'total_count': len(processed_products),
+            'search_query': search_query,
+            'user_authenticated': 'user_id' in session,
+            'is_patient': session.get('role') == 'patient'
+        }
+        
+        return jsonify(response_data)
+        
+    except Exception as e:
+        print(f"Error in get_pharmacy_products_json: {str(e)}")
+        return jsonify({
+            'success': False,
+            'error': 'Failed to fetch products',
+            'message': str(e)
+        }), 500
+
+@app.route('/api/product/<product_id>/check-stock')
+def check_product_stock(product_id):
+    """API endpoint to check current stock for a product"""
+    try:
+        product = mongo.db.pharmacy_products.find_one({'_id': ObjectId(product_id)})
+        
+        if not product:
+            return jsonify({
+                'success': False,
+                'error': 'Product not found'
+            }), 404
+            
+        return jsonify({
+            'success': True,
+            'product_id': product_id,
+            'stock': int(product.get('stock_quantity', 0)),
+            'available': product.get('stock_quantity', 0) > 0,
+            'name': product.get('name', ''),
+            'price': float(product.get('price', 0))
+        })
+        
+    except Exception as e:
+        print(f"Error checking stock: {str(e)}")
+        return jsonify({
+            'success': False,
+            'error': 'Failed to check stock'
+        }), 500
+
+@app.route('/api/create-order', methods=['POST'])
+def create_order():
+    """API endpoint to create a new order"""
+    try:
+        if 'user_id' not in session:
+            return jsonify({
+                'success': False,
+                'error': 'Authentication required',
+                'payment_url': '/login'
+            }), 401
+            
+        data = request.get_json()
+        items = data.get('items', [])
+        total = float(data.get('total', 0))
+        
+        if not items:
+            return jsonify({
+                'success': False,
+                'error': 'No items in order'
+            }), 400
+        
+        # Validate stock and calculate actual total
+        validated_items = []
+        calculated_total = 0
+        
+        for item in items:
+            product = mongo.db.pharmacy_products.find_one({'_id': ObjectId(item['id'])})
+            
+            if not product:
+                return jsonify({
+                    'success': False,
+                    'error': f"Product {item.get('name', 'Unknown')} not found"
+                }), 400
+                
+            if product.get('stock_quantity', 0) < item['quantity']:
+                return jsonify({
+                    'success': False,
+                    'error': f"Insufficient stock for {product.get('name', 'product')}"
+                }), 400
+            
+            item_total = float(product.get('price', 0)) * int(item['quantity'])
+            calculated_total += item_total
+            
+            validated_items.append({
+                'product_id': ObjectId(item['id']),
+                'name': product.get('name', ''),
+                'price': float(product.get('price', 0)),
+                'quantity': int(item['quantity']),
+                'subtotal': item_total
+            })
+        
+        # Create order document
+        order = {
+            'user_id': ObjectId(session['user_id']),
+            'items': validated_items,
+            'total_amount': calculated_total,
+            'status': 'pending',
+            'payment_status': 'pending',
+            'created_at': datetime.utcnow(),
+            'delivery_address': None,  # To be filled later
+            'phone_number': None       # To be filled later
+        }
+        
+        # Insert order
+        order_result = mongo.db.pharmacy_orders.insert_one(order)
+        order_id = str(order_result.inserted_id)
+        
+        # Update stock quantities (reserve items)
+        for item in validated_items:
+            mongo.db.pharmacy_products.update_one(
+                {'_id': item['product_id']},
+                {'$inc': {'stock_quantity': -item['quantity']}}
+            )
+        
+        return jsonify({
+            'success': True,
+            'order_id': order_id,
+            'total': calculated_total,
+            'payment_url': f'/payment/{order_id}',
+            'message': 'Order created successfully'
+        })
+        
+    except Exception as e:
+        print(f"Error creating order: {str(e)}")
+        return jsonify({
+            'success': False,
+            'error': 'Failed to create order'
+        }), 500
+
+@app.route('/api/pharmacy/categories')
+def get_pharmacy_categories():
+    """Get available product categories"""
+    try:
+        categories = mongo.db.pharmacy_products.distinct('category')
+        categories = [cat for cat in categories if cat]  # Remove empty categories
+        
+        return jsonify({
+            'success': True,
+            'categories': categories
+        })
+        
+    except Exception as e:
+        return jsonify({
+            'success': False,
+            'error': 'Failed to fetch categories'
+        }), 500
+
+@app.route('/api/pharmacy/search-suggestions')
+def get_search_suggestions():
+    """Get search suggestions for autocomplete"""
+    try:
+        query = request.args.get('q', '').lower()
+        if len(query) < 2:
+            return jsonify({'suggestions': []})
+        
+        # Search in product names and descriptions
+        products = mongo.db.pharmacy_products.find({
+            "$or": [
+                {"name": {"$regex": query, "$options": "i"}},
+                {"category": {"$regex": query, "$options": "i"}}
+            ]
+        }).limit(10)
+        
+        suggestions = []
+        seen_names = set()
+        
+        for product in products:
+            name = product.get('name', '')
+            if name and name not in seen_names:
+                suggestions.append({
+                    'name': name,
+                    'category': product.get('category', ''),
+                    'id': str(product['_id'])
+                })
+                seen_names.add(name)
+        
+        return jsonify({'suggestions': suggestions})
+        
+    except Exception as e:
+        return jsonify({'suggestions': []}), 500
 
 @app.route('/admin_dashboard/add_medicine', methods=['GET', 'POST'])
 def add_medicine():
@@ -3697,9 +3976,6 @@ def buy_product(product_id):
         medicines=purchase["medicines"],  # Send medicines list
         total_price=purchase["medicines"][0]["price"]
     )
-
-
-
 
 @app.route('/patient_dashboard/proceed_payment/<prescription_id>', methods=['GET'])
 def proceed_payment(prescription_id):
