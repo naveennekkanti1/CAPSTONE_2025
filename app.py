@@ -281,6 +281,42 @@ def admin_form_submissions(form_id):
     submissions = list(mongo.db.form_submissions.find({"form_id": form_id}).sort("submitted_at", -1))
     return render_template('admin_form_submissions.html', submissions=submissions, form_id=form_id)
 
+
+@app.route('/download_excel/<form_id>')
+@admin_required
+def download_excel(form_id):
+    # Query MongoDB for submissions for the given form_id, sorted by submitted_at descending
+    submissions = list(mongo.db.form_submissions.find({"form_id": form_id}).sort("submitted_at", -1))
+
+    if not submissions:
+        abort(404, description="No submissions found for this form.")
+
+    rows = []
+    for sub in submissions:
+        row = {
+            'ID': str(sub['_id']),  # Convert ObjectId to string
+            'User Email': sub.get('user_email', 'N/A'),
+            'Submitted At': sub['submitted_at'].strftime('%Y-%m-%d %H:%M:%S'),
+        }
+        for key, value in sub['submission_data'].items():
+            col_name = key.replace('_', ' ').capitalize()
+            row[col_name] = value
+        rows.append(row)
+
+    df = pd.DataFrame(rows)
+
+    output = io.BytesIO()
+    with pd.ExcelWriter(output, engine='xlsxwriter') as writer:
+        df.to_excel(writer, index=False, sheet_name='Submissions')
+    output.seek(0)
+
+    return send_file(
+        output,
+        download_name=f'submissions_{form_id}.xlsx',
+        as_attachment=True,
+        mimetype='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+    )
+
 # -------------------------------------
 # Admin: Send Notification Email
 # -------------------------------------

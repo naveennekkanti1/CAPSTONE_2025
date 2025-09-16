@@ -143,12 +143,14 @@
     </style>
 </head>
 <body>
-    <h1>Form Submissions - {{ form_id }}</h1>
+    <h1>Form Submissions</h1>
 
     <div class="nav-links">
         <a href="{{ url_for('admin_dashboard') }}">Dashboard</a> |
         <a href="{{ url_for('admin_form_builder', form_id=form_id) }}">Edit Form</a> |
-        <a href="{{ url_for('admin_send_email') }}">Send Notification</a>
+        <a href="{{ url_for('admin_send_email') }}">Send Notification</a> |
+        <a href="{{ url_for('download_excel', form_id=form_id) }}" class="download-btn">Download Excel</a>
+
     </div>
 
     <div class="table-container">
