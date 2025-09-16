@@ -1,0 +1,1096 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Services - RapiACT</title>
+    <link rel="icon" type="image/jpg" href="{{ url_for('static', filename='images/logo.jpg') }}">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            /* Light theme variables */
+            --bg-primary: #ffffff;
+            --bg-secondary: #f8fafc;
+            --bg-card: #ffffff;
+            --text-primary: #1a202c;
+            --text-secondary: #4a5568;
+            --text-muted: #718096;
+            --border-color: #e2e8f0;
+            --accent-primary: #3b82f6;
+            --accent-secondary: #10b981;
+            --accent-hover: #2563eb;
+            --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+            --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+            --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+            --shadow-xl: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
+        }
+
+        [data-theme="dark"] {
+            /* Dark theme variables */
+            --bg-primary: #0f172a;
+            --bg-secondary: #1e293b;
+            --bg-card: #334155;
+            --text-primary: #f8fafc;
+            --text-secondary: #cbd5e1;
+            --text-muted: #94a3b8;
+            --border-color: #475569;
+            --accent-primary: #60a5fa;
+            --accent-secondary: #34d399;
+            --accent-hover: #3b82f6;
+            --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.3);
+            --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.3), 0 2px 4px -2px rgb(0 0 0 / 0.3);
+            --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.3), 0 4px 6px -4px rgb(0 0 0 / 0.3);
+            --shadow-xl: 0 20px 25px -5px rgb(0 0 0 / 0.3), 0 8px 10px -6px rgb(0 0 0 / 0.3);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background-color: var(--bg-primary);
+            color: var(--text-primary);
+            line-height: 1.6;
+            overflow-x: hidden;
+            transition: all 0.3s ease;
+        }
+
+        /* Modern Navbar */
+        .navbar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 1000;
+            background: rgba(255, 255, 255, 0.8);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-bottom: 1px solid var(--border-color);
+            transition: all 0.3s ease;
+        }
+
+        [data-theme="dark"] .navbar {
+            background: rgba(15, 23, 42, 0.8);
+        }
+
+        .navbar-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem 2rem;
+        }
+
+        .navbar-brand {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            font-weight: 700;
+            font-size: 1.5rem;
+            color: var(--accent-primary);
+            text-decoration: none;
+        }
+
+        .navbar-brand img {
+            width: 40px;
+            height: 40px;
+            border-radius: 8px;
+        }
+
+        .navbar-nav {
+            display: flex;
+            align-items: center;
+            gap: 2rem;
+            list-style: none;
+        }
+
+        .navbar-nav a {
+            color: var(--text-secondary);
+            text-decoration: none;
+            font-weight: 500;
+            font-size: 0.95rem;
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+            transition: all 0.2s ease;
+            position: relative;
+        }
+
+        .navbar-nav a:hover,
+        .navbar-nav a.active {
+            color: var(--accent-primary);
+            background: rgba(59, 130, 246, 0.1);
+        }
+
+        .navbar-controls {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .theme-toggle {
+            background: none;
+            border: none;
+            color: var(--text-secondary);
+            cursor: pointer;
+            padding: 0.5rem;
+            border-radius: 8px;
+            transition: all 0.2s ease;
+            font-size: 1.2rem;
+        }
+
+        .theme-toggle:hover {
+            background: rgba(59, 130, 246, 0.1);
+            color: var(--accent-primary);
+        }
+
+        .btn {
+            padding: 0.625rem 1.25rem;
+            border-radius: 8px;
+            font-weight: 500;
+            font-size: 0.9rem;
+            text-decoration: none;
+            transition: all 0.2s ease;
+            border: none;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .btn-outline {
+            color: var(--text-secondary);
+            border: 1px solid var(--border-color);
+            background: transparent;
+        }
+
+        .btn-outline:hover {
+            background: var(--bg-secondary);
+            border-color: var(--accent-primary);
+            color: var(--accent-primary);
+        }
+
+        .btn-primary {
+            background: var(--accent-primary);
+            color: white;
+            border: 1px solid var(--accent-primary);
+        }
+
+        .btn-primary:hover {
+            background: var(--accent-hover);
+            transform: translateY(-1px);
+            box-shadow: var(--shadow-md);
+        }
+
+        /* Hero Section */
+        .hero {
+            padding: 8rem 2rem 4rem;
+            text-align: center;
+            background: linear-gradient(135deg, var(--bg-primary) 0%, var(--bg-secondary) 100%);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .hero::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: radial-gradient(circle at 30% 20%, rgba(59, 130, 246, 0.1) 0%, transparent 50%),
+                        radial-gradient(circle at 80% 80%, rgba(16, 185, 129, 0.1) 0%, transparent 50%);
+            pointer-events: none;
+        }
+
+        .hero-content {
+            max-width: 800px;
+            margin: 0 auto;
+            position: relative;
+            z-index: 1;
+        }
+
+        .hero h1 {
+            font-size: clamp(2.5rem, 5vw, 3.5rem);
+            font-weight: 800;
+            margin-bottom: 1.5rem;
+            background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            line-height: 1.2;
+        }
+
+        .hero p {
+            font-size: 1.25rem;
+            color: var(--text-secondary);
+            margin-bottom: 2.5rem;
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        /* Services Section */
+        .services-section {
+            padding: 5rem 2rem;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .services-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 2rem;
+            margin-bottom: 4rem;
+        }
+
+        .service-card {
+            background: var(--bg-card);
+            border-radius: 16px;
+            padding: 2.5rem;
+            box-shadow: var(--shadow-sm);
+            border: 1px solid var(--border-color);
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+            cursor: pointer;
+        }
+
+        .service-card:hover {
+            transform: translateY(-8px);
+            box-shadow: var(--shadow-xl);
+            border-color: var(--accent-primary);
+        }
+
+        .service-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+            transform: scaleX(0);
+            transition: transform 0.3s ease;
+        }
+
+        .service-card:hover::before {
+            transform: scaleX(1);
+        }
+
+        .service-icon {
+            width: 80px;
+            height: 80px;
+            background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+            border-radius: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 1.5rem;
+            font-size: 2rem;
+            color: white;
+        }
+
+        .service-card img {
+            width: 60px;
+            height: 60px;
+            object-fit: contain;
+        }
+
+        .service-card h3 {
+            font-size: 1.5rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+            color: var(--text-primary);
+        }
+
+        .service-card p {
+            color: var(--text-secondary);
+            line-height: 1.6;
+            font-size: 1rem;
+        }
+
+        .service-card .features {
+            margin-top: 1.5rem;
+            padding-top: 1.5rem;
+            border-top: 1px solid var(--border-color);
+        }
+
+        .service-card .features ul {
+            list-style: none;
+            padding: 0;
+        }
+
+        .service-card .features li {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin-bottom: 0.5rem;
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+        }
+
+        .service-card .features li::before {
+            content: "✓";
+            color: var(--accent-secondary);
+            font-weight: bold;
+        }
+
+        /* Special Service Cards */
+        .service-card.featured {
+            background: linear-gradient(135deg, var(--accent-primary), var(--accent-hover));
+            color: white;
+            border: none;
+        }
+
+        .service-card.featured h3,
+        .service-card.featured p,
+        .service-card.featured .features li {
+            color: white;
+        }
+
+        .service-card.featured .service-icon {
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        .service-card.featured .features {
+            border-top-color: rgba(255, 255, 255, 0.2);
+        }
+
+        /* Contact Section */
+        .contact-section {
+            background: linear-gradient(135deg, var(--bg-secondary) 0%, var(--bg-primary) 100%);
+            padding: 5rem 2rem;
+            margin-top: 4rem;
+        }
+
+        .contact-container {
+            max-width: 800px;
+            margin: 0 auto;
+            text-align: center;
+        }
+
+        .contact-container h2 {
+            font-size: clamp(2rem, 4vw, 2.5rem);
+            font-weight: 700;
+            margin-bottom: 1rem;
+            color: var(--text-primary);
+        }
+
+        .contact-container p {
+            font-size: 1.125rem;
+            color: var(--text-secondary);
+            margin-bottom: 3rem;
+        }
+
+        .contact-form {
+            display: grid;
+            gap: 1.5rem;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+            text-align: left;
+        }
+
+        .form-group label {
+            color: var(--text-primary);
+            font-weight: 500;
+            font-size: 0.9rem;
+        }
+
+        .form-control {
+            padding: 1rem;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            background: var(--bg-card);
+            color: var(--text-primary);
+            font-size: 1rem;
+            transition: all 0.2s ease;
+        }
+
+        .form-control:focus {
+            outline: none;
+            border-color: var(--accent-primary);
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+        }
+
+        textarea.form-control {
+            resize: vertical;
+            min-height: 120px;
+        }
+
+        .btn-large {
+            padding: 1rem 2rem;
+            font-size: 1.1rem;
+            border-radius: 12px;
+        }
+
+        /* Footer */
+        footer {
+            background: var(--bg-secondary);
+            border-top: 1px solid var(--border-color);
+            padding: 3rem 2rem 2rem;
+            text-align: center;
+            margin-top: 5rem;
+        }
+
+        .footer-content {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .footer-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 2rem;
+            margin-bottom: 2rem;
+            text-align: left;
+        }
+
+        .footer-section h3 {
+            color: var(--accent-primary);
+            margin-bottom: 1rem;
+            font-size: 1.125rem;
+            font-weight: 600;
+        }
+
+        .footer-section p,
+        .footer-section ul {
+            color: var(--text-muted);
+            font-size: 0.9rem;
+            line-height: 1.6;
+        }
+
+        .footer-section ul {
+            list-style: none;
+            padding: 0;
+        }
+
+        .footer-section ul li {
+            margin-bottom: 0.5rem;
+        }
+
+        .footer-section a {
+            color: var(--text-muted);
+            text-decoration: none;
+            transition: color 0.2s ease;
+        }
+
+        .footer-section a:hover {
+            color: var(--accent-primary);
+        }
+
+        .footer-bottom {
+            border-top: 1px solid var(--border-color);
+            padding-top: 2rem;
+            text-align: center;
+        }
+
+        .footer-bottom p {
+            color: var(--text-muted);
+            font-size: 0.9rem;
+        }
+
+        /* Loading Screen */
+        .loading-screen {
+            position: fixed;
+            width: 100%;
+            height: 100%;
+            background: var(--bg-primary);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+            flex-direction: column;
+            gap: 2rem;
+        }
+
+        .loading-circle {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            border: 4px solid var(--border-color);
+            border-top-color: var(--accent-primary);
+            animation: spin 1s linear infinite;
+        }
+
+        .loading-text {
+            color: var(--text-secondary);
+            font-weight: 500;
+        }
+
+        /* Animations */
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* Mobile Responsiveness */
+        @media (max-width: 768px) {
+            .navbar-container {
+                padding: 1rem;
+            }
+
+            .navbar-nav {
+                display: none;
+            }
+
+            .hero {
+                padding: 6rem 1rem 3rem;
+            }
+
+            .services-section {
+                padding: 3rem 1rem;
+            }
+
+            .services-grid {
+                grid-template-columns: 1fr;
+                gap: 1.5rem;
+            }
+
+            .service-card {
+                padding: 2rem;
+            }
+
+            .contact-section {
+                padding: 3rem 1rem;
+            }
+        }
+
+        /* Hide Google Translate elements */
+        #google_translate_element {
+            display: none;
+        }
+
+        .goog-te-banner-frame {
+            display: none !important;
+        }
+
+        body {
+            top: 0 !important;
+        }
+    </style>
+</head>
+<body data-theme="light">
+    <!-- Loading Screen -->
+    <div class="loading-screen">
+        <div class="loading-circle"></div>
+        <div class="loading-text">Loading Services...</div>
+    </div>
+
+    <!-- Modern Navbar -->
+    <nav class="navbar">
+        <div class="navbar-container">
+            <a href="/" class="navbar-brand">
+                <img src="static/images/logo.jpg" alt="RapiACT Logo">
+                RapiACT
+            </a>
+            
+            <ul class="navbar-nav">
+                <li><a href="/">Home</a></li>
+                <li><a href="/#about">About</a></li>
+                <li><a href="/services" class="active">Services</a></li>
+                <li><a href="/#pharmacy">Pharmacy</a></li>
+                <li><a href="/#doctors">Doctors</a></li>
+                <li><a href="/#contact">Contact</a></li>
+                <li><a href="/all_doctors">Find Doctor</a></li>
+            </ul>
+            
+            <div class="navbar-controls">
+                <button class="theme-toggle" onclick="toggleTheme()" title="Toggle theme">
+                    <span class="theme-icon">🌙</span>
+                </button>
+                
+                <div style="display: flex; gap: 0.75rem;">
+                    <a href="/login" class="btn btn-outline">Login</a>
+                    <a href="/register" class="btn btn-primary">Sign Up</a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="hero">
+        <div class="hero-content">
+            <h1>Our Healthcare Services</h1>
+            <p>Comprehensive digital healthcare solutions designed to provide you with convenient, reliable, and expert medical care from the comfort of your home.</p>
+        </div>
+    </section>
+
+    <!-- Services Section -->
+    <section class="services-section">
+        <div class="services-grid">
+            <div class="service-card featured" onclick="location.href='/login';" style="cursor: pointer;">
+                <div class="service-icon">
+                    🩺
+                </div>
+                <h3>Online Doctor Consultation</h3>
+                <p>Connect with certified healthcare professionals through secure video consultations. Get expert medical advice, prescriptions, and follow-up care from anywhere.</p>
+                <div class="features">
+                    <ul>
+                        <li>24/7 doctor availability</li>
+                        <li>Secure video consultations</li>
+                        <li>Digital prescriptions</li>
+                        <li>Medical record access</li>
+                        <li>Specialist referrals</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="service-card">
+                <div class="service-icon">
+                    🧪
+                </div>
+                <h3>Diagnostic Test Bookings</h3>
+                <p>Book laboratory tests and diagnostic services with ease. Get your reports delivered digitally and track your health metrics over time.</p>
+                <div class="features">
+                    <ul>
+                        <li>Home sample collection</li>
+                        <li>Digital report delivery</li>
+                        <li>Test result tracking</li>
+                        <li>Doctor consultation included</li>
+                        <li>Comprehensive health panels</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="service-card" onclick="location.href='/predictions';" style="cursor: pointer;">
+                <div class="service-icon">
+                    📊
+                </div>
+                <h3>AI-Powered Health Reports</h3>
+                <p>Get personalized health insights using advanced AI algorithms. Our system analyzes your health data to predict potential risks and recommend preventive measures.</p>
+                <div class="features">
+                    <ul>
+                        <li>Predictive health analysis</li>
+                        <li>Risk assessment reports</li>
+                        <li>Personalized recommendations</li>
+                        <li>Health trend tracking</li>
+                        <li>Early warning systems</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="service-card">
+                <div class="service-icon">
+                    🚨
+                </div>
+                <h3>Emergency Assistance</h3>
+                <p>Round-the-clock emergency medical support when you need it most. Quick access to emergency consultations and immediate medical guidance.</p>
+                <div class="features">
+                    <ul>
+                        <li>24/7 emergency hotline</li>
+                        <li>Immediate doctor consultation</li>
+                        <li>Emergency medication guidance</li>
+                        <li>Hospital referral service</li>
+                        <li>Ambulance coordination</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="service-card">
+                <div class="service-icon">
+                    💊
+                </div>
+                <h3>Online Pharmacy</h3>
+                <p>Order prescribed medications and healthcare products with doorstep delivery. Manage your prescriptions and get automatic refill reminders.</p>
+                <div class="features">
+                    <ul>
+                        <li>Prescription medication delivery</li>
+                        <li>Over-the-counter products</li>
+                        <li>Automatic refill reminders</li>
+                        <li>Medicine authenticity guarantee</li>
+                        <li>Express delivery options</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="service-card">
+                <div class="service-icon">
+                    📱
+                </div>
+                <h3>Health Monitoring</h3>
+                <p>Track your vital signs, medications, and health goals through our comprehensive health monitoring system with smart reminders and insights.</p>
+                <div class="features">
+                    <ul>
+                        <li>Vital signs tracking</li>
+                        <li>Medication reminders</li>
+                        <li>Health goal setting</li>
+                        <li>Progress analytics</li>
+                        <li>Wearable device integration</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="service-card">
+                <div class="service-icon">
+                    🧠
+                </div>
+                <h3>Mental Health Support</h3>
+                <p>Professional mental health services including counseling, therapy sessions, and wellness programs to support your emotional wellbeing.</p>
+                <div class="features">
+                    <ul>
+                        <li>Licensed therapist consultations</li>
+                        <li>Mental health assessments</li>
+                        <li>Stress management programs</li>
+                        <li>Mindfulness sessions</li>
+                        <li>Support group access</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="service-card">
+                <div class="service-icon">
+                    👶
+                </div>
+                <h3>Specialized Care</h3>
+                <p>Specialized healthcare services for different life stages including pediatric care, women's health, elderly care, and chronic disease management.</p>
+                <div class="features">
+                    <ul>
+                        <li>Pediatric consultations</li>
+                        <li>Women's health services</li>
+                        <li>Geriatric care</li>
+                        <li>Chronic disease management</li>
+                        <li>Preventive care programs</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Contact Section -->
+    <section class="contact-section">
+        <div class="contact-container">
+            <h2>Need Help Choosing a Service?</h2>
+            <p>Our healthcare experts are here to guide you to the right service for your needs. Contact us for personalized assistance.</p>
+            
+            <form class="contact-form" action="/submit_enquiry" method="POST">
+                <div class="form-group">
+                    <label for="name">Full Name</label>
+                    <input type="text" id="name" name="name" class="form-control" placeholder="Enter your full name" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="email">Email Address</label>
+                    <input type="email" id="email" name="email" class="form-control" placeholder="Enter your email address" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="service">Service of Interest</label>
+                    <select id="service" name="service" class="form-control" required>
+                        <option value="">Select a service</option>
+                        <option value="consultation">Online Doctor Consultation</option>
+                        <option value="diagnostics">Diagnostic Test Bookings</option>
+                        <option value="ai-reports">AI-Powered Health Reports</option>
+                        <option value="emergency">Emergency Assistance</option>
+                        <option value="pharmacy">Online Pharmacy</option>
+                        <option value="monitoring">Health Monitoring</option>
+                        <option value="mental-health">Mental Health Support</option>
+                        <option value="specialized">Specialized Care</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label for="message">Message</label>
+                    <textarea id="message" name="message" class="form-control" placeholder="Tell us about your healthcare needs..." required></textarea>
+                </div>
+                
+                <button type="submit" class="btn btn-primary btn-large">Send Inquiry</button>
+            </form>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer>
+        <div class="footer-content">
+            <div class="footer-grid">
+                <div class="footer-section">
+                    <h3>RapiACT</h3>
+                    <p>Your intelligent healthcare companion providing AI-powered diagnostics and seamless medical services for a healthier tomorrow.</p>
+                </div>
+                
+                <div class="footer-section">
+                    <h3>Services</h3>
+                    <ul>
+                        <li><a href="/services">Online Consultations</a></li>
+                        <li><a href="/services">Diagnostic Tests</a></li>
+                        <li><a href="/services">AI Health Reports</a></li>
+                        <li><a href="/services">Emergency Care</a></li>
+                    </ul>
+                </div>
+                
+                <div class="footer-section">
+                    <h3>Quick Links</h3>
+                    <ul>
+                        <li><a href="/">Home</a></li>
+                        <li><a href="/#about">About Us</a></li>
+                        <li><a href="/all_doctors">Find Doctors</a></li>
+                        <li><a href="/#contact">Contact</a></li>
+                    </ul>
+                </div>
+                
+                <div class="footer-section">
+                    <h3>Contact Info</h3>
+                    <p>📧 support@rapiact.com</p>
+                    <p>📞 +91-XXXX-XXXXXX</p>
+                    <p>📍 India</p>
+                </div>
+            </div>
+            
+            <div class="footer-bottom">
+                <p>© 2025 RapiACT. All Rights Reserved. | Privacy Policy | Terms of Service</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- JavaScript -->
+    <script>
+        // Theme Toggle Function
+        function toggleTheme() {
+            const body = document.body;
+            const themeIcon = document.querySelector('.theme-icon');
+            
+            if (body.getAttribute('data-theme') === 'dark') {
+                body.setAttribute('data-theme', 'light');
+                themeIcon.textContent = '🌙';
+                localStorage.setItem('theme', 'light');
+            } else {
+                body.setAttribute('data-theme', 'dark');
+                themeIcon.textContent = '☀️';
+                localStorage.setItem('theme', 'dark');
+            }
+        }
+
+        // Load saved theme
+        function loadTheme() {
+            const savedTheme = localStorage.getItem('theme') || 'light';
+            const themeIcon = document.querySelector('.theme-icon');
+            
+            document.body.setAttribute('data-theme', savedTheme);
+            themeIcon.textContent = savedTheme === 'dark' ? '☀️' : '🌙';
+        }
+
+        // Smooth scrolling for anchor links
+        // Smooth scrolling for anchor links
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    target.scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'start'
+                    });
+                }
+            });
+        });
+
+        // Navbar scroll effect
+        function handleNavbarScroll() {
+            const navbar = document.querySelector('.navbar');
+            if (window.scrollY > 50) {
+                navbar.style.background = document.body.getAttribute('data-theme') === 'dark' 
+                    ? 'rgba(15, 23, 42, 0.95)' 
+                    : 'rgba(255, 255, 255, 0.95)';
+            } else {
+                navbar.style.background = document.body.getAttribute('data-theme') === 'dark' 
+                    ? 'rgba(15, 23, 42, 0.8)' 
+                    : 'rgba(255, 255, 255, 0.8)';
+            }
+        }
+
+        // Scroll animations for service cards
+        function handleScrollAnimations() {
+            const cards = document.querySelectorAll('.service-card');
+            cards.forEach(card => {
+                const rect = card.getBoundingClientRect();
+                const isVisible = rect.top < window.innerHeight - 100;
+                
+                if (isVisible) {
+                    card.style.opacity = '1';
+                    card.style.transform = 'translateY(0)';
+                } else {
+                    card.style.opacity = '0';
+                    card.style.transform = 'translateY(30px)';
+                }
+            });
+        }
+
+        // Initialize scroll animations
+        function initializeScrollAnimations() {
+            const cards = document.querySelectorAll('.service-card');
+            cards.forEach(card => {
+                card.style.opacity = '0';
+                card.style.transform = 'translateY(30px)';
+                card.style.transition = 'opacity 0.6s ease, transform 0.6s ease';
+            });
+        }
+
+        // Hide loading screen
+        function hideLoadingScreen() {
+            const loadingScreen = document.querySelector('.loading-screen');
+            setTimeout(() => {
+                loadingScreen.style.opacity = '0';
+                setTimeout(() => {
+                    loadingScreen.style.display = 'none';
+                }, 300);
+            }, 1000);
+        }
+
+        // Form submission handler
+        function handleFormSubmission() {
+            const form = document.querySelector('.contact-form');
+            if (form) {
+                form.addEventListener('submit', function(e) {
+                    const button = form.querySelector('button[type="submit"]');
+                    button.textContent = 'Sending...';
+                    button.disabled = true;
+                    
+                    // Re-enable button after 3 seconds (in case of error)
+                    setTimeout(() => {
+                        button.textContent = 'Send Inquiry';
+                        button.disabled = false;
+                    }, 3000);
+                });
+            }
+        }
+
+        // Mobile menu toggle (for responsive design)
+        function initializeMobileMenu() {
+            // Add mobile menu button if needed
+            const navbarContainer = document.querySelector('.navbar-container');
+            const navbarNav = document.querySelector('.navbar-nav');
+            
+            if (window.innerWidth <= 768) {
+                // Create mobile menu button
+                const mobileMenuBtn = document.createElement('button');
+                mobileMenuBtn.className = 'mobile-menu-btn';
+                mobileMenuBtn.innerHTML = '☰';
+                mobileMenuBtn.style.cssText = `
+                    display: block;
+                    background: none;
+                    border: none;
+                    color: var(--text-primary);
+                    font-size: 1.5rem;
+                    cursor: pointer;
+                    padding: 0.5rem;
+                    border-radius: 8px;
+                `;
+                
+                // Toggle mobile menu
+                mobileMenuBtn.addEventListener('click', () => {
+                    if (navbarNav.style.display === 'none' || !navbarNav.style.display) {
+                        navbarNav.style.display = 'flex';
+                        navbarNav.style.flexDirection = 'column';
+                        navbarNav.style.position = 'absolute';
+                        navbarNav.style.top = '100%';
+                        navbarNav.style.left = '0';
+                        navbarNav.style.right = '0';
+                        navbarNav.style.background = 'var(--bg-card)';
+                        navbarNav.style.padding = '1rem';
+                        navbarNav.style.borderTop = '1px solid var(--border-color)';
+                        navbarNav.style.zIndex = '1000';
+                    } else {
+                        navbarNav.style.display = 'none';
+                    }
+                });
+                
+                // Insert mobile menu button
+                const controls = document.querySelector('.navbar-controls');
+                navbarContainer.insertBefore(mobileMenuBtn, controls);
+            }
+        }
+
+        // Service card click tracking
+        function trackServiceClicks() {
+            const serviceCards = document.querySelectorAll('.service-card');
+            serviceCards.forEach(card => {
+                card.addEventListener('click', function() {
+                    const serviceName = this.querySelector('h3').textContent;
+                    console.log(`Service clicked: ${serviceName}`);
+                    
+                    // Add visual feedback
+                    this.style.transform = 'scale(0.98)';
+                    setTimeout(() => {
+                        this.style.transform = '';
+                    }, 150);
+                });
+            });
+        }
+
+        // Keyboard navigation support
+        function initializeKeyboardNavigation() {
+            const serviceCards = document.querySelectorAll('.service-card[onclick]');
+            serviceCards.forEach(card => {
+                card.setAttribute('tabindex', '0');
+                card.setAttribute('role', 'button');
+                
+                card.addEventListener('keydown', function(e) {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                        e.preventDefault();
+                        this.click();
+                    }
+                });
+            });
+        }
+
+        // Initialize all functionality when DOM is loaded
+        document.addEventListener('DOMContentLoaded', function() {
+            loadTheme();
+            hideLoadingScreen();
+            initializeScrollAnimations();
+            handleFormSubmission();
+            initializeMobileMenu();
+            trackServiceClicks();
+            initializeKeyboardNavigation();
+            
+            // Handle scroll events
+            window.addEventListener('scroll', () => {
+                handleNavbarScroll();
+                handleScrollAnimations();
+            });
+            
+            // Handle resize events
+            window.addEventListener('resize', () => {
+                initializeMobileMenu();
+            });
+            
+            // Initial scroll animation
+            setTimeout(handleScrollAnimations, 100);
+        });
+
+        // Error handling for images
+        document.addEventListener('error', function(e) {
+            if (e.target.tagName === 'IMG') {
+                e.target.style.display = 'none';
+                console.log('Image failed to load:', e.target.src);
+            }
+        }, true);
+
+        // Add some interactive enhancements
+        function addInteractiveEnhancements() {
+            // Add hover sound effect (optional)
+            const cards = document.querySelectorAll('.service-card');
+            cards.forEach(card => {
+                card.addEventListener('mouseenter', function() {
+                    this.style.willChange = 'transform, box-shadow';
+                });
+                
+                card.addEventListener('mouseleave', function() {
+                    this.style.willChange = 'auto';
+                });
+            });
+        }
+
+        // Initialize enhancements
+        setTimeout(addInteractiveEnhancements, 1500);
+    </script>
+</body>
+</html>

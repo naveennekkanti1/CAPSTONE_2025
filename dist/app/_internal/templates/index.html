@@ -1,0 +1,1525 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RapiACT</title>
+    <link rel="icon" type="image/jpg" href="{{ url_for('static', filename='images/logo.jpg') }}">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            /* Light theme variables */
+            --bg-primary: #ffffff;
+            --bg-secondary: #f8fafc;
+            --bg-card: #ffffff;
+            --text-primary: #1a202c;
+            --text-secondary: #4a5568;
+            --text-muted: #718096;
+            --border-color: #e2e8f0;
+            --accent-primary: #3b82f6;
+            --accent-secondary: #10b981;
+            --accent-hover: #2563eb;
+            --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+            --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+            --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+            --shadow-xl: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
+        }
+
+        [data-theme="dark"] {
+            /* Dark theme variables */
+            --bg-primary: #0f172a;
+            --bg-secondary: #1e293b;
+            --bg-card: #334155;
+            --text-primary: #f8fafc;
+            --text-secondary: #cbd5e1;
+            --text-muted: #94a3b8;
+            --border-color: #475569;
+            --accent-primary: #60a5fa;
+            --accent-secondary: #34d399;
+            --accent-hover: #3b82f6;
+            --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.3);
+            --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.3), 0 2px 4px -2px rgb(0 0 0 / 0.3);
+            --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.3), 0 4px 6px -4px rgb(0 0 0 / 0.3);
+            --shadow-xl: 0 20px 25px -5px rgb(0 0 0 / 0.3), 0 8px 10px -6px rgb(0 0 0 / 0.3);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background-color: var(--bg-primary);
+            color: var(--text-primary);
+            line-height: 1.6;
+            overflow-x: hidden;
+            transition: all 0.3s ease;
+        }
+
+        /* Modern Navbar CSS */
+.navbar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 1000;
+    background: rgba(255, 255, 255, 0.9);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border-bottom: 1px solid var(--border-color);
+    transition: all 0.3s ease;
+    box-shadow: var(--shadow-sm);
+}
+
+[data-theme="dark"] .navbar {
+    background: rgba(15, 23, 42, 0.9);
+}
+
+.navbar-container {
+    max-width: 1400px;
+    margin: 0 auto;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.75rem 2rem;
+    min-height: 70px;
+}
+
+.navbar-brand {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    font-weight: 700;
+    font-size: 1.5rem;
+    color: var(--accent-primary);
+    text-decoration: none;
+    transition: all 0.2s ease;
+}
+
+.navbar-brand:hover {
+    transform: scale(1.02);
+}
+
+.navbar-brand img {
+    width: 40px;
+    height: 40px;
+    border-radius: 10px;
+    object-fit: cover;
+}
+
+.navbar-nav {
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+
+.navbar-nav li {
+    position: relative;
+}
+
+.navbar-nav a {
+    color: var(--text-secondary);
+    text-decoration: none;
+    font-weight: 500;
+    font-size: 0.95rem;
+    padding: 0.625rem 1rem;
+    border-radius: 8px;
+    transition: all 0.2s ease;
+    position: relative;
+    white-space: nowrap;
+}
+
+.navbar-nav a:hover,
+.navbar-nav a.active {
+    color: var(--accent-primary);
+    background: rgba(59, 130, 246, 0.1);
+    transform: translateY(-1px);
+}
+
+.navbar-nav a.active::after {
+    content: '';
+    position: absolute;
+    bottom: -2px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 20px;
+    height: 2px;
+    background: var(--accent-primary);
+    border-radius: 1px;
+}
+
+.navbar-controls {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.theme-toggle {
+    background: none;
+    border: none;
+    color: var(--text-secondary);
+    cursor: pointer;
+    padding: 0.625rem;
+    border-radius: 8px;
+    transition: all 0.2s ease;
+    font-size: 1.1rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.theme-toggle:hover {
+    background: rgba(59, 130, 246, 0.1);
+    color: var(--accent-primary);
+    transform: scale(1.05);
+}
+
+.language-selector {
+    background: none;
+    border: 1px solid var(--border-color);
+    color: var(--text-secondary);
+    cursor: pointer;
+    padding: 0.5rem 0.875rem;
+    border-radius: 8px;
+    transition: all 0.2s ease;
+    font-size: 0.9rem;
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    white-space: nowrap;
+}
+
+.language-selector:hover {
+    background: rgba(59, 130, 246, 0.1);
+    border-color: var(--accent-primary);
+    color: var(--accent-primary);
+    transform: translateY(-1px);
+}
+
+.cta-buttons {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.translate-dropdown {
+    position: absolute;
+    top: 100%;
+    right: 2rem;
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    box-shadow: var(--shadow-lg);
+    padding: 1rem;
+    transform: translateY(-10px);
+    opacity: 0;
+    visibility: hidden;
+    transition: all 0.3s ease;
+    z-index: 1001;
+}
+
+.translate-dropdown.active {
+    transform: translateY(0);
+    opacity: 1;
+    visibility: visible;
+}
+
+/* Mobile Menu */
+.mobile-menu-toggle {
+    display: none;
+    flex-direction: column;
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 0.5rem;
+    gap: 0.25rem;
+}
+
+.hamburger-line {
+    width: 24px;
+    height: 2px;
+    background: var(--text-primary);
+    transition: all 0.3s ease;
+    border-radius: 1px;
+}
+
+.mobile-menu-toggle.active .hamburger-line:nth-child(1) {
+    transform: rotate(45deg) translate(6px, 6px);
+}
+
+.mobile-menu-toggle.active .hamburger-line:nth-child(2) {
+    opacity: 0;
+}
+
+.mobile-menu-toggle.active .hamburger-line:nth-child(3) {
+    transform: rotate(-45deg) translate(6px, -6px);
+}
+
+.mobile-menu-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.8);
+    backdrop-filter: blur(10px);
+    z-index: 999;
+    transform: translateX(100%);
+    transition: transform 0.3s ease;
+}
+
+.mobile-menu-overlay.active {
+    transform: translateX(0);
+}
+
+.mobile-menu-content {
+    position: absolute;
+    top: 0;
+    right: 0;
+    height: 100vh;
+    width: 300px;
+    background: var(--bg-card);
+    padding: 2rem;
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+    overflow-y: auto;
+}
+
+.mobile-nav {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.mobile-nav a {
+    color: var(--text-primary);
+    text-decoration: none;
+    padding: 1rem;
+    border-radius: 8px;
+    transition: all 0.2s ease;
+    font-weight: 500;
+}
+
+.mobile-nav a:hover,
+.mobile-nav a.active {
+    background: rgba(59, 130, 246, 0.1);
+    color: var(--accent-primary);
+}
+
+.mobile-controls {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.theme-toggle.mobile,
+.language-selector.mobile {
+    justify-content: flex-start;
+    width: 100%;
+    padding: 1rem;
+    text-align: left;
+}
+
+.mobile-cta {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    margin-top: auto;
+}
+
+.btn.mobile {
+    width: 100%;
+    justify-content: center;
+    padding: 0.875rem 1.5rem;
+}
+
+/* Responsive Design */
+@media (max-width: 1024px) {
+    .navbar-nav {
+        gap: 1rem;
+    }
+    
+    .navbar-nav a {
+        padding: 0.5rem 0.75rem;
+        font-size: 0.9rem;
+    }
+    
+    .navbar-container {
+        padding: 0.75rem 1.5rem;
+    }
+}
+
+@media (max-width: 768px) {
+    .navbar-nav,
+    .navbar-controls .cta-buttons,
+    .navbar-controls .language-selector {
+        display: none;
+    }
+
+    .mobile-menu-toggle {
+        display: flex;
+    }
+
+    .navbar-container {
+        padding: 1rem;
+    }
+
+    .navbar-controls {
+        gap: 0.5rem;
+    }
+}
+
+        .theme-toggle {
+            background: none;
+            border: none;
+            color: var(--text-secondary);
+            cursor: pointer;
+            padding: 0.5rem;
+            border-radius: 8px;
+            transition: all 0.2s ease;
+            font-size: 1.2rem;
+        }
+
+        .theme-toggle:hover {
+            background: rgba(59, 130, 246, 0.1);
+            color: var(--accent-primary);
+        }
+
+        .cta-buttons {
+            display: flex;
+            gap: 0.75rem;
+        }
+
+        .btn {
+            padding: 0.625rem 1.25rem;
+            border-radius: 8px;
+            font-weight: 500;
+            font-size: 0.9rem;
+            text-decoration: none;
+            transition: all 0.2s ease;
+            border: none;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .btn-outline {
+            color: var(--text-secondary);
+            border: 1px solid var(--border-color);
+            background: transparent;
+        }
+
+        .btn-outline:hover {
+            background: var(--bg-secondary);
+            border-color: var(--accent-primary);
+            color: var(--accent-primary);
+        }
+
+        .btn-primary {
+            background: var(--accent-primary);
+            color: white;
+            border: 1px solid var(--accent-primary);
+        }
+
+        .btn-primary:hover {
+            background: var(--accent-hover);
+            transform: translateY(-1px);
+            box-shadow: var(--shadow-md);
+        }
+
+        /* Hero Section */
+        .hero {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            background: linear-gradient(135deg, var(--bg-primary) 0%, var(--bg-secondary) 100%);
+            padding: 8rem 2rem 4rem;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .hero::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: radial-gradient(circle at 30% 20%, rgba(59, 130, 246, 0.1) 0%, transparent 50%),
+                        radial-gradient(circle at 80% 80%, rgba(16, 185, 129, 0.1) 0%, transparent 50%);
+            pointer-events: none;
+        }
+
+        .hero-content {
+            max-width: 800px;
+            margin: 0 auto;
+            position: relative;
+            z-index: 1;
+        }
+
+        .hero h1 {
+            font-size: clamp(2.5rem, 5vw, 4rem);
+            font-weight: 800;
+            margin-bottom: 1.5rem;
+            background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            line-height: 1.2;
+        }
+
+        .hero p {
+            font-size: 1.25rem;
+            color: var(--text-secondary);
+            margin-bottom: 2.5rem;
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .hero-actions {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .btn-large {
+            padding: 1rem 2rem;
+            font-size: 1.1rem;
+            border-radius: 12px;
+        }
+
+        /* Announcement Bar */
+        .announcement-bar {
+            background: linear-gradient(135deg, #eff6ff, #f0f9ff);
+            color: var(--text-primary);
+            text-align: center;
+            padding: 1rem 2rem;
+            margin: 2rem auto;
+            max-width: 900px;
+            border-radius: 12px;
+            box-shadow: var(--shadow-sm);
+            border: 1px solid #dbeafe;
+        }
+
+        [data-theme="dark"] .announcement-bar {
+            background: linear-gradient(135deg, #1e3a8a, #1e40af);
+            border: 1px solid #3730a3;
+            color: #ddd6fe;
+        }
+
+        .announcement-bar a {
+            color: var(--accent-primary);
+            text-decoration: none;
+            font-weight: 600;
+        }
+
+        /* Modern Sections */
+        section {
+            padding: 5rem 2rem;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .section-header {
+            text-align: center;
+            margin-bottom: 4rem;
+        }
+
+        .section-header h2 {
+            font-size: clamp(2rem, 4vw, 3rem);
+            font-weight: 700;
+            margin-bottom: 1rem;
+            color: var(--text-primary);
+        }
+
+        .section-header p {
+            font-size: 1.125rem;
+            color: var(--text-secondary);
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        /* Cards Grid */
+        .cards-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+            margin-bottom: 3rem;
+        }
+
+        .card {
+            background: var(--bg-card);
+            border-radius: 16px;
+            padding: 2rem;
+            box-shadow: var(--shadow-sm);
+            border: 1px solid var(--border-color);
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .card:hover {
+            transform: translateY(-4px);
+            box-shadow: var(--shadow-lg);
+            border-color: var(--accent-primary);
+        }
+
+        .card-icon {
+            width: 60px;
+            height: 60px;
+            background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 1.5rem;
+            font-size: 1.5rem;
+        }
+
+        .card h3 {
+            font-size: 1.25rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+            color: var(--text-primary);
+        }
+
+        .card p {
+            color: var(--text-secondary);
+            line-height: 1.6;
+        }
+
+        /* Services List */
+        .services-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1rem;
+            list-style: none;
+            margin-bottom: 3rem;
+        }
+
+        .service-item {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            padding: 1.5rem;
+            background: var(--bg-card);
+            border-radius: 12px;
+            border: 1px solid var(--border-color);
+            transition: all 0.2s ease;
+        }
+
+        .service-item:hover {
+            border-color: var(--accent-primary);
+            background: rgba(59, 130, 246, 0.05);
+        }
+
+        .service-item::before {
+            content: "✓";
+            color: var(--accent-secondary);
+            font-weight: bold;
+            font-size: 1.2rem;
+            flex-shrink: 0;
+        }
+
+        /* Doctor Cards */
+        .doctor-slider {
+            width: 100%;
+            overflow: hidden;
+            position: relative;
+            margin-bottom: 3rem;
+        }
+
+        .slides {
+            display: flex;
+            gap: 2rem;
+            animation: scroll 30s linear infinite;
+        }
+
+        .doctor-card {
+            flex-shrink: 0;
+            width: 280px;
+            background: var(--bg-card);
+            border-radius: 16px;
+            padding: 2rem;
+            text-align: center;
+            box-shadow: var(--shadow-sm);
+            border: 1px solid var(--border-color);
+            transition: all 0.3s ease;
+        }
+
+        .doctor-card:hover {
+            transform: translateY(-4px);
+            box-shadow: var(--shadow-lg);
+        }
+
+        .doctor-card img {
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            object-fit: cover;
+            margin-bottom: 1.5rem;
+            border: 3px solid var(--accent-primary);
+        }
+
+        .doctor-card h3 {
+            color: var(--text-primary);
+            font-size: 1.125rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+        }
+
+        .doctor-card p {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+            margin: 0.25rem 0;
+        }
+
+        /* Contact Form */
+        .contact-form {
+            max-width: 600px;
+            margin: 0 auto;
+            display: grid;
+            gap: 1.5rem;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .form-group label {
+            color: var(--text-primary);
+            font-weight: 500;
+            font-size: 0.9rem;
+        }
+
+        .form-control {
+            padding: 1rem;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            background: var(--bg-card);
+            color: var(--text-primary);
+            font-size: 1rem;
+            transition: all 0.2s ease;
+        }
+
+        .form-control:focus {
+            outline: none;
+            border-color: var(--accent-primary);
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+        }
+
+        textarea.form-control {
+            resize: vertical;
+            min-height: 120px;
+        }
+
+        /* Footer */
+        footer {
+            background: var(--bg-secondary);
+            border-top: 1px solid var(--border-color);
+            padding: 3rem 2rem 2rem;
+            text-align: center;
+            margin-top: 5rem;
+        }
+
+        footer p {
+            color: var(--text-muted);
+            font-size: 0.9rem;
+        }
+
+        /* Fixed Elements */
+        .scroll-indicator {
+            position: fixed;
+            left: 0;
+            top: 0;
+            width: 4px;
+            height: 0;
+            background: linear-gradient(to bottom, var(--accent-primary), var(--accent-secondary));
+            z-index: 9999;
+            transition: height 0.1s ease;
+        }
+
+        .visitor-counter {
+            position: fixed;
+            bottom: 2rem;
+            left: 2rem;
+            background: var(--bg-card);
+            color: var(--text-primary);
+            padding: 0.75rem 1rem;
+            border-radius: 8px;
+            font-size: 0.85rem;
+            box-shadow: var(--shadow-md);
+            border: 1px solid var(--border-color);
+        }
+
+        .chatbot-container {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background: var(--accent-primary);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            box-shadow: var(--shadow-lg);
+            transition: all 0.3s ease;
+            color: white;
+            font-size: 1.5rem;
+        }
+
+        .chatbot-container:hover {
+            transform: scale(1.1);
+            box-shadow: var(--shadow-xl);
+        }
+
+        /* Language Selector */
+        .language-selector {
+            background: transparent;
+            border: 1px solid var(--border-color);
+            color: var(--text-secondary);
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-size: 0.9rem;
+        }
+
+        .language-selector:hover {
+            border-color: var(--accent-primary);
+            color: var(--accent-primary);
+        }
+
+        .language-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 10000;
+            backdrop-filter: blur(4px);
+        }
+
+        .language-selection {
+            background: var(--bg-card);
+            border-radius: 16px;
+            padding: 2rem;
+            max-width: 500px;
+            width: 90%;
+            box-shadow: var(--shadow-xl);
+            border: 1px solid var(--border-color);
+        }
+
+        .language-selection h2 {
+            color: var(--text-primary);
+            margin-bottom: 1rem;
+            text-align: center;
+        }
+
+        .language-selection p {
+            color: var(--text-secondary);
+            margin-bottom: 2rem;
+            text-align: center;
+        }
+
+        .language-buttons {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+            gap: 1rem;
+        }
+
+        .language-button {
+            background: var(--accent-primary);
+            color: white;
+            border: none;
+            padding: 0.75rem 1rem;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-weight: 500;
+        }
+
+        .language-button:hover {
+            background: var(--accent-hover);
+            transform: translateY(-1px);
+        }
+
+        /* Loading Screen */
+        .loading-screen {
+            position: fixed;
+            width: 100%;
+            height: 100%;
+            background: var(--bg-primary);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+            flex-direction: column;
+            gap: 2rem;
+        }
+
+        .loading-circle {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            border: 4px solid var(--border-color);
+            border-top-color: var(--accent-primary);
+            animation: spin 1s linear infinite;
+        }
+
+        .loading-text {
+            color: var(--text-secondary);
+            font-weight: 500;
+        }
+
+        /* Animations */
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        @keyframes scroll {
+            from { transform: translateX(0); }
+            to { transform: translateX(calc(-280px * 5 - 2rem * 5)); }
+        }
+
+        /* Mobile Responsiveness */
+        @media (max-width: 768px) {
+
+            .hero {
+                padding: 6rem 1rem 3rem;
+            }
+
+            .hero-actions {
+                flex-direction: column;
+                align-items: center;
+            }
+
+            .btn-large {
+                width: 100%;
+                max-width: 300px;
+            }
+
+            section {
+                padding: 3rem 1rem;
+            }
+
+            .cards-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .services-list {
+                grid-template-columns: 1fr;
+            }
+
+            .visitor-counter,
+            .chatbot-container {
+                bottom: 1rem;
+            }
+
+            .visitor-counter {
+                left: 1rem;
+            }
+
+            .chatbot-container {
+                right: 1rem;
+            }
+        }
+
+        /* Dark theme specific adjustments */
+        [data-theme="dark"] .card:hover {
+            background: var(--bg-secondary);
+        }
+
+        [data-theme="dark"] .service-item:hover {
+            background: rgba(59, 130, 246, 0.1);
+        }
+
+        /* Hide Google Translate elements */
+        #google_translate_element {
+            display: none;
+        }
+
+        .goog-te-banner-frame {
+            display: none !important;
+        }
+
+        body {
+            top: 0 !important;
+        }
+    </style>
+</head>
+<body data-theme="light">
+    <!-- Loading Screen -->
+    <div class="loading-screen">
+        <div class="loading-circle"></div>
+        <div class="loading-text">Loading RapiACT...</div>
+    </div>
+
+    <!-- Scroll Indicator -->
+    <div class="scroll-indicator"></div>
+
+    <nav class="navbar">
+    <div class="navbar-container">
+        <a href="/" class="navbar-brand">
+            <img src="static/images/logo.jpg" alt="RapiACT Logo">
+            RapiACT
+        </a>
+        
+        <ul class="navbar-nav">
+            <li><a href="/">Home</a></li>
+            <li><a href="#about">About</a></li>
+            <li><a href="/services">Services</a></li>
+            <li><a href="#pharmacy">Pharmacy</a></li>
+            <li><a href="#doctors">Doctors</a></li>
+            <li><a href="#contact">Contact</a></li>
+            <li><a href="/all_doctors" class="active">Find Doctor</a></li>
+        </ul>
+        
+        <div class="navbar-controls">
+            <button class="theme-toggle" onclick="toggleTheme()" title="Toggle theme">
+                <span class="theme-icon">🌙</span>
+            </button>
+            
+            <button id="language-selector" class="language-selector" onclick="toggleLanguageDropdown()">
+                🌐 Language
+            </button>
+            
+            <div class="cta-buttons">
+                <a href="/login" class="btn btn-outline">Login</a>
+                <a href="/register" class="btn btn-primary">Sign Up</a>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Google Translate Element -->
+    <div id="google_translate_element" class="translate-dropdown"></div>
+    
+    <!-- Mobile Menu Toggle -->
+    <button class="mobile-menu-toggle" onclick="toggleMobileMenu()">
+        <span class="hamburger-line"></span>
+        <span class="hamburger-line"></span>
+        <span class="hamburger-line"></span>
+    </button>
+    
+    <!-- Mobile Menu Overlay -->
+    <div class="mobile-menu-overlay" id="mobile-menu">
+        <div class="mobile-menu-content">
+            <ul class="mobile-nav">
+                <li><a href="/" onclick="closeMobileMenu()">Home</a></li>
+                <li><a href="#about" onclick="closeMobileMenu()">About</a></li>
+                <li><a href="/services" onclick="closeMobileMenu()">Services</a></li>
+                <li><a href="#pharmacy" onclick="closeMobileMenu()">Pharmacy</a></li>
+                <li><a href="#doctors" onclick="closeMobileMenu()">Doctors</a></li>
+                <li><a href="#contact" onclick="closeMobileMenu()">Contact</a></li>
+                <li><a href="/all_doctors" onclick="closeMobileMenu()">Find Doctor</a></li>
+            </ul>
+            
+            <div class="mobile-controls">
+                <button class="theme-toggle mobile" onclick="toggleTheme()" title="Toggle theme">
+                    <span class="theme-icon">🌙</span>
+                    <span>Toggle Theme</span>
+                </button>
+                
+                <button class="language-selector mobile" onclick="toggleLanguageDropdown()">
+                    🌐 Language
+                </button>
+            </div>
+            
+            <div class="mobile-cta">
+                <a href="/login" class="btn btn-outline mobile" onclick="closeMobileMenu()">Login</a>
+                <a href="/register" class="btn btn-primary mobile" onclick="closeMobileMenu()">Sign Up</a>
+            </div>
+        </div>
+    </div>
+</nav>
+    <!-- Hero Section -->
+    <section class="hero">
+        <div class="hero-content">
+            <h1>Welcome to RapiACT</h1>
+            <p>Your intelligent healthcare companion - Experience the future of digital healthcare with AI-powered diagnostics, virtual consultations, and seamless medical services.</p>
+            <div class="hero-actions">
+                <a href="#services" class="btn btn-primary btn-large">Get Started</a>
+                <a href="#about" class="btn btn-outline btn-large">Learn More</a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Announcement Bar -->
+    <div class="announcement-bar">
+        🚀 RapiACT now provides AI-powered healthcare services across India! 
+        <a href="#about">Discover more</a> about our innovative platform.
+    </div>
+
+    <!-- About Section -->
+    <section id="about">
+        <div class="section-header">
+            <h2>About RapiACT</h2>
+            <p>Revolutionizing healthcare through intelligent technology and compassionate care</p>
+        </div>
+        
+        <div class="cards-grid">
+            <div class="card">
+                <div class="card-icon">🩺</div>
+                <h3>Smart Diagnosis</h3>
+                <p>Get instant health insights powered by advanced AI algorithms that analyze your symptoms and provide accurate preliminary assessments.</p>
+            </div>
+            
+            <div class="card">
+                <div class="card-icon">👨‍⚕️</div>
+                <h3>Expert Consultations</h3>
+                <p>Connect with certified healthcare professionals anytime, anywhere through our secure video consultation platform.</p>
+            </div>
+            
+            <div class="card">
+                <div class="card-icon">📊</div>
+                <h3>AI Report Analysis</h3>
+                <p>Our machine learning models analyze your medical reports to predict potential health risks and recommend preventive measures.</p>
+            </div>
+            
+            <div class="card">
+                <div class="card-icon">🔒</div>
+                <h3>Secure & Private</h3>
+                <p>Your health data is protected with end-to-end encryption and complies with international healthcare privacy standards.</p>
+            </div>
+            
+            <div class="card">
+                <div class="card-icon">📱</div>
+                <h3>Seamless Experience</h3>
+                <p>Book appointments, access records, and manage your health journey through our intuitive mobile and web platforms.</p>
+            </div>
+            
+            <div class="card">
+                <div class="card-icon">💊</div>
+                <h3>Integrated Pharmacy</h3>
+                <p>Order prescribed medications and healthcare products with doorstep delivery and automatic refill reminders.</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Services Section -->
+    <section id="services">
+        <div class="section-header">
+            <h2>Our Services</h2>
+            <p>Comprehensive healthcare solutions designed for your convenience and wellbeing</p>
+        </div>
+        
+        <div class="services-list">
+            <div class="service-item">Online Doctor Consultations</div>
+            <div class="service-item">AI-Powered Health Assessments</div>
+            <div class="service-item">Diagnostic Test Bookings</div>
+            <div class="service-item">Personalized Health Reports</div>
+            <div class="service-item">24/7 Emergency Assistance</div>
+            <div class="service-item">Prescription Management</div>
+            <div class="service-item">Health Monitoring & Tracking</div>
+            <div class="service-item">Medication Delivery Services</div>
+        </div>
+        
+        <div style="text-align: center;">
+            <a href="/services" class="btn btn-primary btn-large">Explore All Services</a>
+        </div>
+    </section>
+
+    <!-- Pharmacy Section -->
+    <section id="pharmacy">
+        <div class="section-header">
+            <h2>Online Pharmacy</h2>
+            <p>Your trusted partner for safe, authentic medications delivered to your doorstep</p>
+        </div>
+        
+        <div class="cards-grid">
+            <div class="card">
+                <div class="card-icon">📋</div>
+                <h3>Digital Prescriptions</h3>
+                <p>Seamlessly upload prescriptions from consultations or scan physical prescriptions with our smart document reader.</p>
+            </div>
+            
+            <div class="card">
+                <div class="card-icon">💊</div>
+                <h3>Extensive Catalog</h3>
+                <p>Access thousands of prescription medications, OTC drugs, wellness products, and medical equipment from verified suppliers.</p>
+            </div>
+            
+            <div class="card">
+                <div class="card-icon">🚚</div>
+                <h3>Fast Delivery</h3>
+                <p>Express delivery for emergency medications within 2 hours, and standard delivery within 24-48 hours nationwide.</p>
+            </div>
+        </div>
+        
+        <div style="text-align: center; margin-top: 3rem;">
+            <a href="/pharmacy" class="btn btn-primary btn-large">Visit Pharmacy</a>
+        </div>
+    </section>
+
+    <!-- Doctors Section -->
+    <section id="doctors">
+        <div class="section-header">
+            <h2>Meet Our Expert Doctors</h2>
+            <p>Connect with our team of experienced and qualified healthcare professionals</p>
+        </div>
+        
+        <div class="doctor-slider">
+            <div class="slides">
+                <!-- Doctors will be dynamically loaded here -->
+            </div>
+        </div>
+        
+        <div style="text-align: center;">
+            <a href="/all_doctors" class="btn btn-primary btn-large">View All Doctors</a>
+        </div>
+    </section>
+
+    <!-- Contact Section -->
+    <section id="contact">
+        <div class="section-header">
+            <h2>Get in Touch<p>We're here to help you with any questions or concerns about your healthcare needs</p>
+        </div>
+        
+        <form class="contact-form" action="/submit_enquiry" method="POST">
+            <div class="form-group">
+                <label for="name">Full Name</label>
+                <input type="text" id="name" name="name" class="form-control" placeholder="Enter your full name" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="email">Email Address</label>
+                <input type="email" id="email" name="email" class="form-control" placeholder="Enter your email address" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="message">Message</label>
+                <textarea id="message" name="message" class="form-control" placeholder="Tell us how we can help you..." rows="5" required></textarea>
+            </div>
+            
+            <button type="submit" class="btn btn-primary btn-large">Send Message</button>
+        </form>
+    </section>
+
+    <!-- Footer -->
+    <footer>
+        <div style="max-width: 1200px; margin: 0 auto; padding: 0 2rem;">
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 2rem; margin-bottom: 2rem;">
+                <div>
+                    <h3 style="color: var(--accent-primary); margin-bottom: 1rem;">RapiACT</h3>
+                    <p style="color: var(--text-muted); margin-bottom: 1rem;">Your intelligent healthcare companion providing AI-powered diagnostics and seamless medical services.</p>
+                </div>
+                
+                <div>
+                    <h4 style="color: var(--text-primary); margin-bottom: 1rem;">Quick Links</h4>
+                    <ul style="list-style: none; padding: 0;">
+                        <li style="margin-bottom: 0.5rem;"><a href="/" style="color: var(--text-muted); text-decoration: none;">Home</a></li>
+                        <li style="margin-bottom: 0.5rem;"><a href="#about" style="color: var(--text-muted); text-decoration: none;">About</a></li>
+                        <li style="margin-bottom: 0.5rem;"><a href="/services" style="color: var(--text-muted); text-decoration: none;">Services</a></li>
+                        <li style="margin-bottom: 0.5rem;"><a href="/all_doctors" style="color: var(--text-muted); text-decoration: none;">Find Doctor</a></li>
+                    </ul>
+                </div>
+                
+                <div>
+                    <h4 style="color: var(--text-primary); margin-bottom: 1rem;">Services</h4>
+                    <ul style="list-style: none; padding: 0;">
+                        <li style="margin-bottom: 0.5rem;"><a href="/services" style="color: var(--text-muted); text-decoration: none;">Online Consultations</a></li>
+                        <li style="margin-bottom: 0.5rem;"><a href="#pharmacy" style="color: var(--text-muted); text-decoration: none;">Pharmacy</a></li>
+                        <li style="margin-bottom: 0.5rem;"><a href="/services" style="color: var(--text-muted); text-decoration: none;">Health Reports</a></li>
+                        <li style="margin-bottom: 0.5rem;"><a href="/services" style="color: var(--text-muted); text-decoration: none;">AI Diagnosis</a></li>
+                    </ul>
+                </div>
+                
+                <div>
+                    <h4 style="color: var(--text-primary); margin-bottom: 1rem;">Contact Info</h4>
+                    <p style="color: var(--text-muted); margin-bottom: 0.5rem;">📧 support@rapiact.com</p>
+                    <p style="color: var(--text-muted); margin-bottom: 0.5rem;">📞 +91-XXXX-XXXXXX</p>
+                    <p style="color: var(--text-muted); margin-bottom: 0.5rem;">📍 India</p>
+                </div>
+            </div>
+            
+            <div style="border-top: 1px solid var(--border-color); padding-top: 2rem; text-align: center;">
+                <p style="color: var(--text-muted);">© 2025 RapiACT. All Rights Reserved. | Privacy Policy | Terms of Service</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Fixed Elements -->
+    <div class="visitor-counter">
+        Visitors: <span id="visitor-count">0</span>
+    </div>
+
+    <div class="chatbot-container" onclick="toggleChatbot()">
+        💬
+    </div>
+
+    <!-- Language Selection Modal (Hidden by default) -->
+    <div id="language-modal" class="language-modal" style="display: none;">
+        <div class="language-selection">
+            <h2>Choose Your Language</h2>
+            <p>Please select your preferred language to continue:</p>
+            <div class="language-buttons">
+                <button class="language-button" onclick="translatePage('en')">English</button>
+                <button class="language-button" onclick="translatePage('hi')">हिन्दी</button>
+                <button class="language-button" onclick="translatePage('te')">తెలుగు</button>
+                <button class="language-button" onclick="translatePage('kn')">ಕನ್ನಡ</button>
+                <button class="language-button" onclick="translatePage('ta')">தமிழ்</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Chatbot iframe (Hidden by default) -->
+    <iframe id="chatbot-iframe" src="https://www.chatbase.co/chatbot-iframe/fSiObHG0hl0I5oV-SEFiZ" 
+            style="position: fixed; bottom: 90px; right: 20px; width: 350px; height: 500px; 
+                   border: none; border-radius: 12px; box-shadow: var(--shadow-xl); display: none; 
+                   background: white; z-index: 9998;"></iframe>
+
+    <!-- Google Translate Element -->
+    <div id="google_translate_element"></div>
+
+    <!-- JavaScript -->
+    <script>
+        // Theme Toggle Function
+        function toggleTheme() {
+            const body = document.body;
+            const themeIcon = document.querySelector('.theme-icon');
+            
+            if (body.getAttribute('data-theme') === 'dark') {
+                body.setAttribute('data-theme', 'light');
+                themeIcon.textContent = '🌙';
+                localStorage.setItem('theme', 'light');
+            } else {
+                body.setAttribute('data-theme', 'dark');
+                themeIcon.textContent = '☀️';
+                localStorage.setItem('theme', 'dark');
+            }
+        }
+
+        // Load saved theme
+        function loadTheme() {
+            const savedTheme = localStorage.getItem('theme') || 'light';
+            const themeIcon = document.querySelector('.theme-icon');
+            
+            document.body.setAttribute('data-theme', savedTheme);
+            themeIcon.textContent = savedTheme === 'dark' ? '☀️' : '🌙';
+        }
+
+        // Scroll Indicator
+        function updateScrollIndicator() {
+            const scrollTop = window.scrollY;
+            const windowHeight = document.documentElement.scrollHeight - window.innerHeight;
+            const scrollPercentage = (scrollTop / windowHeight) * 100;
+            document.querySelector('.scroll-indicator').style.height = scrollPercentage + '%';
+        }
+
+        // Language Selection Functions
+        function showLanguageModal() {
+            document.getElementById('language-modal').style.display = 'flex';
+        }
+
+        function hideLanguageModal() {
+            document.getElementById('language-modal').style.display = 'none';
+        }
+
+        function translatePage(langCode) {
+            // Save language preference
+            localStorage.setItem('preferredLanguage', langCode);
+            hideLanguageModal();
+            
+            // Here you would integrate with Google Translate API
+            console.log('Translating to:', langCode);
+            
+            // For demo purposes, just show an alert
+            if (langCode !== 'en') {
+                alert(`Translation to ${langCode} would be implemented here using Google Translate API`);
+            }
+        }
+
+        // Chatbot Toggle Function
+        function toggleChatbot() {
+            const chatbotIframe = document.getElementById('chatbot-iframe');
+            chatbotIframe.style.display = chatbotIframe.style.display === 'none' ? 'block' : 'none';
+        }
+
+        // Load Doctors Function
+        async function loadDoctors() {
+            try {
+                const response = await fetch('/get_doctors');
+                const doctors = await response.json();
+                const slidesContainer = document.querySelector('.slides');
+                
+                // Clear existing content
+                slidesContainer.innerHTML = '';
+                
+                doctors.forEach(doctor => {
+                    let photoSrc = 'static/images/logo.jpg'; // Default image
+                    
+                    if (doctor._id && typeof doctor._id === "object" && "$oid" in doctor._id) {
+                        photoSrc = `/user_photo/${doctor._id.$oid}`;
+                    } else if (doctor._id && typeof doctor._id === "string") {
+                        photoSrc = `/user_photo/${doctor._id}`;
+                    }
+                    
+                    const doctorCard = document.createElement('div');
+                    doctorCard.classList.add('doctor-card');
+                    doctorCard.innerHTML = `
+                        <img src="${photoSrc}" alt="Dr. ${doctor.name}" onerror="this.src='static/images/logo.jpg'">
+                        <h3>Dr. ${doctor.name}</h3>
+                        <p><strong>Specialization:</strong> ${doctor.specialization}</p>
+                        <p><strong>Experience:</strong> ${doctor.years_experience} years</p>
+                        <p><strong>Location:</strong> ${doctor.location || 'Available Online'}</p>
+                    `;
+                    slidesContainer.appendChild(doctorCard);
+                });
+                
+                // Duplicate slides for infinite scroll effect
+                const allCards = slidesContainer.innerHTML;
+                slidesContainer.innerHTML = allCards + allCards;
+                
+            } catch (error) {
+                console.error('Error fetching doctors:', error);
+                // Show fallback content
+                document.querySelector('.slides').innerHTML = `
+                    <div class="doctor-card">
+                        <img src="static/images/logo.jpg" alt="Doctor">
+                        <h3>Dr. Sample Doctor</h3>
+                        <p><strong>Specialization:</strong> General Medicine</p>
+                        <p><strong>Experience:</strong> 10+ years</p>
+                    </div>
+                `;
+            }
+        }
+
+        // Visitor Counter
+        function updateVisitorCounter() {
+            let count = localStorage.getItem('visitorCount') || 0;
+            count = parseInt(count) + 1;
+            localStorage.setItem('visitorCount', count);
+            document.getElementById('visitor-count').textContent = count;
+        }
+
+        // Smooth Scrolling for Anchor Links
+        function initSmoothScrolling() {
+            document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+                anchor.addEventListener('click', function (e) {
+                    e.preventDefault();
+                    const target = document.querySelector(this.getAttribute('href'));
+                    if (target) {
+                        target.scrollIntoView({
+                            behavior: 'smooth',
+                            block: 'start'
+                        });
+                    }
+                });
+            });
+        }
+
+        // Initialize Google Translate
+        function googleTranslateElementInit() {
+            new google.translate.TranslateElement({
+                pageLanguage: 'en',
+                includedLanguages: 'en,hi,te,kn,ta',
+                autoDisplay: false,
+                layout: google.translate.TranslateElement.InlineLayout.HORIZONTAL
+            }, 'google_translate_element');
+        }
+
+        // DOM Content Loaded Event
+        document.addEventListener('DOMContentLoaded', function() {
+            // Load theme
+            loadTheme();
+            
+            // Update visitor counter
+            updateVisitorCounter();
+            
+            // Load doctors
+            loadDoctors();
+            
+            // Initialize smooth scrolling
+            initSmoothScrolling();
+            
+            // Add scroll event listener
+            window.addEventListener('scroll', updateScrollIndicator);
+            
+            // Language selector event
+            document.getElementById('language-selector').addEventListener('click', showLanguageModal);
+            
+            // Close modal when clicking outside
+            document.getElementById('language-modal').addEventListener('click', function(e) {
+                if (e.target === this) {
+                    hideLanguageModal();
+                }
+            });
+            
+            // Hide loading screen
+            setTimeout(() => {
+                const loadingScreen = document.querySelector('.loading-screen');
+                if (loadingScreen) {
+                    loadingScreen.style.opacity = '0';
+                    setTimeout(() => {
+                        loadingScreen.style.display = 'none';
+                    }, 300);
+                }
+            }, 2000);
+            
+            // Navbar scroll effect
+            let lastScrollTop = 0;
+            const navbar = document.querySelector('.navbar');
+            
+            window.addEventListener('scroll', function() {
+                let scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+                
+                if (scrollTop > lastScrollTop) {
+                    // Scrolling down
+                    navbar.style.transform = 'translateY(-100%)';
+                } else {
+                    // Scrolling up
+                    navbar.style.transform = 'translateY(0)';
+                }
+                lastScrollTop = scrollTop;
+            });
+        });
+
+        // Form submission handler
+        document.addEventListener('submit', function(e) {
+            if (e.target.classList.contains('contact-form')) {
+                e.preventDefault();
+                
+                // Show loading state
+                const submitBtn = e.target.querySelector('button[type="submit"]');
+                const originalText = submitBtn.textContent;
+                submitBtn.textContent = 'Sending...';
+                submitBtn.disabled = true;
+                
+                // Simulate form submission (replace with actual form handling)
+                setTimeout(() => {
+                    alert('Thank you for your message! We will get back to you soon.');
+                    e.target.reset();
+                    submitBtn.textContent = originalText;
+                    submitBtn.disabled = false;
+                }, 2000);
+            }
+        });
+    </script>
+
+    <!-- Google Translate Script -->
+    <script type="text/javascript" src="//translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script>
+</body>
+</html>
