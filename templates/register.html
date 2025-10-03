@@ -4,12 +4,11 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>RapiACT - Sign Up</title>
-  <link rel="icon" type="image/jpg" href="static/images/logo.jpg" />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
   <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet" />
   <style>
     :root {
-      /* Dark Theme Colors from attached file */
+      /* Dark Theme Colors */
       --bg-primary: linear-gradient(135deg, #0c0c0c 0%, #1a1a2e 100%);
       --bg-secondary: #0f0f23;
       --bg-card: #16213e;
@@ -25,6 +24,20 @@
       --gradient-accent: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
       --glassmorphism: rgba(22, 33, 62, 0.25);
       --backdrop-blur: blur(15px);
+    }
+
+    [data-theme="light"] {
+      --bg-primary: linear-gradient(135deg, #f0f4f8 0%, #d9e2ec 100%);
+      --bg-secondary: #ffffff;
+      --bg-card: #f8f9fa;
+      --text-primary: #1a202c;
+      --text-secondary: #4a5568;
+      --text-accent: #3182ce;
+      --border-color: #cbd5e0;
+      --shadow-light: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+      --shadow-medium: 0 10px 15px -3px rgba(0, 0, 0, 0.15);
+      --shadow-large: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+      --glassmorphism: rgba(255, 255, 255, 0.7);
     }
 
     *, *::before, *::after {
@@ -99,7 +112,7 @@
       font-weight: 500;
       padding: 6px 18px;
       border-radius: 10px;
-      transition: background 0.3s ease, color 0.3s ease;
+      transition: all 0.3s ease;
       position: relative;
       font-size: 1rem;
     }
@@ -108,22 +121,7 @@
       background: rgba(255, 255, 255, 0.1);
       transform: translateY(-2px);
     }
-    nav.navbar .nav-links a::after {
-      content: '';
-      position: absolute;
-      bottom: 0;
-      left: 50%;
-      width: 0;
-      height: 2px;
-      background: var(--gradient-accent);
-      transition: width 0.3s ease;
-      transform: translateX(-50%);
-    }
-    nav.navbar .nav-links a:hover::after {
-      width: 80%;
-    }
 
-    /* Theme and Language toggle buttons */
     .theme-toggle, .language-toggle {
       background: var(--gradient-accent);
       border: none;
@@ -144,7 +142,6 @@
       box-shadow: var(--shadow-medium);
     }
 
-    /* Background pattern */
     body::before {
       content: '';
       position: fixed;
@@ -156,7 +153,6 @@
       z-index: 0;
     }
 
-    /* Sign Up Form container */
     .signup_form {
       background: var(--glassmorphism);
       backdrop-filter: var(--backdrop-blur);
@@ -169,16 +165,6 @@
       position: relative;
       z-index: 2;
       animation: fadeIn 0.5s ease forwards;
-      color: var(--text-primary);
-    }
-
-    .signup_form .logo img {
-      height: 70px;
-      width: auto;
-      border-radius: 12px;
-      box-shadow: 0 4px 20px rgba(31, 140, 255, 0.4);
-      display: block;
-      margin: 0 auto 25px auto;
     }
 
     .signup_form h3 {
@@ -226,12 +212,12 @@
       height: 50px;
       border-radius: 12px;
       border: 1.8px solid var(--border-color);
-      background: var(--bg-secondary, #16213e);
+      background: var(--bg-secondary);
       color: var(--text-primary);
       padding: 12px 18px;
       font-size: 1rem;
       font-family: 'Inter', sans-serif;
-      transition: border 0.3s ease, background 0.3s ease;
+      transition: all 0.3s ease;
     }
 
     .input_box input:focus,
@@ -239,7 +225,7 @@
       outline: none;
       border-color: var(--text-accent);
       background: var(--bg-card);
-      box-shadow: 0 0 8px var(--text-accent);
+      box-shadow: 0 0 8px rgba(79, 172, 254, 0.3);
     }
 
     .input_box input::placeholder {
@@ -266,20 +252,24 @@
       cursor: pointer;
       box-shadow: var(--shadow-large);
       letter-spacing: 0.3px;
-      transition: background 0.3s ease, box-shadow 0.3s ease, transform 0.2s ease;
+      transition: all 0.3s ease;
       position: relative;
       overflow: hidden;
     }
 
-    button:hover {
+    button:hover:not(:disabled) {
       background: var(--text-accent);
       box-shadow: var(--shadow-medium);
       transform: translateY(-3px);
     }
 
-    button:active {
+    button:active:not(:disabled) {
       transform: translateY(0);
-      box-shadow: var(--shadow-light);
+    }
+
+    button:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
     }
 
     button::after {
@@ -291,14 +281,12 @@
       height: 100%;
       background: rgba(255,255,255,0.15);
       transition: left 0.5s ease;
-      z-index: 1;
     }
 
-    button:hover::after {
+    button:hover:not(:disabled)::after {
       left: 100%;
     }
 
-    /* OTP related controls */
     #otpField,
     #verifyBtn {
       display: none;
@@ -306,28 +294,44 @@
     }
 
     #verifyBtn {
-      background: #3cb371;
+      background: linear-gradient(135deg, #3cb371 0%, #2e8b57 100%);
       box-shadow: 0 4px 15px rgba(60, 179, 113, 0.3);
     }
-    #verifyBtn:hover {
-      background: #2e8b57;
-      box-shadow: 0 8px 20px rgba(60, 179, 113, 0.4);
+
+    .error-message {
+      color: #ff6b6b;
+      font-size: 0.875rem;
+      margin-top: 5px;
+      display: none;
     }
 
-    /* Healthcare background subtle grid */
-    .healthcare-pattern {
-      position: fixed;
-      width: 100vw;
-      height: 100vh;
-      background: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='40' height='40'><g fill='rgba(79,172,254,0.03)'><path d='M20 0v40' /><path d='M0 20h40' /></g></svg>") repeat;
-      opacity: 0.3;
-      top: 0;
-      left: 0;
-      z-index: 0;
-      pointer-events: none;
+    .loading {
+      display: inline-block;
+      width: 16px;
+      height: 16px;
+      border: 2px solid rgba(255,255,255,0.3);
+      border-radius: 50%;
+      border-top-color: white;
+      animation: spin 0.8s linear infinite;
+      margin-left: 8px;
+      vertical-align: middle;
     }
 
-    /* Responsive */
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    @keyframes fadeIn {
+      0% {
+        opacity: 0;
+        transform: translateY(15px);
+      }
+      100% {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
     @media (max-width: 600px) {
       .signup_form {
         margin: 100px 20px;
@@ -340,22 +344,6 @@
       }
       nav.navbar .nav-links {
         gap: 12px;
-      }
-      nav.navbar .nav-links a {
-        font-size: 0.9rem;
-        padding: 6px 14px;
-      }
-    }
-
-    /* Fade In Animation */
-    @keyframes fadeIn {
-      0% {
-        opacity: 0;
-        transform: translateY(15px);
-      }
-      100% {
-        opacity: 1;
-        transform: translateY(0);
       }
     }
   </style>
@@ -379,8 +367,8 @@
   </div>
 </nav>
 
-<div class="signup_form" role="main" aria-labelledby="signup-heading">
-  <h3 id="signup-heading">RapiACT!❤️ Account</h3>
+<div class="signup_form">
+  <h3>RapiACT!❤️ Account</h3>
   <form id="signupForm" novalidate>
     <div class="input_box">
       <label for="role">I am a</label>
@@ -389,6 +377,7 @@
         <option value="Patient">Patient</option>
         <option value="Doctor">Doctor</option>
       </select>
+      <div class="error-message" id="roleError">Please select a role</div>
     </div>
     <div class="input_box">
       <label for="name">Full Name</label>
@@ -400,6 +389,7 @@
         required
         autocomplete="name"
       />
+      <div class="error-message" id="nameError">Please enter your full name</div>
     </div>
     <div class="input_box">
       <label for="email">Email</label>
@@ -411,6 +401,7 @@
         required
         autocomplete="email"
       />
+      <div class="error-message" id="emailError">Please enter a valid email</div>
     </div>
     <div class="input_box">
       <label for="password">Password</label>
@@ -418,9 +409,10 @@
         type="password"
         id="password"
         name="password"
-        placeholder="Create a secure password"
+        placeholder="Create a secure password (min 6 characters)"
         required
       />
+      <div class="error-message" id="passwordError">Password must be at least 6 characters</div>
     </div>
     <div class="input_box">
       <label for="confirmPassword">Confirm Password</label>
@@ -431,20 +423,21 @@
         placeholder="Confirm your password"
         required
       />
+      <div class="error-message" id="confirmPasswordError">Passwords do not match</div>
     </div>
     <button type="button" id="sendOtpBtn">SEND VERIFICATION CODE</button>
 
     <div id="otpField" class="input_box">
       <label for="otp">Verification Code</label>
-      <input type="text" id="otp" name="otp" placeholder="Enter 6-digit code" />
+      <input type="text" id="otp" name="otp" placeholder="Enter 6-digit code" maxlength="6" />
+      <div class="error-message" id="otpError">Please enter the 6-digit code</div>
     </div>
     <button type="button" id="verifyBtn">VERIFY & CONTINUE</button>
   </form>
 </div>
-<div class="healthcare-pattern"></div>
 
 <script>
-  // Toggle Dark/Light theme
+  // Toggle Dark/Light theme - FIXED
   function toggleTheme() {
     const body = document.body;
     const themeToggleIcon = document.querySelector('.theme-toggle i');
@@ -452,25 +445,46 @@
 
     if (currentTheme === 'dark') {
       body.setAttribute('data-theme', 'light');
-      themeToggleIcon.classList.replace('fa-sun', 'fa-moon');
+      themeToggleIcon.classList.replace('fa-moon', 'fa-sun');
       localStorage.setItem('theme', 'light');
     } else {
       body.setAttribute('data-theme', 'dark');
-      themeToggleIcon.classList.replace('fa-moon', 'fa-sun');
+      themeToggleIcon.classList.replace('fa-sun', 'fa-moon');
       localStorage.setItem('theme', 'dark');
     }
   }
 
-  // Load saved theme on page load
+  // Load saved theme on page load - FIXED
   window.addEventListener('DOMContentLoaded', () => {
     const savedTheme = localStorage.getItem('theme') || 'dark';
     document.body.setAttribute('data-theme', savedTheme);
     const themeToggleIcon = document.querySelector('.theme-toggle i');
-    if (savedTheme === 'dark') themeToggleIcon.classList.replace('fa-moon', 'fa-sun');
+    if (savedTheme === 'light') {
+      themeToggleIcon.classList.replace('fa-moon', 'fa-sun');
+    }
   });
 
-  // Handle Send OTP
-  document.getElementById('sendOtpBtn').addEventListener('click', () => {
+  // Validation functions
+  function validateEmail(email) {
+    return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+  }
+
+  function showError(fieldId, message) {
+    const errorElement = document.getElementById(fieldId + 'Error');
+    if (errorElement) {
+      errorElement.textContent = message;
+      errorElement.style.display = 'block';
+    }
+  }
+
+  function hideError(fieldId) {
+    const errorElement = document.getElementById(fieldId + 'Error');
+    if (errorElement) {
+      errorElement.style.display = 'none';
+    }
+  }
+
+  function validateForm() {
     const form = document.getElementById('signupForm');
     const role = form.role.value.trim();
     const name = form.name.value.trim();
@@ -478,50 +492,92 @@
     const password = form.password.value;
     const confirmPassword = form.confirmPassword.value;
 
-    if (!role || !name || !email || !password || !confirmPassword) {
-      alert('Please fill in all required fields.');
-      return;
+    let isValid = true;
+
+    // Hide all errors first
+    ['role', 'name', 'email', 'password', 'confirmPassword'].forEach(hideError);
+
+    if (!role) {
+      showError('role', 'Please select a role');
+      isValid = false;
     }
+
+    if (!name || name.length < 2) {
+      showError('name', 'Please enter your full name (at least 2 characters)');
+      isValid = false;
+    }
+
+    if (!email || !validateEmail(email)) {
+      showError('email', 'Please enter a valid email address');
+      isValid = false;
+    }
+
+    if (!password || password.length < 6) {
+      showError('password', 'Password must be at least 6 characters');
+      isValid = false;
+    }
+
     if (password !== confirmPassword) {
-      alert('Passwords do not match.');
-      return;
+      showError('confirmPassword', 'Passwords do not match');
+      isValid = false;
     }
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-      alert('Please enter a valid email address.');
+
+    return isValid;
+  }
+
+  // Handle Send OTP - IMPROVED
+  document.getElementById('sendOtpBtn').addEventListener('click', async () => {
+    if (!validateForm()) {
       return;
     }
 
-    // Call your API endpoint here to send OTP
-    fetch('/send-otp', {
-      method: 'POST',
-      headers: {'Content-Type': 'application/json'},
-      body: JSON.stringify({ email }),
-    })
-      .then(response => response.json())
-      .then(data => {
-        if (data.error) {
-          alert(data.error);
-          return;
-        }
-        alert('Verification code sent to your email.');
-        // Disable inputs and hide send button, show OTP field and verify button
+    const form = document.getElementById('signupForm');
+    const email = form.email.value.trim();
+    const sendOtpBtn = document.getElementById('sendOtpBtn');
+
+    // Disable button and show loading
+    sendOtpBtn.disabled = true;
+    sendOtpBtn.innerHTML = 'SENDING<span class="loading"></span>';
+
+    try {
+      const response = await fetch('/send-otp', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({ email }),
+      });
+
+      const data = await response.json();
+
+      if (response.ok && data.message) {
+        alert('Verification code sent to your email. Please check your inbox.');
+        
+        // Disable inputs
         form.role.disabled = true;
         form.name.disabled = true;
         form.email.disabled = true;
         form.password.disabled = true;
         form.confirmPassword.disabled = true;
-        document.getElementById('sendOtpBtn').style.display = 'none';
+        
+        // Show OTP field
+        sendOtpBtn.style.display = 'none';
         document.getElementById('otpField').style.display = 'block';
         document.getElementById('verifyBtn').style.display = 'block';
-      })
-      .catch(err => {
-        console.error('Error sending OTP:', err);
-        alert('Error sending verification code. Please try again later.');
-      });
+        document.getElementById('otp').focus();
+      } else {
+        alert(data.error || 'Failed to send verification code. Please try again.');
+        sendOtpBtn.disabled = false;
+        sendOtpBtn.textContent = 'SEND VERIFICATION CODE';
+      }
+    } catch (err) {
+      console.error('Error sending OTP:', err);
+      alert('Network error. Please check your connection and try again.');
+      sendOtpBtn.disabled = false;
+      sendOtpBtn.textContent = 'SEND VERIFICATION CODE';
+    }
   });
 
-  // Handle Verify OTP
-  document.getElementById('verifyBtn').addEventListener('click', () => {
+  // Handle Verify OTP - IMPROVED
+  document.getElementById('verifyBtn').addEventListener('click', async () => {
     const form = document.getElementById('signupForm');
     const role = form.role.value.trim();
     const name = form.name.value.trim();
@@ -529,34 +585,51 @@
     const password = form.password.value;
     const otp = form.otp.value.trim();
 
-    if (!otp) {
-      alert('Please enter the verification code.');
+    hideError('otp');
+
+    if (!otp || otp.length !== 6) {
+      showError('otp', 'Please enter the 6-digit verification code');
       return;
     }
 
-    // Call your API endpoint here to verify OTP and register
-    fetch('/verify-otp', {
-      method: 'POST',
-      headers: {'Content-Type': 'application/json'},
-      body: JSON.stringify({ role, name, email, password, otp }),
-    })
-      .then(response => response.json())
-      .then(data => {
-        if (data.message) {
-          alert('Verification successful! Redirecting...');
-          if (role === 'Doctor') {
-            window.location.href = '/doctor_register';
-          } else {
-            window.location.href = '/patient_register';
-          }
-        } else {
-          alert('Invalid verification code. Please try again.');
-        }
-      })
-      .catch(err => {
-        console.error('Error verifying OTP:', err);
-        alert('Verification failed. Please try again.');
+    const verifyBtn = document.getElementById('verifyBtn');
+    verifyBtn.disabled = true;
+    verifyBtn.innerHTML = 'VERIFYING<span class="loading"></span>';
+
+    try {
+      const response = await fetch('/verify-otp', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({ role, name, email, password, otp }),
       });
+
+      const data = await response.json();
+
+      if (response.ok && data.message) {
+        alert('Verification successful! Redirecting...');
+        if (role === 'Doctor') {
+          window.location.href = '/doctor_register';
+        } else {
+          window.location.href = '/patient_register';
+        }
+      } else {
+        alert(data.error || 'Invalid verification code. Please try again.');
+        verifyBtn.disabled = false;
+        verifyBtn.textContent = 'VERIFY & CONTINUE';
+      }
+    } catch (err) {
+      console.error('Error verifying OTP:', err);
+      alert('Network error. Please check your connection and try again.');
+      verifyBtn.disabled = false;
+      verifyBtn.textContent = 'VERIFY & CONTINUE';
+    }
+  });
+
+  // Allow Enter key to submit
+  document.getElementById('otp').addEventListener('keypress', (e) => {
+    if (e.key === 'Enter') {
+      document.getElementById('verifyBtn').click();
+    }
   });
 </script>
 </body>
