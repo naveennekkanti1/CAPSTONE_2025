@@ -847,122 +847,126 @@ def register():
 
 @app.route('/send-otp', methods=['POST'])
 def send_otp():
-    data = request.json
-    email = data.get('email')
-
-    if not email:
-        return jsonify({"error": "Email is required"}), 400
-    
-    if users_collection.find_one({"email": email}):
-        return jsonify({"error": "User already registered!"}), 400
-
-    otp = str(random.randint(100000, 999999))
-    otp_store[email] = otp
-
-    subject = "Your OTP Code for RapiACT Registration"
-    
-    # HTML email with CSS styling
-    html_body = f"""
-    <!DOCTYPE html>
-    <html>
-    <head>
-        <style>
-            body {{
-                font-family: Arial, sans-serif;
-                line-height: 1.6;
-                color: #333;
-                max-width: 600px;
-                margin: 0 auto;
-            }}
-            .email-container {{
-                border: 1px solid #ddd;
-                border-radius: 8px;
-                padding: 20px;
-                background-color: #f9f9f9;
-            }}
-            .header {{
-                background-color: #6B46C1;
-                color: white;
-                padding: 15px;
-                text-align: center;
-                border-radius: 5px 5px 0 0;
-                margin-bottom: 20px;
-            }}
-            .otp-container {{
-                background-color: white;
-                padding: 20px;
-                border-radius: 5px;
-                box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-                margin: 25px 0;
-                text-align: center;
-            }}
-            .otp-code {{
-                font-size: 32px;
-                font-weight: bold;
-                letter-spacing: 5px;
-                color: #6B46C1;
-                padding: 10px 20px;
-                background-color: #f3f4f6;
-                border-radius: 5px;
-                margin: 10px 0;
-                display: inline-block;
-            }}
-            .footer {{
-                text-align: center;
-                margin-top: 20px;
-                font-size: 14px;
-                color: #777;
-            }}
-            .expiry-notice {{
-                background-color: #fffbeb;
-                border-left: 4px solid #f59e0b;
-                padding: 10px 15px;
-                margin: 15px 0;
-                font-size: 14px;
-            }}
-            .help-text {{
-                font-size: 15px;
-                color: #555;
-            }}
-        </style>
-    </head>
-    <body>
-        <div class="email-container">
-            <div class="header">
-                <h2>One-Time Password (OTP)</h2>
-            </div>
-            
-            <p>Hello,</p>
-            
-            <p>Thank you for registering with RapiACT! To verify your email address, please use the following One-Time Password (OTP):</p>
-            
-            <div class="otp-container">
-                <div class="otp-code">{otp}</div>
-                <p class="help-text">Please enter this code on the registration page.</p>
-            </div>
-            
-            <div class="expiry-notice">
-                <strong>Note:</strong> This OTP will expire in 10 minutes for security reasons.
-            </div>
-            
-            <p>If you did not request this code, please ignore this email. Someone might have entered your email address by mistake.</p>
-            
-            <div class="footer">
-                <p>Best regards,<br>RapiACT! Team ❤️</p>
-                <p style="font-size: 12px; color: #999;">This is an automated message, please do not reply to this email.</p>
-            </div>
-        </div>
-    </body>
-    </html>
-    """
-    
     try:
+        data = request.get_json()
+        
+        if not data:
+            return jsonify({"error": "No data provided"}), 400
+            
+        email = data.get('email')
+        
+        if not email:
+            return jsonify({"error": "Email is required"}), 400
+        
+        # Check if user already exists
+        if users_collection.find_one({"email": email}):
+            return jsonify({"error": "User already registered!"}), 400
+        
+        # Generate OTP
+        otp = str(random.randint(100000, 999999))
+        otp_store[email] = otp
+        
+        subject = "Your OTP Code for RapiACT Registration"
+        
+        html_body = f"""
+        <!DOCTYPE html>
+        <html>
+        <head>
+            <style>
+                body {{
+                    font-family: Arial, sans-serif;
+                    line-height: 1.6;
+                    color: #333;
+                    max-width: 600px;
+                    margin: 0 auto;
+                }}
+                .email-container {{
+                    border: 1px solid #ddd;
+                    border-radius: 8px;
+                    padding: 20px;
+                    background-color: #f9f9f9;
+                }}
+                .header {{
+                    background-color: #6B46C1;
+                    color: white;
+                    padding: 15px;
+                    text-align: center;
+                    border-radius: 5px 5px 0 0;
+                    margin-bottom: 20px;
+                }}
+                .otp-container {{
+                    background-color: white;
+                    padding: 20px;
+                    border-radius: 5px;
+                    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+                    margin: 25px 0;
+                    text-align: center;
+                }}
+                .otp-code {{
+                    font-size: 32px;
+                    font-weight: bold;
+                    letter-spacing: 5px;
+                    color: #6B46C1;
+                    padding: 10px 20px;
+                    background-color: #f3f4f6;
+                    border-radius: 5px;
+                    margin: 10px 0;
+                    display: inline-block;
+                }}
+                .footer {{
+                    text-align: center;
+                    margin-top: 20px;
+                    font-size: 14px;
+                    color: #777;
+                }}
+                .expiry-notice {{
+                    background-color: #fffbeb;
+                    border-left: 4px solid #f59e0b;
+                    padding: 10px 15px;
+                    margin: 15px 0;
+                    font-size: 14px;
+                }}
+            </style>
+        </head>
+        <body>
+            <div class="email-container">
+                <div class="header">
+                    <h2>One-Time Password (OTP)</h2>
+                </div>
+                
+                <p>Hello,</p>
+                
+                <p>Thank you for registering with RapiACT! To verify your email address, please use the following One-Time Password (OTP):</p>
+                
+                <div class="otp-container">
+                    <div class="otp-code">{otp}</div>
+                    <p>Please enter this code on the registration page.</p>
+                </div>
+                
+                <div class="expiry-notice">
+                    <strong>Note:</strong> This OTP will expire in 10 minutes for security reasons.
+                </div>
+                
+                <p>If you did not request this code, please ignore this email.</p>
+                
+                <div class="footer">
+                    <p>Best regards,<br>RapiACT Team ❤️</p>
+                    <p style="font-size: 12px; color: #999;">This is an automated message, please do not reply.</p>
+                </div>
+            </div>
+        </body>
+        </html>
+        """
+        
         msg = Message(subject=subject, recipients=[email])
         msg.html = html_body
         mail.send(msg)
-        return jsonify({"message": "OTP sent successfully!"})
+        
+        return jsonify({"message": "OTP sent successfully!"}), 200
+        
     except Exception as e:
-        return jsonify({"error": str(e)}), 500
+        print(f"Error in send-otp: {str(e)}")  # Log the error
+        return jsonify({"error": f"Failed to send OTP: {str(e)}"}), 500
 
 @app.route('/verify-otp', methods=['POST'])
 def verify_otp():
