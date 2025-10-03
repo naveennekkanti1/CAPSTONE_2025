@@ -546,6 +546,12 @@
         body: JSON.stringify({ email }),
       });
 
+      // Check if response is JSON
+      const contentType = response.headers.get('content-type');
+      if (!contentType || !contentType.includes('application/json')) {
+        throw new Error('Server returned invalid response. Please check server configuration.');
+      }
+
       const data = await response.json();
 
       if (response.ok && data.message) {
@@ -570,7 +576,15 @@
       }
     } catch (err) {
       console.error('Error sending OTP:', err);
-      alert('Network error. Please check your connection and try again.');
+      let errorMsg = 'Error sending verification code. ';
+      if (err.message.includes('Server returned invalid response')) {
+        errorMsg += 'Server configuration error. Please contact support.';
+      } else if (err.message.includes('Failed to fetch')) {
+        errorMsg += 'Cannot connect to server. Please check your internet connection.';
+      } else {
+        errorMsg += err.message;
+      }
+      alert(errorMsg);
       sendOtpBtn.disabled = false;
       sendOtpBtn.textContent = 'SEND VERIFICATION CODE';
     }
@@ -603,6 +617,12 @@
         body: JSON.stringify({ role, name, email, password, otp }),
       });
 
+      // Check if response is JSON
+      const contentType = response.headers.get('content-type');
+      if (!contentType || !contentType.includes('application/json')) {
+        throw new Error('Server returned invalid response. Please check server configuration.');
+      }
+
       const data = await response.json();
 
       if (response.ok && data.message) {
@@ -619,7 +639,15 @@
       }
     } catch (err) {
       console.error('Error verifying OTP:', err);
-      alert('Network error. Please check your connection and try again.');
+      let errorMsg = 'Verification failed. ';
+      if (err.message.includes('Server returned invalid response')) {
+        errorMsg += 'Server configuration error. Please contact support.';
+      } else if (err.message.includes('Failed to fetch')) {
+        errorMsg += 'Cannot connect to server. Please check your internet connection.';
+      } else {
+        errorMsg += err.message;
+      }
+      alert(errorMsg);
       verifyBtn.disabled = false;
       verifyBtn.textContent = 'VERIFY & CONTINUE';
     }
