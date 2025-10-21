@@ -1,664 +1,450 @@
 <!DOCTYPE html>
-<html lang="en" data-theme="dark">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>RapiACT - Sign Up</title>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
-  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet" />
-  <style>
-    :root {
-      /* Dark Theme Colors */
-      --bg-primary: linear-gradient(135deg, #0c0c0c 0%, #1a1a2e 100%);
-      --bg-secondary: #0f0f23;
-      --bg-card: #16213e;
-      --text-primary: #ffffff;
-      --text-secondary: #a0aec0;
-      --text-accent: #4facfe;
-      --border-color: #2d3748;
-      --shadow-light: 0 4px 6px -1px rgba(0, 0, 0, 0.3);
-      --shadow-medium: 0 10px 15px -3px rgba(0, 0, 0, 0.4);
-      --shadow-large: 0 25px 50px -12px rgba(0, 0, 0, 0.6);
-      --gradient-primary: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-      --gradient-secondary: linear-gradient(135deg, #ff6b6b 0%, #ee5a24 100%);
-      --gradient-accent: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
-      --glassmorphism: rgba(22, 33, 62, 0.25);
-      --backdrop-blur: blur(15px);
-    }
-
-    [data-theme="light"] {
-      --bg-primary: linear-gradient(135deg, #f0f4f8 0%, #d9e2ec 100%);
-      --bg-secondary: #ffffff;
-      --bg-card: #f8f9fa;
-      --text-primary: #1a202c;
-      --text-secondary: #4a5568;
-      --text-accent: #3182ce;
-      --border-color: #cbd5e0;
-      --shadow-light: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
-      --shadow-medium: 0 10px 15px -3px rgba(0, 0, 0, 0.15);
-      --shadow-large: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
-      --glassmorphism: rgba(255, 255, 255, 0.7);
-    }
-
-    *, *::before, *::after {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-    }
-
-    body {
-      font-family: 'Inter', sans-serif;
-      background: var(--bg-primary);
-      color: var(--text-primary);
-      min-height: 100vh;
-      position: relative;
-      overflow-x: hidden;
-      transition: background 0.3s ease;
-    }
-
-    /* Navbar */
-    nav.navbar {
-      position: fixed;
-      top: 20px;
-      left: 50%;
-      transform: translateX(-50%);
-      width: 95%;
-      max-width: 1200px;
-      padding: 15px 30px;
-      background: var(--glassmorphism);
-      backdrop-filter: var(--backdrop-blur);
-      border-radius: 20px;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      z-index: 1000;
-      box-shadow: var(--shadow-medium);
-      transition: all 0.3s ease;
-    }
-
-    nav.navbar:hover {
-      box-shadow: var(--shadow-large);
-      transform: translateX(-50%) translateY(-2px);
-    }
-
-    nav.navbar .logo {
-      font-size: 1.9rem;
-      font-weight: 900;
-      color: var(--text-accent);
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      cursor: pointer;
-      user-select: none;
-      text-decoration: none;
-    }
-    nav.navbar .logo i {
-      font-size: 2.4rem;
-      background: var(--gradient-accent);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      background-clip: text;
-    }
-
-    nav.navbar .nav-links {
-      display: flex;
-      gap: 25px;
-      align-items: center;
-      flex-wrap: wrap;
-    }
-    nav.navbar .nav-links a {
-      color: var(--text-primary);
-      text-decoration: none;
-      font-weight: 500;
-      padding: 6px 18px;
-      border-radius: 10px;
-      transition: all 0.3s ease;
-      position: relative;
-      font-size: 1rem;
-    }
-    nav.navbar .nav-links a:hover {
-      color: var(--text-accent);
-      background: rgba(255, 255, 255, 0.1);
-      transform: translateY(-2px);
-    }
-
-    .theme-toggle, .language-toggle {
-      background: var(--gradient-accent);
-      border: none;
-      width: 40px;
-      height: 40px;
-      border-radius: 50%;
-      color: white;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 1.3rem;
-      box-shadow: var(--shadow-light);
-      transition: all 0.3s ease;
-    }
-    .theme-toggle:hover, .language-toggle:hover {
-      transform: scale(1.1) rotate(15deg);
-      box-shadow: var(--shadow-medium);
-    }
-
-    body::before {
-      content: '';
-      position: fixed;
-      top: 0; left: 0;
-      width: 100vw; height: 100vh;
-      background: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='40' height='40' viewBox='0 0 40 40'><g fill='rgba(79,172,254,0.03)'><path d='M20 0v40'/><path d='M0 20h40'/></g></svg>") repeat;
-      opacity: 0.4;
-      pointer-events: none;
-      z-index: 0;
-    }
-
-    .signup_form {
-      background: var(--glassmorphism);
-      backdrop-filter: var(--backdrop-blur);
-      max-width: 480px;
-      margin: 120px auto 60px;
-      border-radius: 25px;
-      padding: 45px 35px;
-      box-shadow: var(--shadow-medium);
-      border: 1px solid var(--border-color);
-      position: relative;
-      z-index: 2;
-      animation: fadeIn 0.5s ease forwards;
-    }
-
-    .signup_form h3 {
-      font-weight: 700;
-      font-size: 2.2rem;
-      text-align: center;
-      margin-bottom: 30px;
-      position: relative;
-      color: var(--text-primary);
-      padding-bottom: 12px;
-    }
-    .signup_form h3::after {
-      content: '';
-      position: absolute;
-      bottom: 0;
-      left: 50%;
-      width: 60px;
-      height: 4px;
-      border-radius: 3px;
-      background: var(--gradient-accent);
-      transform: translateX(-50%);
-    }
-
-    .input_box {
-      margin-bottom: 25px;
-      position: relative;
-    }
-
-    .input_box label {
-      display: block;
-      margin-bottom: 10px;
-      font-size: 14px;
-      font-weight: 600;
-      color: var(--text-secondary);
-      transition: color 0.3s ease;
-    }
-
-    .input_box:focus-within label {
-      color: var(--text-accent);
-    }
-
-    .input_box input,
-    .input_box select {
-      width: 100%;
-      height: 50px;
-      border-radius: 12px;
-      border: 1.8px solid var(--border-color);
-      background: var(--bg-secondary);
-      color: var(--text-primary);
-      padding: 12px 18px;
-      font-size: 1rem;
-      font-family: 'Inter', sans-serif;
-      transition: all 0.3s ease;
-    }
-
-    .input_box input:focus,
-    .input_box select:focus {
-      outline: none;
-      border-color: var(--text-accent);
-      background: var(--bg-card);
-      box-shadow: 0 0 8px rgba(79, 172, 254, 0.3);
-    }
-
-    .input_box input::placeholder {
-      color: var(--text-secondary);
-    }
-
-    .input_box input:disabled,
-    .input_box select:disabled {
-      background: var(--bg-secondary);
-      border-color: var(--border-color);
-      cursor: not-allowed;
-      opacity: 0.7;
-    }
-
-    button {
-      width: 100%;
-      padding: 14px 0;
-      border-radius: 16px;
-      background: var(--gradient-accent);
-      color: white;
-      border: none;
-      font-weight: 700;
-      font-size: 1.1rem;
-      cursor: pointer;
-      box-shadow: var(--shadow-large);
-      letter-spacing: 0.3px;
-      transition: all 0.3s ease;
-      position: relative;
-      overflow: hidden;
-    }
-
-    button:hover:not(:disabled) {
-      background: var(--text-accent);
-      box-shadow: var(--shadow-medium);
-      transform: translateY(-3px);
-    }
-
-    button:active:not(:disabled) {
-      transform: translateY(0);
-    }
-
-    button:disabled {
-      opacity: 0.6;
-      cursor: not-allowed;
-    }
-
-    button::after {
-      content: '';
-      position: absolute;
-      top: 0;
-      left: -100%;
-      width: 100%;
-      height: 100%;
-      background: rgba(255,255,255,0.15);
-      transition: left 0.5s ease;
-    }
-
-    button:hover:not(:disabled)::after {
-      left: 100%;
-    }
-
-    #otpField,
-    #verifyBtn {
-      display: none;
-      margin-top: 20px;
-    }
-
-    #verifyBtn {
-      background: linear-gradient(135deg, #3cb371 0%, #2e8b57 100%);
-      box-shadow: 0 4px 15px rgba(60, 179, 113, 0.3);
-    }
-
-    .error-message {
-      color: #ff6b6b;
-      font-size: 0.875rem;
-      margin-top: 5px;
-      display: none;
-    }
-
-    .loading {
-      display: inline-block;
-      width: 16px;
-      height: 16px;
-      border: 2px solid rgba(255,255,255,0.3);
-      border-radius: 50%;
-      border-top-color: white;
-      animation: spin 0.8s linear infinite;
-      margin-left: 8px;
-      vertical-align: middle;
-    }
-
-    @keyframes spin {
-      to { transform: rotate(360deg); }
-    }
-
-    @keyframes fadeIn {
-      0% {
-        opacity: 0;
-        transform: translateY(15px);
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Healthcare Sign Up</title>
+    <link rel="icon" type="image/jpg" href="{{ url_for('static', filename='images/logo.jpg') }}">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap" rel="stylesheet">
+    <style>
+      :root {
+        --primary-color: #0079bc;
+        --primary-dark: #005f93;
+        --primary-light: rgba(0, 121, 188, 0.1);
+        --success-color: #3cb371;
+        --success-dark: #2e8b57;
+        --text-dark: #2c3e50;
+        --text-light: #456;
+        --border-color: #d1dbe3;
+        --background-light: #f7fafd;
+        --disabled-bg: #e9ecef;
+        --disabled-border: #cfd8dc;
+        --shadow-color: rgba(0, 121, 188, 0.2);
+        --white: #ffffff;
+        --animation-speed: 0.3s;
       }
-      100% {
-        opacity: 1;
-        transform: translateY(0);
-      }
-    }
 
-    @media (max-width: 600px) {
-      .signup_form {
-        margin: 100px 20px;
-        padding: 35px 25px;
+      * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
       }
-      nav.navbar {
-        flex-wrap: wrap;
+      
+      body {
+        display: flex;
         justify-content: center;
-        padding: 10px 20px;
+        align-items: center;
+        min-height: 100vh;
+        background: linear-gradient(135deg, #f0f8ff 0%, #e6f2ff 100%);
+        font-family: 'Poppins', sans-serif;
+        margin: 0;
+        padding: 20px;
+        background-image: url("static/images/signup.jpg");
+        background-size: cover;
+        background-position: center;
+        position: relative;
       }
-      nav.navbar .nav-links {
-        gap: 12px;
+      
+      body::before {
+        content: "";
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(255, 255, 255, 0.8);
+        backdrop-filter: blur(5px);
+        z-index: 0;
       }
-    }
-  </style>
-</head>
-<body>
-<nav class="navbar">
-  <a href="#" class="logo" aria-label="RapiACT Home"><i class="fas fa-heartbeat"></i>RapiACT</a>
-  <div class="nav-links">
-    <a href="/">Home</a>
-    <a href="/">About</a>
-    <a href="/services">Services</a>
-    <a href="/all_doctors">Doctors</a>
-    <a href="/">Contact</a>
-    <a href="/login">Login</a>
-    <button class="language-toggle" title="Change Language" aria-label="Change Language">
-      <i class="fas fa-globe"></i>
-    </button>
-    <button class="theme-toggle" title="Toggle Dark/Light Theme" aria-label="Toggle Dark/Light Theme" onclick="toggleTheme()">
-      <i class="fas fa-moon"></i>
-    </button>
-  </div>
-</nav>
-
-<div class="signup_form">
-  <h3>RapiACT!❤️ Account</h3>
-  <form id="signupForm" novalidate>
-    <div class="input_box">
-      <label for="role">I am a</label>
-      <select id="role" name="role" required>
-        <option value="">Select Role</option>
-        <option value="Patient">Patient</option>
-        <option value="Doctor">Doctor</option>
-      </select>
-      <div class="error-message" id="roleError">Please select a role</div>
-    </div>
-    <div class="input_box">
-      <label for="name">Full Name</label>
-      <input
-        type="text"
-        id="name"
-        name="name"
-        placeholder="Enter your full name"
-        required
-        autocomplete="name"
-      />
-      <div class="error-message" id="nameError">Please enter your full name</div>
-    </div>
-    <div class="input_box">
-      <label for="email">Email</label>
-      <input
-        type="email"
-        id="email"
-        name="email"
-        placeholder="Enter your email address"
-        required
-        autocomplete="email"
-      />
-      <div class="error-message" id="emailError">Please enter a valid email</div>
-    </div>
-    <div class="input_box">
-      <label for="password">Password</label>
-      <input
-        type="password"
-        id="password"
-        name="password"
-        placeholder="Create a secure password (min 6 characters)"
-        required
-      />
-      <div class="error-message" id="passwordError">Password must be at least 6 characters</div>
-    </div>
-    <div class="input_box">
-      <label for="confirmPassword">Confirm Password</label>
-      <input
-        type="password"
-        id="confirmPassword"
-        name="confirmPassword"
-        placeholder="Confirm your password"
-        required
-      />
-      <div class="error-message" id="confirmPasswordError">Passwords do not match</div>
-    </div>
-    <button type="button" id="sendOtpBtn">SEND VERIFICATION CODE</button>
-
-    <div id="otpField" class="input_box">
-      <label for="otp">Verification Code</label>
-      <input type="text" id="otp" name="otp" placeholder="Enter 6-digit code" maxlength="6" />
-      <div class="error-message" id="otpError">Please enter the 6-digit code</div>
-    </div>
-    <button type="button" id="verifyBtn">VERIFY & CONTINUE</button>
-  </form>
-</div>
-
-<script>
-  // Toggle Dark/Light theme - FIXED
-  function toggleTheme() {
-    const body = document.body;
-    const themeToggleIcon = document.querySelector('.theme-toggle i');
-    const currentTheme = body.getAttribute('data-theme');
-
-    if (currentTheme === 'dark') {
-      body.setAttribute('data-theme', 'light');
-      themeToggleIcon.classList.replace('fa-moon', 'fa-sun');
-      localStorage.setItem('theme', 'light');
-    } else {
-      body.setAttribute('data-theme', 'dark');
-      themeToggleIcon.classList.replace('fa-sun', 'fa-moon');
-      localStorage.setItem('theme', 'dark');
-    }
-  }
-
-  // Load saved theme on page load - FIXED
-  window.addEventListener('DOMContentLoaded', () => {
-    const savedTheme = localStorage.getItem('theme') || 'dark';
-    document.body.setAttribute('data-theme', savedTheme);
-    const themeToggleIcon = document.querySelector('.theme-toggle i');
-    if (savedTheme === 'light') {
-      themeToggleIcon.classList.replace('fa-moon', 'fa-sun');
-    }
-  });
-
-  // Validation functions
-  function validateEmail(email) {
-    return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
-  }
-
-  function showError(fieldId, message) {
-    const errorElement = document.getElementById(fieldId + 'Error');
-    if (errorElement) {
-      errorElement.textContent = message;
-      errorElement.style.display = 'block';
-    }
-  }
-
-  function hideError(fieldId) {
-    const errorElement = document.getElementById(fieldId + 'Error');
-    if (errorElement) {
-      errorElement.style.display = 'none';
-    }
-  }
-
-  function validateForm() {
-    const form = document.getElementById('signupForm');
-    const role = form.role.value.trim();
-    const name = form.name.value.trim();
-    const email = form.email.value.trim();
-    const password = form.password.value;
-    const confirmPassword = form.confirmPassword.value;
-
-    let isValid = true;
-
-    // Hide all errors first
-    ['role', 'name', 'email', 'password', 'confirmPassword'].forEach(hideError);
-
-    if (!role) {
-      showError('role', 'Please select a role');
-      isValid = false;
-    }
-
-    if (!name || name.length < 2) {
-      showError('name', 'Please enter your full name (at least 2 characters)');
-      isValid = false;
-    }
-
-    if (!email || !validateEmail(email)) {
-      showError('email', 'Please enter a valid email address');
-      isValid = false;
-    }
-
-    if (!password || password.length < 6) {
-      showError('password', 'Password must be at least 6 characters');
-      isValid = false;
-    }
-
-    if (password !== confirmPassword) {
-      showError('confirmPassword', 'Passwords do not match');
-      isValid = false;
-    }
-
-    return isValid;
-  }
-
-  // Handle Send OTP - IMPROVED
-  document.getElementById('sendOtpBtn').addEventListener('click', async () => {
-    if (!validateForm()) {
-      return;
-    }
-
-    const form = document.getElementById('signupForm');
-    const email = form.email.value.trim();
-    const sendOtpBtn = document.getElementById('sendOtpBtn');
-
-    // Disable button and show loading
-    sendOtpBtn.disabled = true;
-    sendOtpBtn.innerHTML = 'SENDING<span class="loading"></span>';
-
-    try {
-      const response = await fetch('/send-otp', {
-        method: 'POST',
-        headers: {'Content-Type': 'application/json'},
-        body: JSON.stringify({ email }),
-      });
-
-      // Check if response is JSON
-      const contentType = response.headers.get('content-type');
-      if (!contentType || !contentType.includes('application/json')) {
-        throw new Error('Server returned invalid response. Please check server configuration.');
+      
+      .signup_form {
+        background: var(--white);
+        padding: 40px;
+        border-radius: 16px;
+        box-shadow: 0 15px 40px var(--shadow-color);
+        max-width: 450px;
+        width: 100%;
+        text-align: center;
+        position: relative;
+        z-index: 1;
+        border-top: 5px solid var(--primary-color);
+        transform: translateY(0);
+        transition: transform var(--animation-speed) ease;
       }
-
-      const data = await response.json();
-
-      if (response.ok && data.message) {
-        alert('Verification code sent to your email. Please check your inbox.');
-        
-        // Disable inputs
-        form.role.disabled = true;
-        form.name.disabled = true;
-        form.email.disabled = true;
-        form.password.disabled = true;
-        form.confirmPassword.disabled = true;
-        
-        // Show OTP field
-        sendOtpBtn.style.display = 'none';
-        document.getElementById('otpField').style.display = 'block';
-        document.getElementById('verifyBtn').style.display = 'block';
-        document.getElementById('otp').focus();
-      } else {
-        alert(data.error || 'Failed to send verification code. Please try again.');
-        sendOtpBtn.disabled = false;
-        sendOtpBtn.textContent = 'SEND VERIFICATION CODE';
+      
+      .signup_form:hover {
+        transform: translateY(-5px);
       }
-    } catch (err) {
-      console.error('Error sending OTP:', err);
-      let errorMsg = 'Error sending verification code. ';
-      if (err.message.includes('Server returned invalid response')) {
-        errorMsg += 'Server configuration error. Please contact support.';
-      } else if (err.message.includes('Failed to fetch')) {
-        errorMsg += 'Cannot connect to server. Please check your internet connection.';
-      } else {
-        errorMsg += err.message;
+      
+      .logo {
+        margin-bottom: 20px;
       }
-      alert(errorMsg);
-      sendOtpBtn.disabled = false;
-      sendOtpBtn.textContent = 'SEND VERIFICATION CODE';
-    }
-  });
-
-  // Handle Verify OTP - IMPROVED
-  document.getElementById('verifyBtn').addEventListener('click', async () => {
-    const form = document.getElementById('signupForm');
-    const role = form.role.value.trim();
-    const name = form.name.value.trim();
-    const email = form.email.value.trim();
-    const password = form.password.value;
-    const otp = form.otp.value.trim();
-
-    hideError('otp');
-
-    if (!otp || otp.length !== 6) {
-      showError('otp', 'Please enter the 6-digit verification code');
-      return;
-    }
-
-    const verifyBtn = document.getElementById('verifyBtn');
-    verifyBtn.disabled = true;
-    verifyBtn.innerHTML = 'VERIFYING<span class="loading"></span>';
-
-    try {
-      const response = await fetch('/verify-otp', {
-        method: 'POST',
-        headers: {'Content-Type': 'application/json'},
-        body: JSON.stringify({ role, name, email, password, otp }),
-      });
-
-      // Check if response is JSON
-      const contentType = response.headers.get('content-type');
-      if (!contentType || !contentType.includes('application/json')) {
-        throw new Error('Server returned invalid response. Please check server configuration.');
+      
+      .logo img {
+        height: 70px;
+        width: auto;
+        border-radius: 12px;
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+      }
+      
+      h3 {
+        margin-bottom: 30px;
+        font-size: 28px;
+        color: var(--text-dark);
+        font-weight: 600;
+        position: relative;
+        padding-bottom: 12px;
+      }
+      
+      h3::after {
+        content: "";
+        position: absolute;
+        bottom: 0;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 60px;
+        height: 4px;
+        background: var(--primary-color);
+        border-radius: 2px;
+      }
+      
+      .input_box {
+        margin-bottom: 24px;
+        text-align: left;
+      }
+      
+      .input_box label {
+        display: block;
+        font-size: 15px;
+        margin-bottom: 10px;
+        color: var(--text-light);
+        font-weight: 500;
+        transition: color var(--animation-speed) ease;
+      }
+      
+      .input_box:focus-within label {
+        color: var(--primary-color);
+      }
+      
+      .input_box input,
+      .input_box select {
+        width: 100%;
+        height: 52px;
+        padding: 12px 18px;
+        font-size: 16px;
+        border: 2px solid var(--border-color);
+        border-radius: 10px;
+        transition: all var(--animation-speed) ease;
+        background-color: var(--background-light);
+        font-family: 'Poppins', sans-serif;
+      }
+      
+      .input_box input:focus,
+      .input_box select:focus {
+        outline: none;
+        border-color: var(--primary-color);
+        box-shadow: 0 0 0 4px rgba(0, 121, 188, 0.1);
+        background-color: var(--white);
+      }
+      
+      .input_box input:disabled,
+      .input_box select:disabled {
+        background-color: var(--disabled-bg);
+        cursor: not-allowed;
+        border-color: var(--disabled-border);
+        opacity: 0.7;
+      }
+      
+      button {
+        width: 100%;
+        padding: 16px;
+        background: var(--primary-color);
+        color: var(--white);
+        border: none;
+        border-radius: 10px;
+        font-size: 16px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all var(--animation-speed);
+        margin-top: 15px;
+        box-shadow: 0 4px 15px rgba(0, 121, 188, 0.3);
+        position: relative;
+        overflow: hidden;
+        letter-spacing: 0.5px;
+        font-family: 'Poppins', sans-serif;
+      }
+      
+      button::after {
+        content: "";
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        background: rgba(255, 255, 255, 0.2);
+        transition: all 0.5s ease;
+      }
+      
+      button:hover {
+        background: var(--primary-dark);
+        transform: translateY(-3px);
+        box-shadow: 0 8px 20px rgba(0, 121, 188, 0.4);
+      }
+      
+      button:hover::after {
+        left: 100%;
+      }
+      
+      button:active {
+        transform: translateY(0);
+        box-shadow: 0 4px 10px rgba(0, 121, 188, 0.2);
+      }
+      
+      #otpField {
+        display: none;
+        margin-top: 20px;
+        text-align: left;
+        animation: fadeIn 0.5s ease;
+      }
+      
+      #verifyBtn {
+        display: none;
+        background: var(--success-color);
+        box-shadow: 0 4px 15px rgba(60, 179, 113, 0.3);
+      }
+      
+      #verifyBtn:hover {
+        background: var(--success-dark);
+        box-shadow: 0 8px 20px rgba(60, 179, 113, 0.4);
+      }
+      
+      .role-icons {
+        display: flex;
+        justify-content: space-around;
+        margin-bottom: 25px;
+        gap: 15px;
+      }
+      
+      .role-icon {
+        text-align: center;
+        padding: 15px;
+        border-radius: 12px;
+        cursor: pointer;
+        transition: all var(--animation-speed);
+        width: 48%;
+        border: 2px solid transparent;
+      }
+      
+      .role-icon.active {
+        background: var(--primary-light);
+        border: 2px solid var(--primary-color);
+        transform: translateY(-3px);
+      }
+      
+      .role-icon i {
+        font-size: 36px;
+        color: var(--primary-color);
+        margin-bottom: 8px;
+      }
+      
+      .healthcare-pattern {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 40 40"><g fill="rgba(0,121,188,0.03)"><path d="M20 0v40M0 20h40"/></g></svg>');
+        opacity: 0.5;
+        z-index: -1;
       }
 
-      const data = await response.json();
-
-      if (response.ok && data.message) {
-        alert('Verification successful! Redirecting...');
-        if (role === 'Doctor') {
-          window.location.href = '/doctor_register';
-        } else {
-          window.location.href = '/patient_register';
+      /* Added animations */
+      @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(10px); }
+        to { opacity: 1; transform: translateY(0); }
+      }
+      
+      .signup_form {
+        animation: fadeIn 0.6s ease-out;
+      }
+      
+      /* Responsive adjustments */
+      @media (max-width: 480px) {
+        .signup_form {
+          padding: 30px 20px;
+          max-width: 100%;
+          margin: 0 15px;
         }
-      } else {
-        alert(data.error || 'Invalid verification code. Please try again.');
-        verifyBtn.disabled = false;
-        verifyBtn.textContent = 'VERIFY & CONTINUE';
+        
+        h3 {
+          font-size: 24px;
+        }
+        
+        .input_box input,
+        .input_box select {
+          height: 48px;
+        }
       }
-    } catch (err) {
-      console.error('Error verifying OTP:', err);
-      let errorMsg = 'Verification failed. ';
-      if (err.message.includes('Server returned invalid response')) {
-        errorMsg += 'Server configuration error. Please contact support.';
-      } else if (err.message.includes('Failed to fetch')) {
-        errorMsg += 'Cannot connect to server. Please check your internet connection.';
-      } else {
-        errorMsg += err.message;
-      }
-      alert(errorMsg);
-      verifyBtn.disabled = false;
-      verifyBtn.textContent = 'VERIFY & CONTINUE';
-    }
-  });
+    </style>
+  </head>
+  <body>
+    <div class="signup_form">
+      <div class="logo">
+        <!-- Add your healthcare logo here -->
+        <img src="static/images/logo.jpg" alt="Healthcare Logo"> 
+      </div>
+      <h3>RapiACT!❤️ Account</h3>
+      <form id="signupForm">
+        <div class="input_box">
+          <label for="role">I am a</label>
+          <select id="role" name="role" required>
+            <option value="Patient">Patient</option>
+            <option value="Doctor">Doctor</option>
+          </select>
+        </div>
+        <div class="input_box">
+          <label for="name">Full Name</label>
+          <input
+            type="text"
+            id="name"
+            name="name"
+            placeholder="Enter your full name"
+            required
+          />
+        </div>
+        <div class="input_box">
+          <label for="email">Email</label>
+          <input
+            type="email"
+            id="email"
+            name="email"
+            placeholder="Enter your email address"
+            required
+          />
+        </div>
+        <div class="input_box">
+          <label for="password">Password</label>
+          <input
+            type="password"
+            id="password"
+            name="password"
+            placeholder="Create a secure password"
+            required
+          />
+        </div>
+        <div class="input_box">
+          <label for="confirmPassword">Confirm Password</label>
+          <input
+            type="password"
+            id="confirmPassword"
+            name="confirmPassword"
+            placeholder="Confirm your password"
+            required
+          />
+        </div>
 
-  // Allow Enter key to submit
-  document.getElementById('otp').addEventListener('keypress', (e) => {
-    if (e.key === 'Enter') {
-      document.getElementById('verifyBtn').click();
-    }
-  });
-</script>
-</body>
+        <button type="button" id="sendOtpBtn">SEND VERIFICATION CODE</button>
+
+        <div id="otpField" class="input_box">
+          <label for="otp">Verification Code</label>
+          <input
+            type="text"
+            id="otp"
+            name="otp"
+            placeholder="Enter the 6-digit code"
+            required
+          />
+        </div>
+
+        <button type="button" id="verifyBtn">VERIFY & CONTINUE</button>
+      </form>
+      <div class="healthcare-pattern"></div>
+    </div>
+
+    <script>
+      document
+        .getElementById("sendOtpBtn")
+        .addEventListener("click", function () {
+          const email = document.getElementById("email").value;
+          const password = document.getElementById("password").value;
+          const confirmPassword =
+            document.getElementById("confirmPassword").value;
+          const name = document.getElementById("name").value;
+          const role = document.getElementById("role").value;
+
+          if (
+            name &&
+            email &&
+            password &&
+            confirmPassword &&
+            role &&
+            password === confirmPassword &&
+            /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)
+          ) {
+            fetch("/send-otp", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ email }),
+            })
+              .then((response) => response.json())
+              .then((data) => {
+                if (data.error) {
+                  alert(data.error);  // Show error if user is already registered
+                  return;
+                }
+            
+                alert("Verification code sent to your email!");
+                document.getElementById("role").disabled = true;
+                document.getElementById("name").disabled = true;
+                document.getElementById("email").disabled = true;
+                document.getElementById("password").disabled = true;
+                document.getElementById("confirmPassword").disabled = true;
+                document.getElementById("sendOtpBtn").style.display = "none";
+                document.getElementById("otpField").style.display = "block";
+                document.getElementById("verifyBtn").style.display = "block";
+              })
+              .catch((error) => console.error("Error:", error));
+          } else {
+            alert(
+              "Please fill all fields correctly and ensure passwords match!"
+            );
+          }
+        });
+
+        document.getElementById("verifyBtn").addEventListener("click", function () {
+          const name = document.getElementById("name").value;
+          const email = document.getElementById("email").value;
+          const password = document.getElementById("password").value;
+          const role = document.getElementById("role").value;
+          const otp = document.getElementById("otp").value;
+        
+          if (!email || !otp || !name || !password || !role) {
+            alert("All fields are required.");
+            return;
+          }
+        
+          fetch("/verify-otp", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ name, email, password, role, otp }),  // Sending all fields
+          })
+            .then((response) => response.json())
+            .then((data) => {
+              if (data.message) {
+                alert("Verification successful!");
+        
+                // Redirect based on role
+                if (role === "Doctor") {
+                  window.location.href = "doctor_register";
+                } else if (role === "Patient") {
+                  window.location.href = "patient_register";
+                }
+              } else {
+                alert("Invalid verification code! Please try again.");
+              }
+            })
+            .catch((error) => console.error("Error:", error));
+        });
+    </script>
+  </body>
 </html>
