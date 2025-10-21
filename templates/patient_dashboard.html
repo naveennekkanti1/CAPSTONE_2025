@@ -281,20 +281,6 @@
             background: linear-gradient(90deg, #20c997, #28a745);
         }
 
-        .btn-order {
-            background: linear-gradient(90deg, #17a2b8, #138496);
-            border: none;
-            color: white;
-            transition: all 0.3s ease;
-            margin-top: auto;
-        }
-
-        .btn-order:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(23, 162, 184, 0.3);
-            background: linear-gradient(90deg, #138496, #17a2b8);
-        }
-
         .btn-disabled {
             background: linear-gradient(90deg, #6c757d, #5a6268) !important;
             cursor: not-allowed;
@@ -320,58 +306,109 @@
             backdrop-filter: blur(10px);
         }
 
-        /* Patient profile card styles */
-        .profile-photo {
-            width: 120px;
-            height: 120px;
-            border-radius: 50%;
-            border: 4px solid white;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-            object-fit: cover;
-            margin-right: 25px;
-        }
-
-        .profile-detail {
-            display: flex;
+        /* Confirmation modal styles */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.6);
+            z-index: 2000;
+            justify-content: center;
             align-items: center;
-            margin-bottom: 10px;
+            animation: fadeIn 0.3s ease;
         }
 
-        .profile-detail i {
-            width: 24px;
-            margin-right: 10px;
+        .modal-overlay.active {
+            display: flex;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+            }
+            to {
+                opacity: 1;
+            }
+        }
+
+        .confirmation-modal {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            max-width: 500px;
+            width: 90%;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+            animation: slideUp 0.3s ease;
+        }
+
+        @keyframes slideUp {
+            from {
+                transform: translateY(50px);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        .confirmation-modal h4 {
             color: var(--primary-dark);
-        }
-
-        .profile-main {
+            margin-bottom: 15px;
             display: flex;
             align-items: center;
+        }
+
+        .confirmation-modal h4 i {
+            margin-right: 10px;
+            color: #dc3545;
+        }
+
+        .confirmation-modal p {
+            color: #666;
             margin-bottom: 20px;
         }
 
-        .patient-info-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
-            gap: 20px;
-            width: 100%;
+        .confirmation-modal .modal-buttons {
+            display: flex;
+            gap: 10px;
+            justify-content: flex-end;
         }
 
-        .patient-info-card {
-            background: rgba(255, 255, 255, 0.8);
-            border-radius: 12px;
-            padding: 15px;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-        }
-
-        .patient-info-card h5 {
-            color: var(--primary-dark);
+        .confirmation-modal .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
             font-weight: 600;
-            margin-bottom: 15px;
-            border-bottom: 1px solid #e0e0e0;
-            padding-bottom: 10px;
+            transition: all 0.3s ease;
         }
 
-        /* Added for larger screens */
+        .confirmation-modal .btn-confirm-cancel {
+            background: linear-gradient(90deg, #dc3545, #c82333);
+            color: white;
+        }
+
+        .confirmation-modal .btn-confirm-cancel:hover {
+            background: linear-gradient(90deg, #c82333, #bd2130);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(220, 53, 69, 0.3);
+        }
+
+        .confirmation-modal .btn-keep {
+            background: linear-gradient(90deg, #6c757d, #5a6268);
+            color: white;
+        }
+
+        .confirmation-modal .btn-keep:hover {
+            background: linear-gradient(90deg, #5a6268, #545b62);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(108, 117, 125, 0.3);
+        }
+
         @media (min-width: 1600px) {
             .card-container {
                 grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
@@ -398,8 +435,8 @@
             }
 
             .main-content {
-                margin-left: 0 !important; /* Force override */
-                width: 100% !important; /* Force override */
+                margin-left: 0 !important;
+                width: 100% !important;
                 padding: 20px;
             }
             
@@ -415,14 +452,16 @@
                 font-size: 2rem;
             }
 
-            .profile-main {
-                flex-direction: column;
-                text-align: center;
+            .confirmation-modal {
+                padding: 20px;
             }
 
-            .profile-photo {
-                margin-right: 0;
-                margin-bottom: 15px;
+            .confirmation-modal .modal-buttons {
+                flex-direction: column;
+            }
+
+            .confirmation-modal .btn {
+                width: 100%;
             }
         }
     </style>
@@ -448,6 +487,25 @@
         <a href="/logout"><i class="fas fa-sign-out-alt"></i>Logout</a>
     </div>
 
+    <!-- Confirmation Modal -->
+    <div class="modal-overlay" id="cancelModal">
+        <div class="confirmation-modal">
+            <h4><i class="fas fa-exclamation-triangle"></i>Cancel Appointment?</h4>
+            <p>Are you sure you want to cancel this appointment? This action cannot be undone.</p>
+            <div id="appointmentDetails" style="background: #f8f9fa; padding: 15px; border-radius: 8px; margin-bottom: 20px;">
+                <!-- Appointment details will be inserted here -->
+            </div>
+            <div class="modal-buttons">
+                <button class="btn btn-keep" onclick="closeModal()">
+                    <i class="fas fa-arrow-left"></i> Keep Appointment
+                </button>
+                <button class="btn btn-confirm-cancel" onclick="confirmCancel()">
+                    <i class="fas fa-times-circle"></i> Yes, Cancel It
+                </button>
+            </div>
+        </div>
+    </div>
+
     <div class="main-content">
         <div class="main-content-wrapper">
             <div class="dashboard-header">
@@ -465,7 +523,10 @@
                         {% if appointments %}
                             {% for appointment in appointments %}
                                 <div class="card" id="appointment-{{ appointment._id }}" 
-                                     data-time="{{ appointment.appointment_datetime }}" >
+                                     data-time="{{ appointment.appointment_datetime }}"
+                                     data-doctor="{{ appointment.doctor_name }}"
+                                     data-datetime="{{ appointment.appointment_datetime }}"
+                                     data-cause="{{ appointment.cause }}">
                                     <h5 class="card-title">
                                         <i class="fas fa-user-md"></i> 
                                         Doctor: {{ appointment.doctor_name }}
@@ -483,12 +544,12 @@
                                         <strong>Cause:</strong> {{ appointment.cause }}
                                     </p>
                                     <p class="card-text">
-                                        <strong>The Link has shared to respective mail id check and join in the meeting</strong>
+                                        <strong>The Link has been shared to respective mail id. Check and join the meeting.</strong>
                                     </p>
                                     
                                     {% if section == 'upcoming' %}
-                                        <form action="/cancel_appointment/{{ appointment._id }}" method="post" class="mt-auto">
-                                            <button type="submit" class="btn btn-cancel w-100">
+                                        <form id="cancel-form-{{ appointment._id }}" action="/cancel_appointment/{{ appointment._id }}" method="post" class="mt-auto">
+                                            <button type="button" class="btn btn-cancel w-100" onclick="showCancelModal('{{ appointment._id }}')">
                                                 <i class="fas fa-times-circle"></i> Cancel Appointment
                                             </button>
                                         </form>
@@ -514,6 +575,46 @@
     </div>
 
     <script>
+        let currentAppointmentId = null;
+
+        // Show cancel confirmation modal
+        function showCancelModal(appointmentId) {
+            currentAppointmentId = appointmentId;
+            const card = document.getElementById(`appointment-${appointmentId}`);
+            const doctorName = card.getAttribute('data-doctor');
+            const datetime = card.getAttribute('data-datetime');
+            const cause = card.getAttribute('data-cause');
+            
+            const detailsHtml = `
+                <p style="margin-bottom: 8px;"><strong>Doctor:</strong> Dr. ${doctorName}</p>
+                <p style="margin-bottom: 8px;"><strong>Date & Time:</strong> ${datetime}</p>
+                <p style="margin-bottom: 0;"><strong>Reason:</strong> ${cause}</p>
+            `;
+            
+            document.getElementById('appointmentDetails').innerHTML = detailsHtml;
+            document.getElementById('cancelModal').classList.add('active');
+        }
+
+        // Close modal
+        function closeModal() {
+            document.getElementById('cancelModal').classList.remove('active');
+            currentAppointmentId = null;
+        }
+
+        // Confirm cancellation
+        function confirmCancel() {
+            if (currentAppointmentId) {
+                document.getElementById(`cancel-form-${currentAppointmentId}`).submit();
+            }
+        }
+
+        // Close modal when clicking outside
+        document.getElementById('cancelModal').addEventListener('click', function(e) {
+            if (e.target === this) {
+                closeModal();
+            }
+        });
+
         // Mobile Sidebar Toggle
         const toggleSidebar = () => {
             const sidebar = document.querySelector('.sidebar');
@@ -521,7 +622,6 @@
             
             sidebar.classList.toggle('active');
             
-            // Handle main content margin dynamically
             if (window.innerWidth <= 768) {
                 if (sidebar.classList.contains('active')) {
                     mainContent.style.marginLeft = '0';
@@ -564,14 +664,12 @@
                 const timeDiff = (appointmentTime - now) / 1000 / 60; // Difference in minutes
                 
                 const appointmentId = card.id.split('-')[1];
-                const joinBtn = document.getElementById(`join-btn-${appointmentId}`);
                 const ongoingContainer = document.getElementById('ongoing-appointments');
                 const upcomingContainer = document.getElementById('upcoming-appointments');
-                const meetingLink = card.getAttribute('data-meeting-link');
 
                 if (timeDiff <= 5 && timeDiff >= -60) { 
                     // Move to "Ongoing" section
-                    if (ongoingContainer) {
+                    if (ongoingContainer && card.parentElement.id === 'upcoming-appointments') {
                         ongoingContainer.appendChild(card);
                         
                         // Remove "no appointments" message if it exists
@@ -580,22 +678,16 @@
                             noApptMsg.remove();
                         }
                         
-                        // Update card for ongoing section
+                        // Remove cancel button for ongoing appointments
                         if (card.querySelector('.btn-cancel')) {
                             const cancelBtn = card.querySelector('.btn-cancel');
-                            cancelBtn.parentNode.remove(); // Remove the form containing the cancel button
-                            
-                            // Add join meeting button
-                            const btnContainer = document.createElement('div');
-                            btnContainer.className = 'mt-auto';
-                            
-                            
-                            card.appendChild(btnContainer);
+                            cancelBtn.parentNode.remove();
                         }
                     }
                     
                     // Check if upcoming is now empty
-                    if (upcomingContainer && upcomingContainer.children.length === 0) {
+                    const upcomingCards = upcomingContainer.querySelectorAll('.card');
+                    if (upcomingContainer && upcomingCards.length === 0) {
                         const emptyMsg = document.createElement('div');
                         emptyMsg.className = 'text-center w-100 p-4';
                         emptyMsg.innerHTML = `
